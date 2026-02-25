@@ -123,21 +123,35 @@ export default function LandingPageBuilder({
   };
 
   const handleSave = async (publish = false) => {
+    console.log('handleSave called', { eventId, publish, formData });
+    
+    if (!eventId) {
+      setError("Event ID is missing");
+      return;
+    }
+    
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
+      const payload = {
+        ...formData,
+        published: publish ? true : formData.published,
+      };
+      
+      console.log('Sending PUT request to:', `/api/admin/events/${eventId}/landing-page`);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+      
       const res = await fetch(`/api/admin/events/${eventId}/landing-page`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          published: publish ? true : formData.published,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log('Response status:', res.status);
       const data = await res.json();
+      console.log('Response data:', data);
 
       if (res.ok) {
         setSuccess(publish ? "Landing page published!" : "Landing page saved!");
@@ -148,7 +162,8 @@ export default function LandingPageBuilder({
         setError(data.message || "Failed to save landing page");
       }
     } catch (err) {
-      setError("Failed to save landing page");
+      console.error('Save error:', err);
+      setError("Failed to save landing page: " + String(err));
     } finally {
       setSaving(false);
     }
