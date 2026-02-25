@@ -79,6 +79,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "white",
               color: "primary.main",
@@ -279,6 +280,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "white",
               color: "primary.main",

@@ -18,7 +18,7 @@ export async function GET(
       return errorResponse("Event not found", 404);
     }
 
-    return successResponse(event);
+    return successResponse({ event });
   } catch (error) {
     console.error("GET /api/events/[eventId] error:", error);
     return errorResponse("Failed to fetch event", 500);

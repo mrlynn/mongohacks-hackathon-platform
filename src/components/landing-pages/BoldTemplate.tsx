@@ -125,6 +125,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "white",
               color: "#0068F9",
@@ -458,6 +459,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "white",
               color: "#0068F9",

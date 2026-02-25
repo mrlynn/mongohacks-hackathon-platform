@@ -130,6 +130,7 @@ export default function TechTemplate({ event }: TechTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "#00ED64",
               color: "#0a0e27",
@@ -514,6 +515,7 @@ export default function TechTemplate({ event }: TechTemplateProps) {
           <Button
             variant="contained"
             size="large"
+            href={`/events/${event._id}/register`}
             sx={{
               bgcolor: "#00ED64",
               color: "#0a0e27",
