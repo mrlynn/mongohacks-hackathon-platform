@@ -157,7 +157,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
 
           <Grid container spacing={3}>
             {/* Name */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Name"
@@ -168,7 +168,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
             </Grid>
 
             {/* Bio */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -182,7 +182,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
             </Grid>
 
             {/* Experience Level */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 select
@@ -200,7 +200,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
             </Grid>
 
             {/* Member Since */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Member Since"
@@ -210,7 +210,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
             </Grid>
 
             {/* Skills */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Skills"
@@ -223,7 +223,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
             </Grid>
 
             {/* Interests */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Interests"
@@ -237,7 +237,7 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
 
             {/* Action Buttons */}
             {editing && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <Button
                     variant="contained"

@@ -127,7 +127,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
           Platform Features
         </Typography>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
                 <EventIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
@@ -141,7 +141,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
                 <PeopleIcon sx={{ fontSize: 48, color: "secondary.main", mb: 2 }} />
@@ -155,7 +155,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
                 <FolderIcon sx={{ fontSize: 48, color: "success.main", mb: 2 }} />
@@ -169,7 +169,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
                 <MapIcon sx={{ fontSize: 48, color: "info.main", mb: 2 }} />
@@ -191,7 +191,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
               Admin Quick Links
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -201,7 +201,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
                   Create Event
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -211,7 +211,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
                   Manage Users
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -221,7 +221,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
                   View Projects
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Button
                   fullWidth
                   variant="outlined"

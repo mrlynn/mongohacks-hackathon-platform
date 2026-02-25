@@ -163,7 +163,7 @@ export default function EditEventPage({
         <CardContent sx={{ p: 4 }}>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Event Name"
@@ -174,7 +174,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Theme"
@@ -185,7 +185,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   multiline
@@ -198,7 +198,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Start Date & Time"
@@ -211,7 +211,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="End Date & Time"
@@ -224,7 +224,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Registration Deadline"
@@ -238,7 +238,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Location"
@@ -250,7 +250,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Venue"
@@ -261,7 +261,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="City"
@@ -271,7 +271,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Country"
@@ -281,7 +281,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Capacity"
@@ -293,7 +293,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   select
@@ -309,7 +309,7 @@ export default function EditEventPage({
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -322,7 +322,7 @@ export default function EditEventPage({
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
                   <Button
                     variant="outlined"

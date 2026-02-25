@@ -184,7 +184,7 @@ export default function SettingsClient({ user }: { user: User }) {
             </Typography>
 
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   type="password"
@@ -196,7 +196,7 @@ export default function SettingsClient({ user }: { user: User }) {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   type="password"
@@ -209,7 +209,7 @@ export default function SettingsClient({ user }: { user: User }) {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   type="password"
@@ -221,7 +221,7 @@ export default function SettingsClient({ user }: { user: User }) {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Button
                   variant="contained"
                   startIcon={<SaveIcon />}

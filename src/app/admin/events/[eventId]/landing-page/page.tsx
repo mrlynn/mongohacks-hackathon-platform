@@ -348,7 +348,7 @@ export default function LandingPageBuilder({
 
       <Grid container spacing={4}>
         {/* Template Selection */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -376,7 +376,7 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* URL Settings */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -411,14 +411,14 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* Hero Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                 Hero Section
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Headline"
@@ -438,7 +438,7 @@ export default function LandingPageBuilder({
                     placeholder="Build the Future with MongoDB"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Subheadline"
@@ -458,7 +458,7 @@ export default function LandingPageBuilder({
                     placeholder="Join developers worldwide in a 48-hour coding challenge"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="CTA Button Text"
@@ -477,7 +477,7 @@ export default function LandingPageBuilder({
                     }
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Background Image URL"
@@ -503,7 +503,7 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* About Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
@@ -531,7 +531,7 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* Prizes Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -551,7 +551,7 @@ export default function LandingPageBuilder({
                     </IconButton>
                   </Box>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
                         fullWidth
                         label="Title"
@@ -560,7 +560,7 @@ export default function LandingPageBuilder({
                         placeholder="1st Place"
                       />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
                         fullWidth
                         label="Value"
@@ -569,7 +569,7 @@ export default function LandingPageBuilder({
                         placeholder="$5,000"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth
                         label="Description"
@@ -586,7 +586,7 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* Schedule Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -606,7 +606,7 @@ export default function LandingPageBuilder({
                     </IconButton>
                   </Box>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <TextField
                         fullWidth
                         label="Time"
@@ -624,7 +624,7 @@ export default function LandingPageBuilder({
                         placeholder="Opening Ceremony"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth
                         label="Description"
@@ -641,7 +641,7 @@ export default function LandingPageBuilder({
         </Grid>
 
         {/* FAQ Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -661,7 +661,7 @@ export default function LandingPageBuilder({
                     </IconButton>
                   </Box>
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth
                         label="Question"
@@ -670,7 +670,7 @@ export default function LandingPageBuilder({
                         placeholder="Who can participate?"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <TextField
                         fullWidth
                         multiline
