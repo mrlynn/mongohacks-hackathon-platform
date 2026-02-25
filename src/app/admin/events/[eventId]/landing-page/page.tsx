@@ -92,14 +92,18 @@ export default function LandingPageBuilder({
 
   const fetchEvent = async (id: string) => {
     try {
+      console.log('Fetching event:', id);
       const res = await fetch(`/api/admin/events/${id}`);
       const data = await res.json();
       
-      if (res.ok) {
+      console.log('Event fetch response:', { status: res.status, data });
+      
+      if (res.ok && data.event) {
         setEventName(data.event.name);
         
         // Load existing landing page if exists
         if (data.event.landingPage) {
+          console.log('Loading existing landing page:', data.event.landingPage);
           setFormData({
             template: data.event.landingPage.template || "modern",
             slug: data.event.landingPage.slug || "",
@@ -108,16 +112,20 @@ export default function LandingPageBuilder({
           });
         } else {
           // Generate default slug from event name
+          console.log('No landing page found, generating default slug');
           const defaultSlug = data.event.name
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
           setFormData((prev) => ({ ...prev, slug: defaultSlug }));
         }
+      } else {
+        setError(data.error || data.message || "Failed to load event");
       }
       setLoading(false);
     } catch (err) {
-      setError("Failed to load event");
+      console.error('Failed to fetch event:', err);
+      setError("Failed to load event: " + String(err));
       setLoading(false);
     }
   };
