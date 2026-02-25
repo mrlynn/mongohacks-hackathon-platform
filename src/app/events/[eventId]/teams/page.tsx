@@ -1,10 +1,12 @@
 import { Box, Typography, Button, Card, CardContent, Chip, Grid } from "@mui/material";
-import { Add as AddIcon, People as PeopleIcon } from "@mui/icons-material";
+import { Add as AddIcon } from "@mui/icons-material";
 import Link from "next/link";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { EventModel } from "@/lib/db/models/Event";
+import { ParticipantModel } from "@/lib/db/models/Participant";
 import { auth } from "@/lib/auth";
+import TeamCard from "./TeamCard";
 
 async function getTeams(eventId: string) {
   await connectToDatabase();
@@ -44,6 +46,18 @@ async function getEvent(eventId: string) {
   };
 }
 
+async function getUserTeamId(userId: string | undefined, eventId: string): Promise<string | null> {
+  if (!userId) return null;
+  
+  await connectToDatabase();
+  const participant = await ParticipantModel.findOne({
+    userId,
+    "registeredEvents.eventId": eventId,
+  }).lean();
+  
+  return participant?.teamId?.toString() || null;
+}
+
 export default async function TeamsPage({
   params,
 }: {
@@ -51,9 +65,12 @@ export default async function TeamsPage({
 }) {
   const { eventId } = await params;
   const session = await auth();
-  const [teams, event] = await Promise.all([
+  const userId = (session?.user as { id?: string })?.id;
+  
+  const [teams, event, userTeamId] = await Promise.all([
     getTeams(eventId),
     getEvent(eventId),
+    getUserTeamId(userId, eventId),
   ]);
 
   if (!event) {
@@ -122,73 +139,12 @@ export default async function TeamsPage({
         ) : (
           teams.map((team) => (
             <Grid item key={team._id} xs={12} md={6} lg={4}>
-              <Card elevation={2} sx={{ height: "100%" }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <PeopleIcon sx={{ mr: 1, color: "primary.main" }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {team.name}
-                    </Typography>
-                  </Box>
-
-                  {team.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {team.description}
-                    </Typography>
-                  )}
-
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Team Leader
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {team.leaderId?.name || "Unknown"}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Members
-                    </Typography>
-                    <Typography variant="body2">
-                      {team.members.length} / {team.maxMembers}
-                    </Typography>
-                  </Box>
-
-                  {team.desiredSkills && team.desiredSkills.length > 0 && (
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block" }}>
-                        Looking for
-                      </Typography>
-                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                        {team.desiredSkills.map((skill) => (
-                          <Chip key={skill} label={skill} size="small" variant="outlined" />
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      component={Link}
-                      href={`/events/${eventId}/teams/${team._id}`}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      fullWidth
-                      disabled={team.members.length >= team.maxMembers}
-                    >
-                      {team.members.length >= team.maxMembers ? "Full" : "Join"}
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
+              <TeamCard
+                team={team as any}
+                eventId={eventId}
+                userId={userId || null}
+                userTeamId={userTeamId}
+              />
             </Grid>
           ))
         )}

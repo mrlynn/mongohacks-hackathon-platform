@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
+import { ParticipantModel } from "@/lib/db/models/Participant";
 
 export async function POST(
   request: NextRequest,
@@ -20,21 +21,41 @@ export async function POST(
     await connectToDatabase();
     const { eventId } = await params;
     const body = await request.json();
+    const userId = (session.user as { id: string }).id;
 
-    // Find user's team for this event
+    // Validation 1: Check if user is registered for this event
+    const participant = await ParticipantModel.findOne({
+      userId,
+      "registeredEvents.eventId": eventId,
+    });
+
+    if (!participant) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "You must be registered for this event to submit a project",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Validation 2: Check if user is in a team
     const team = await TeamModel.findOne({
       eventId,
-      members: session.user.id,
+      members: userId,
     }).populate("members");
 
     if (!team) {
       return NextResponse.json(
-        { success: false, error: "You must be in a team to submit a project" },
-        { status: 400 }
+        {
+          success: false,
+          message: "You must join a team before submitting a project",
+        },
+        { status: 403 }
       );
     }
 
-    // Check if team already has a project for this event
+    // Validation 3: Check if team already has a project for this event
     const existingProject = await ProjectModel.findOne({
       eventId,
       teamId: team._id,
@@ -44,9 +65,22 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: "Your team already has a project for this event",
+          message: "Your team already has a project for this event",
         },
-        { status: 400 }
+        { status: 409 }
+      );
+    }
+
+    // Validation 4: Validate GitHub repository URL
+    const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
+    if (body.repoUrl && !githubUrlRegex.test(body.repoUrl)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid GitHub repository URL. Format: https://github.com/username/repo",
+        },
+        { status: 422 }
       );
     }
 
