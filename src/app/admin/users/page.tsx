@@ -1,7 +1,7 @@
 import { Box, Typography, Chip } from "@mui/material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
-import UsersTableClient from "./UsersTableClient";
+import UsersView from "./UsersView";
 
 async function getUsers() {
   await connectToDatabase();
@@ -56,7 +56,7 @@ export default async function AdminUsersPage() {
         <Chip label={`${stats.participants} Participants`} color="success" variant="outlined" />
       </Box>
 
-      <UsersTableClient users={users} />
+      <UsersView users={users} />
     </Box>
   );
 }

@@ -3,7 +3,7 @@
 import { Box, Typography, Button, Chip } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import Link from "next/link";
-import EventsTable from "./EventsTable";
+import EventsView from "./EventsView";
 
 interface Event {
   _id: string;
@@ -64,7 +64,7 @@ export default function EventsPageClient({ events }: { events: Event[] }) {
         />
       </Box>
 
-      <EventsTable events={events} />
+      <EventsView events={events} />
     </Box>
   );
 }
