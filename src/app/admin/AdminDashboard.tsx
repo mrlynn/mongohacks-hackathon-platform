@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Grid2 as Grid, Card, CardContent, Chip } from "@mui/material";
+import { Box, Typography, Grid, Card, CardContent, Chip } from "@mui/material";
 import { Event as EventIcon, People as PeopleIcon, Folder as FolderIcon, Gavel as GavelIcon } from "@mui/icons-material";
 
 interface AdminStats {
