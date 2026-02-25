@@ -1,27 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Alert, Button, Box } from "@mui/material";
 import { ExitToApp as ExitIcon } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function ImpersonationBanner() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [impersonatedUser, setImpersonatedUser] = useState("");
 
-  useEffect(() => {
-    // Check if impersonation cookie exists
-    const checkImpersonation = () => {
-      const cookies = document.cookie.split(";");
-      const impersonateCookie = cookies.find((c) =>
-        c.trim().startsWith("impersonate_user_id=")
-      );
-      setIsImpersonating(!!impersonateCookie);
-    };
-
-    checkImpersonation();
+  const checkImpersonation = useCallback(() => {
+    const cookies = document.cookie.split(";");
+    const nameCookie = cookies.find((c) =>
+      c.trim().startsWith("impersonate_user_name=")
+    );
+    if (nameCookie) {
+      const name = decodeURIComponent(nameCookie.split("=")[1].trim());
+      setImpersonatedUser(name);
+      setIsImpersonating(true);
+    } else {
+      setImpersonatedUser("");
+      setIsImpersonating(false);
+    }
   }, []);
+
+  // Re-check on mount and on every navigation
+  useEffect(() => {
+    checkImpersonation();
+  }, [pathname, checkImpersonation]);
 
   const handleStopImpersonation = async () => {
     try {
@@ -63,7 +71,8 @@ export default function ImpersonationBanner() {
         }}
       >
         <span>
-          <strong>Admin Mode:</strong> You are viewing the site as a user. Some features may be limited.
+          <strong>Admin Mode:</strong> You are viewing the site as{" "}
+          {impersonatedUser ? <strong>{impersonatedUser}</strong> : "a user"}. Some features may be limited.
         </span>
         <Button
           size="small"

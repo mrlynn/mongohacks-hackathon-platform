@@ -1,40 +1,19 @@
 /**
- * Serialize Mongoose documents to plain objects for Next.js Client Components
- * Converts ObjectIds to strings and Dates to ISO strings
+ * Serialize Mongoose lean documents to plain objects for Next.js Client Components.
+ *
+ * Uses JSON round-trip which leverages the built-in .toJSON() on ObjectId (→ string)
+ * and Date (→ ISO string), and automatically strips functions, Uint8Arrays, Symbols,
+ * and any other non-JSON-serializable values that would cause
+ * "Functions cannot be passed directly to Client Components" or
+ * "Uint8Array objects are not supported" errors.
  */
 
-export function serializeDoc<T extends Record<string, any>>(doc: T): any {
+export function serializeDoc<T>(doc: T): any {
   if (!doc) return doc;
-
-  const serialized: any = {};
-
-  for (const key in doc) {
-    const value: unknown = doc[key];
-
-    if (value === null || value === undefined) {
-      serialized[key] = value;
-    } else if (typeof value === "object" && value !== null && (value as Record<string, unknown>)._bsontype === "ObjectId") {
-      // Serialize ObjectId to string
-      serialized[key] = String(value);
-    } else if (value instanceof Date) {
-      // Serialize Date to ISO string
-      serialized[key] = value.toISOString();
-    } else if (Array.isArray(value)) {
-      // Recursively serialize arrays
-      serialized[key] = value.map((item: unknown) =>
-        typeof item === "object" && item !== null ? serializeDoc(item as Record<string, unknown>) : item
-      );
-    } else if (typeof value === "object" && value !== null && !Buffer.isBuffer(value as never)) {
-      // Recursively serialize nested objects (but not Buffers)
-      serialized[key] = serializeDoc(value as Record<string, unknown>);
-    } else {
-      serialized[key] = value;
-    }
-  }
-
-  return serialized;
+  return JSON.parse(JSON.stringify(doc));
 }
 
-export function serializeDocs<T extends Record<string, any>>(docs: T[]): any[] {
-  return docs.map(serializeDoc);
+export function serializeDocs<T>(docs: T[]): any[] {
+  if (!docs) return [];
+  return JSON.parse(JSON.stringify(docs));
 }

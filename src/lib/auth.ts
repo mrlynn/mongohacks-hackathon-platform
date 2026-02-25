@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 
@@ -55,9 +56,39 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
+        // Store the real admin identity
         (session.user as unknown as { role: string }).role =
           token.role as string;
         (session.user as unknown as { id: string }).id = token.id as string;
+
+        // Check for impersonation cookie
+        try {
+          const cookieStore = await cookies();
+          const impersonateUserId = cookieStore.get("impersonate_user_id")?.value;
+
+          if (impersonateUserId && (token.role === "admin" || token.role === "super_admin")) {
+            await connectToDatabase();
+            const impersonatedUser = await UserModel.findById(impersonateUserId)
+              .select("-passwordHash")
+              .lean();
+
+            if (impersonatedUser) {
+              // Swap session to impersonated user, but keep admin info
+              (session.user as unknown as { id: string }).id =
+                impersonatedUser._id.toString();
+              session.user.name = impersonatedUser.name;
+              session.user.email = impersonatedUser.email;
+              (session.user as unknown as { role: string }).role =
+                impersonatedUser.role;
+              // Flag that this is an impersonated session
+              (session.user as unknown as { isImpersonating: boolean }).isImpersonating = true;
+              (session.user as unknown as { realAdminId: string }).realAdminId =
+                token.id as string;
+            }
+          }
+        } catch {
+          // If cookies() fails (e.g., in non-request context), skip impersonation
+        }
       }
       return session;
     },

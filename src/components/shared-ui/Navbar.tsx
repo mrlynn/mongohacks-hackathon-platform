@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
   AppBar,
@@ -17,6 +17,7 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
+  Tooltip,
 } from "@mui/material";
 import {
   AdminPanelSettings as AdminIcon,
@@ -26,19 +27,50 @@ import {
   Map as MapIcon,
   Settings as SettingsIcon,
   Person as PersonIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
 } from "@mui/icons-material";
+import { useColorScheme } from "@mui/material/styles";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+function ThemeToggle() {
+  const { mode, setMode } = useColorScheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || !mode) return null;
+
+  return (
+    <Tooltip
+      title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <IconButton
+        color="inherit"
+        onClick={() => setMode(mode === "dark" ? "light" : "dark")}
+        size="small"
+      >
+        {mode === "dark" ? (
+          <LightModeIcon fontSize="small" />
+        ) : (
+          <DarkModeIcon fontSize="small" />
+        )}
+      </IconButton>
+    </Tooltip>
+  );
+}
 
 export default function Navbar() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const user = session?.user as
     | { id?: string; name?: string; email?: string; role?: string }
     | undefined;
-  const loading = status === "loading";
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -80,6 +112,8 @@ export default function Navbar() {
           </Link>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <ThemeToggle />
+
             <Button
               color="inherit"
               href="/events"
@@ -95,11 +129,11 @@ export default function Navbar() {
               Map
             </Button>
 
-            {!loading && (
+            {mounted && (
               <>
                 {user ? (
                   <>
-                    {user.role === "admin" && (
+                    {(user.role === "admin" || user.role === "super_admin") && (
                       <Button
                         color="inherit"
                         href="/admin"

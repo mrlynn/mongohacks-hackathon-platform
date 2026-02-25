@@ -7,6 +7,8 @@ import { TeamModel } from "../src/lib/db/models/Team";
 import { ProjectModel } from "../src/lib/db/models/Project";
 import { ParticipantModel } from "../src/lib/db/models/Participant";
 import { ScoreModel } from "../src/lib/db/models/Score";
+import { TemplateConfigModel } from "../src/lib/db/models/TemplateConfig";
+import { seedBuiltInTemplates } from "../src/lib/db/seed-templates";
 import bcrypt from "bcryptjs";
 
 const CLEAR_EXISTING = process.argv.includes("--clear");
@@ -26,9 +28,10 @@ async function seed() {
     console.log("   1. Use existing data (you're all set!)");
     console.log("   2. Run 'npm run seed:clear' to wipe and reload fresh data\n");
     console.log("🔑 Test Credentials:");
-    console.log("   Admin:    admin@mongohacks.com / password123");
-    console.log("   Judge:    sarah.judge@mongohacks.com / password123");
-    console.log("   User:     alice@example.com / password123\n");
+    console.log("   Super Admin: superadmin@mongohacks.com / password123");
+    console.log("   Admin:       admin@mongohacks.com / password123");
+    console.log("   Judge:       sarah.judge@mongohacks.com / password123");
+    console.log("   User:        alice@example.com / password123\n");
     process.exit(0);
   }
 
@@ -41,6 +44,7 @@ async function seed() {
     await ProjectModel.deleteMany({});
     await ParticipantModel.deleteMany({});
     await ScoreModel.deleteMany({});
+    await TemplateConfigModel.deleteMany({});
     console.log("✅ Data cleared\n");
   }
 
@@ -49,6 +53,12 @@ async function seed() {
   const passwordHash = await bcrypt.hash("password123", 10);
 
   const users = await UserModel.insertMany([
+    {
+      name: "Super Admin",
+      email: "superadmin@mongohacks.com",
+      passwordHash,
+      role: "super_admin",
+    },
     {
       name: "Admin User",
       email: "admin@mongohacks.com",
@@ -117,7 +127,7 @@ async function seed() {
     },
   ]);
 
-  const [admin, judge1, judge2, alice, bob, carol, david, emma, frank, grace, henry] = users;
+  const [superAdmin, admin, judge1, judge2, alice, bob, carol, david, emma, frank, grace, henry] = users;
   console.log(`✅ Created ${users.length} users\n`);
 
   // Create Participants
@@ -605,6 +615,11 @@ async function seed() {
 
   console.log(`✅ Created ${scores.length} scores\n`);
 
+  // Seed built-in templates
+  console.log("🎨 Seeding built-in templates...");
+  const templatesInserted = await seedBuiltInTemplates();
+  console.log(`✅ Seeded ${templatesInserted} built-in templates\n`);
+
   console.log("🎉 Seeding complete!\n");
   console.log("📊 Summary:");
   console.log(`   Users: ${users.length}`);
@@ -612,13 +627,15 @@ async function seed() {
   console.log(`   Events: 4`);
   console.log(`   Teams: ${teams.length}`);
   console.log(`   Projects: ${projects.length}`);
-  console.log(`   Scores: ${scores.length}\n`);
+  console.log(`   Scores: ${scores.length}`);
+  console.log(`   Templates: ${templatesInserted}\n`);
 
   console.log("🔑 Test Credentials:");
-  console.log("   Admin:    admin@mongohacks.com / password123");
-  console.log("   Judge:    sarah.judge@mongohacks.com / password123");
-  console.log("   Judge:    mike.judge@mongohacks.com / password123");
-  console.log("   User:     alice@example.com / password123");
+  console.log("   Super Admin: superadmin@mongohacks.com / password123");
+  console.log("   Admin:       admin@mongohacks.com / password123");
+  console.log("   Judge:       sarah.judge@mongohacks.com / password123");
+  console.log("   Judge:       mike.judge@mongohacks.com / password123");
+  console.log("   User:        alice@example.com / password123");
   console.log("   (All users have password: password123)\n");
 
   process.exit(0);

@@ -8,7 +8,7 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    await requireAdmin();
+    const session = await requireAdmin();
     await connectToDatabase();
 
     const { userId } = await params;
@@ -16,7 +16,7 @@ export async function PATCH(
     const { role } = body;
 
     // Validate role
-    const validRoles = ["participant", "judge", "organizer", "admin"];
+    const validRoles = ["participant", "judge", "organizer", "admin", "super_admin"];
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         {
@@ -25,6 +25,17 @@ export async function PATCH(
         },
         { status: 422 }
       );
+    }
+
+    // Escalation guard: only super_admin can assign super_admin role
+    if (role === "super_admin") {
+      const currentRole = (session.user as { role?: string }).role;
+      if (currentRole !== "super_admin") {
+        return NextResponse.json(
+          { success: false, message: "Only super admins can assign the super admin role" },
+          { status: 403 }
+        );
+      }
     }
 
     const user = await UserModel.findByIdAndUpdate(

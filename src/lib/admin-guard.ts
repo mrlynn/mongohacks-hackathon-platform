@@ -1,9 +1,18 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
+type UserRole =
+  | "super_admin"
+  | "admin"
+  | "organizer"
+  | "judge"
+  | "participant";
+
+const ADMIN_ROLES: UserRole[] = ["super_admin", "admin"];
+
 /**
  * Admin Guard - Server-side protection for admin routes
- * Usage: await requireAdmin() at the top of admin pages/API routes
+ * Accepts both "admin" and "super_admin" roles
  */
 export async function requireAdmin() {
   const session = await auth();
@@ -12,10 +21,30 @@ export async function requireAdmin() {
     redirect("/login");
   }
 
+  const userRole = (session.user as { role?: string }).role as UserRole;
+
+  if (!ADMIN_ROLES.includes(userRole)) {
+    redirect("/dashboard");
+  }
+
+  return session;
+}
+
+/**
+ * Super Admin Guard - Server-side protection for platform-level features
+ * Only accepts "super_admin" role
+ */
+export async function requireSuperAdmin() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   const userRole = (session.user as { role?: string }).role;
 
-  if (userRole !== "admin") {
-    redirect("/dashboard"); // Redirect non-admins to regular dashboard
+  if (userRole !== "super_admin") {
+    redirect("/admin");
   }
 
   return session;
@@ -23,25 +52,35 @@ export async function requireAdmin() {
 
 /**
  * Check if user is admin (without redirect)
- * Usage: const isAdmin = await isUserAdmin()
  */
 export async function isUserAdmin(): Promise<boolean> {
   const session = await auth();
   if (!session?.user) return false;
 
+  const userRole = (session.user as { role?: string }).role as UserRole;
+  return ADMIN_ROLES.includes(userRole);
+}
+
+/**
+ * Check if user is super admin (without redirect)
+ */
+export async function isUserSuperAdmin(): Promise<boolean> {
+  const session = await auth();
+  if (!session?.user) return false;
+
   const userRole = (session.user as { role?: string }).role;
-  return userRole === "admin";
+  return userRole === "super_admin";
 }
 
 /**
  * Check if user has specific role
  */
 export async function hasRole(
-  ...roles: ("admin" | "organizer" | "judge" | "participant")[]
+  ...roles: UserRole[]
 ): Promise<boolean> {
   const session = await auth();
   if (!session?.user) return false;
 
   const userRole = (session.user as { role?: string }).role;
-  return roles.includes(userRole as any);
+  return roles.includes(userRole as UserRole);
 }

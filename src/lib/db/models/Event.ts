@@ -21,12 +21,14 @@ export interface IEvent extends Document {
   rules: string;
   judging_criteria: string[];
   organizers: Types.ObjectId[];
+  partners: Types.ObjectId[]; // Partner references
   status: "draft" | "open" | "in_progress" | "concluded";
   descriptionEmbedding?: number[];
   landingPage?: {
-    template: "modern" | "bold" | "tech";
+    template: string;
     slug: string; // URL slug (e.g., "mongodb-hackathon-2024")
     published: boolean;
+    registrationFormConfig?: Types.ObjectId;
     customContent: {
       hero?: {
         headline?: string;
@@ -74,6 +76,7 @@ const EventSchema = new Schema<IEvent>(
     rules: { type: String, default: "" },
     judging_criteria: [{ type: String }],
     organizers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    partners: [{ type: Schema.Types.ObjectId, ref: "Partner" }],
     status: {
       type: String,
       enum: ["draft", "open", "in_progress", "concluded"],
@@ -83,11 +86,14 @@ const EventSchema = new Schema<IEvent>(
     landingPage: {
       template: {
         type: String,
-        enum: ["modern", "bold", "tech"],
         default: "modern",
       },
       slug: { type: String, unique: true, sparse: true }, // Unique URL slug
       published: { type: Boolean, default: false },
+      registrationFormConfig: {
+        type: Schema.Types.ObjectId,
+        ref: "RegistrationFormConfig",
+      },
       customContent: {
         hero: {
           headline: String,

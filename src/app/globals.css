@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Lexend+Deca:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
+
 body {
   margin: 0;
   padding: 0;
@@ -6,4 +8,55 @@ body {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--mui-palette-text-secondary, rgba(0, 30, 43, 0.15));
+  border-radius: 3px;
+}
+
+/* Code blocks — always dark mode per MongoDB brand guidelines */
+pre, code, kbd, samp {
+  font-family: 'Source Code Pro', 'Courier New', monospace;
+}
+
+pre {
+  background-color: #001E2B;
+  color: #E3FCF7;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+code {
+  background-color: #001E2B;
+  color: #E3FCF7;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+}
+
+/* Don't double-style code inside pre */
+pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Success icon pulse animation */
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.success-icon {
+  animation: successPulse 2s ease-in-out infinite;
 }

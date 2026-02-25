@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store impersonation in session (cookie)
     const response = NextResponse.json({
       success: true,
       message: `Now viewing as ${user.name}`,
@@ -39,11 +38,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Set impersonation cookie (1 hour expiry)
+    // httpOnly cookie for server-side session swapping
     response.cookies.set("impersonate_user_id", userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 3600, // 1 hour
+      maxAge: 3600,
+      path: "/",
+    });
+
+    // Client-readable cookie for the ImpersonationBanner UI
+    response.cookies.set("impersonate_user_name", user.name, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 3600,
       path: "/",
     });
 
@@ -57,7 +64,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     await requireAdmin();
 
@@ -66,8 +73,8 @@ export async function DELETE(request: NextRequest) {
       message: "Stopped impersonation",
     });
 
-    // Clear impersonation cookie
     response.cookies.delete("impersonate_user_id");
+    response.cookies.delete("impersonate_user_name");
 
     return response;
   } catch (error) {

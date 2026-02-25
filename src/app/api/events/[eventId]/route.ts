@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { RegistrationFormConfigModel } from "@/lib/db/models/RegistrationFormConfig";
 import { updateEventSchema } from "@/lib/db/schemas";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
@@ -18,6 +19,16 @@ export async function GET(
       return errorResponse("Event not found", 404);
     }
 
+    // Populate registration form config if linked
+    let registrationFormConfig = null;
+    if (event.landingPage?.registrationFormConfig) {
+      // Ensure the model is registered
+      RegistrationFormConfigModel;
+      registrationFormConfig = await RegistrationFormConfigModel.findById(
+        event.landingPage.registrationFormConfig
+      ).lean();
+    }
+
     // Serialize dates properly
     const serializedEvent = {
       ...event,
@@ -27,6 +38,9 @@ export async function GET(
       registrationDeadline: event.registrationDeadline?.toISOString() || new Date().toISOString(),
       createdAt: event.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: event.updatedAt?.toISOString() || new Date().toISOString(),
+      registrationFormConfig: registrationFormConfig
+        ? JSON.parse(JSON.stringify(registrationFormConfig))
+        : null,
     };
 
     return successResponse({ event: serializedEvent });

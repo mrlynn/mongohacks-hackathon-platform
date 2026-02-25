@@ -49,3 +49,62 @@ export const submitScoreSchema = z.object({
   ),
   overallComments: z.string().max(5000),
 });
+
+export const createPartnerSchema = z.object({
+  name: z.string().min(2).max(200),
+  description: z.string().min(10).max(2000),
+  logo: z.string().url().optional(),
+  website: z.string().url().optional(),
+  industry: z.string().min(2).max(100),
+  tier: z.enum(["platinum", "gold", "silver", "bronze", "community"]).default("bronze"),
+  status: z.enum(["active", "inactive", "pending"]).default("pending"),
+  companyInfo: z.object({
+    size: z.enum(["startup", "small", "medium", "large", "enterprise"]).optional(),
+    headquarters: z.string().max(200).optional(),
+    foundedYear: z.number().int().min(1800).max(new Date().getFullYear()).optional(),
+    employeeCount: z.string().max(50).optional(),
+  }).optional(),
+  contacts: z.array(
+    z.object({
+      name: z.string().min(2).max(100),
+      email: z.string().email(),
+      phone: z.string().max(30).optional(),
+      role: z.string().min(2).max(100),
+      isPrimary: z.boolean().default(false),
+    })
+  ).min(1).max(10),
+  social: z.object({
+    linkedin: z.string().url().optional(),
+    twitter: z.string().url().optional(),
+    github: z.string().url().optional(),
+    youtube: z.string().url().optional(),
+  }).optional(),
+  tags: z.array(z.string()).max(20).default([]),
+  notes: z.string().max(5000).optional(),
+});
+
+export const updatePartnerSchema = createPartnerSchema.partial();
+
+export const createPrizeSchema = z.object({
+  eventId: z.string(),
+  partnerId: z.string().optional(),
+  title: z.string().min(2).max(200),
+  description: z.string().min(10).max(2000),
+  category: z.enum(["grand", "track", "sponsor", "special", "community"]),
+  value: z.string().max(100).optional(),
+  monetaryValue: z.number().min(0).optional(),
+  eligibility: z.string().max(1000).optional(),
+  criteria: z.array(z.string()).max(20).optional(),
+  displayOrder: z.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+  imageUrl: z.string().url().optional(),
+});
+
+export const updatePrizeSchema = createPrizeSchema.partial();
+
+export const awardPrizeSchema = z.object({
+  prizeId: z.string(),
+  projectId: z.string(),
+  teamId: z.string(),
+  notes: z.string().max(1000).optional(),
+});

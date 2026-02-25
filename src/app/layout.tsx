@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import ThemeRegistry from "@/components/shared-ui/ThemeRegistry";
-import SessionProvider from "@/components/providers/SessionProvider";
-import Navbar from "@/components/shared-ui/Navbar";
-import ImpersonationBanner from "@/components/shared-ui/ImpersonationBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,15 +14,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeRegistry>
-          <SessionProvider>
-            <Navbar />
-            <ImpersonationBanner />
-            {children}
-          </SessionProvider>
-        </ThemeRegistry>
+        <ThemeRegistry>{children}</ThemeRegistry>
       </body>
     </html>
   );
