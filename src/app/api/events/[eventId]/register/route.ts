@@ -82,6 +82,12 @@ export async function POST(
           registrationDate: new Date(),
           status: "registered",
         });
+        // Merge custom responses if provided
+        if (body.customResponses) {
+          for (const [key, val] of Object.entries(body.customResponses)) {
+            existingParticipant.customResponses.set(key, val);
+          }
+        }
         await existingParticipant.save();
       } else {
         // Create new participant profile
@@ -93,6 +99,7 @@ export async function POST(
           skills: body.skills || [],
           interests: [],
           experience_level: body.experienceLevel || "beginner",
+          customResponses: body.customResponses || {},
           registeredEvents: [
             {
               eventId: eventId,
@@ -122,6 +129,7 @@ export async function POST(
         skills: body.skills || [],
         interests: [],
         experience_level: body.experienceLevel || "beginner",
+        customResponses: body.customResponses || {},
         registeredEvents: [
           {
             eventId: eventId,

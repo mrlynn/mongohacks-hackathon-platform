@@ -84,6 +84,7 @@ interface TemplateConfig {
 
 // Sample event data for preview
 const sampleEvent = {
+  _id: "preview",
   name: "MongoDB Hackathon 2026",
   description: "Build the next generation of database-powered applications. Join developers from around the world for an unforgettable 48-hour coding experience.",
   startDate: "2026-06-15T09:00:00Z",

@@ -3,6 +3,7 @@ import { ITemplateConfig, ITemplateColors, ITemplateSectionConfig } from "@/lib/
 export interface TemplateRenderProps {
   config: ITemplateConfig;
   event: {
+    _id: string;
     name: string;
     description: string;
     startDate: string;

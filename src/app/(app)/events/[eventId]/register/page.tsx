@@ -33,15 +33,17 @@ import {
   CodeOutlined,
   EventOutlined,
   LocationOnOutlined,
+  QuizOutlined,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
 import {
-  PageHeader,
   FormCard,
   FormSectionHeader,
 } from "@/components/shared-ui/FormElements";
+import CustomQuestionRenderer from "@/components/shared-ui/CustomQuestionRenderer";
+import type { CustomQuestion } from "@/components/shared-ui/CustomQuestionRenderer";
 
 interface Event {
   _id: string;
@@ -52,6 +54,28 @@ interface Event {
   location: string;
 }
 
+interface FormConfig {
+  _id: string;
+  name: string;
+  tier1: {
+    showExperienceLevel: boolean;
+    customQuestions: CustomQuestion[];
+  };
+  tier2: {
+    enabled: boolean;
+    prompt: string;
+    showSkills: boolean;
+    showGithub: boolean;
+    showBio: boolean;
+    customQuestions: CustomQuestion[];
+  };
+  tier3: {
+    enabled: boolean;
+    prompt: string;
+    customQuestions: CustomQuestion[];
+  };
+}
+
 export default function RegisterPage({
   params,
 }: {
@@ -60,6 +84,7 @@ export default function RegisterPage({
   const router = useRouter();
   const [eventId, setEventId] = useState("");
   const [event, setEvent] = useState<Event | null>(null);
+  const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -78,6 +103,11 @@ export default function RegisterPage({
     acceptCodeOfConduct: false,
   });
 
+  // Custom question responses keyed by question id
+  const [customResponses, setCustomResponses] = useState<
+    Record<string, unknown>
+  >({});
+
   useEffect(() => {
     params.then((p) => {
       setEventId(p.eventId);
@@ -91,6 +121,9 @@ export default function RegisterPage({
       const data = await res.json();
       if (data.event) {
         setEvent(data.event);
+        if (data.event.registrationFormConfig) {
+          setFormConfig(data.event.registrationFormConfig);
+        }
       }
     } catch (err) {
       setError("Failed to load event details");
@@ -109,6 +142,10 @@ export default function RegisterPage({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleCustomResponse = (questionId: string, value: unknown) => {
+    setCustomResponses((prev) => ({ ...prev, [questionId]: value }));
   };
 
   const validateForm = () => {
@@ -136,6 +173,30 @@ export default function RegisterPage({
       setError("You must accept the code of conduct");
       return false;
     }
+
+    // Validate required custom questions
+    if (formConfig) {
+      const allQuestions = [
+        ...formConfig.tier1.customQuestions,
+        ...(formConfig.tier2.enabled ? formConfig.tier2.customQuestions : []),
+        ...(formConfig.tier3.enabled ? formConfig.tier3.customQuestions : []),
+      ];
+      for (const q of allQuestions) {
+        if (q.required) {
+          const val = customResponses[q.id];
+          if (
+            val === undefined ||
+            val === null ||
+            val === "" ||
+            (Array.isArray(val) && val.length === 0)
+          ) {
+            setError(`"${q.label}" is required`);
+            return false;
+          }
+        }
+      }
+    }
+
     return true;
   };
 
@@ -159,6 +220,10 @@ export default function RegisterPage({
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          customResponses:
+            Object.keys(customResponses).length > 0
+              ? customResponses
+              : undefined,
         }),
       });
 
@@ -178,6 +243,32 @@ export default function RegisterPage({
       setSubmitting(false);
     }
   };
+
+  // ---------- Helpers to decide what to show ----------
+
+  // If there's a form config, use it. Otherwise show everything (backward compat).
+  const showExperienceLevel = formConfig
+    ? formConfig.tier1.showExperienceLevel
+    : true;
+  const showGithub = formConfig
+    ? formConfig.tier2.enabled && formConfig.tier2.showGithub
+    : true;
+  const showSkills = formConfig
+    ? formConfig.tier2.enabled && formConfig.tier2.showSkills
+    : true;
+  const showBio = formConfig
+    ? formConfig.tier2.enabled && formConfig.tier2.showBio
+    : true;
+  const showTier2 = formConfig ? formConfig.tier2.enabled : true;
+  const showTier3 = formConfig ? formConfig.tier3.enabled : false;
+
+  const tier1Questions = formConfig?.tier1.customQuestions ?? [];
+  const tier2Questions =
+    formConfig?.tier2.enabled ? (formConfig.tier2.customQuestions ?? []) : [];
+  const tier3Questions =
+    formConfig?.tier3.enabled ? (formConfig.tier3.customQuestions ?? []) : [];
+
+  // ---------- Render states ----------
 
   if (loading) {
     return (
@@ -226,10 +317,7 @@ export default function RegisterPage({
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ mb: 4, textAlign: "center" }}>
-        <Typography
-          variant="h3"
-          sx={{ fontWeight: 700, mb: 3 }}
-        >
+        <Typography variant="h3" sx={{ fontWeight: 700, mb: 3 }}>
           Register for Hackathon
         </Typography>
         <Card
@@ -283,7 +371,7 @@ export default function RegisterPage({
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* Personal Information */}
+        {/* ───── Tier 1: Personal Information (always shown) ───── */}
         <FormCard>
           <FormSectionHeader
             icon={<PersonOutlined />}
@@ -383,124 +471,182 @@ export default function RegisterPage({
                 }}
               />
             </Grid>
+
+            {showExperienceLevel && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Experience Level</InputLabel>
+                  <Select
+                    name="experienceLevel"
+                    value={formData.experienceLevel}
+                    label="Experience Level"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        experienceLevel: e.target.value as any,
+                      }))
+                    }
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <SchoolOutlined
+                          sx={{ color: "text.secondary", fontSize: 20 }}
+                        />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="beginner">Beginner</MenuItem>
+                    <MenuItem value="intermediate">Intermediate</MenuItem>
+                    <MenuItem value="advanced">Advanced</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+
+            {/* Tier 1 custom questions */}
+            {tier1Questions.map((q) => (
+              <Grid size={{ xs: 12 }} key={q.id}>
+                <CustomQuestionRenderer
+                  question={q}
+                  value={customResponses[q.id]}
+                  onChange={(val) => handleCustomResponse(q.id, val)}
+                />
+              </Grid>
+            ))}
           </Grid>
         </FormCard>
 
-        {/* Hacker Profile */}
-        <FormCard
-          accentColor={mongoColors.blue.main}
-          accentColorEnd={mongoColors.purple.main}
-        >
-          <FormSectionHeader
-            icon={<CodeOutlined />}
-            title="Hacker Profile"
-            subtitle="Tell us about your skills and experience"
-          />
+        {/* ───── Tier 2: Hacker Profile (config-driven) ───── */}
+        {showTier2 && (showGithub || showSkills || showBio || tier2Questions.length > 0) && (
+          <FormCard
+            accentColor={mongoColors.blue.main}
+            accentColorEnd={mongoColors.purple.main}
+          >
+            <FormSectionHeader
+              icon={<CodeOutlined />}
+              title={formConfig?.tier2.prompt || "Hacker Profile"}
+              subtitle="Tell us about your skills and experience"
+            />
 
-          <Grid container spacing={2.5}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="GitHub Username"
-                name="githubUsername"
-                value={formData.githubUsername}
-                onChange={handleChange}
-                helperText="Your GitHub profile (e.g., 'octocat')"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <GitHubIcon
-                          sx={{ color: "text.secondary", fontSize: 20 }}
-                        />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+            <Grid container spacing={2.5}>
+              {showGithub && (
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="GitHub Username"
+                    name="githubUsername"
+                    value={formData.githubUsername}
+                    onChange={handleChange}
+                    helperText="Your GitHub profile (e.g., 'octocat')"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <GitHubIcon
+                              sx={{ color: "text.secondary", fontSize: 20 }}
+                            />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </Grid>
+              )}
+
+              {showSkills && (
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    label="Skills"
+                    name="skills"
+                    value={formData.skills}
+                    onChange={handleChange}
+                    helperText="Comma-separated (e.g., Python, React, MongoDB)"
+                    placeholder="Python, JavaScript, MongoDB"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <BuildOutlined
+                              sx={{ color: "text.secondary", fontSize: 20 }}
+                            />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </Grid>
+              )}
+
+              {showBio && (
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    label="Bio (Optional)"
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    multiline
+                    rows={3}
+                    helperText="Tell us about yourself"
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment
+                            position="start"
+                            sx={{ alignSelf: "flex-start", mt: 1.5 }}
+                          >
+                            <NotesOutlined
+                              sx={{ color: "text.secondary", fontSize: 20 }}
+                            />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </Grid>
+              )}
+
+              {/* Tier 2 custom questions */}
+              {tier2Questions.map((q) => (
+                <Grid size={{ xs: 12 }} key={q.id}>
+                  <CustomQuestionRenderer
+                    question={q}
+                    value={customResponses[q.id]}
+                    onChange={(val) => handleCustomResponse(q.id, val)}
+                  />
+                </Grid>
+              ))}
             </Grid>
+          </FormCard>
+        )}
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel>Experience Level</InputLabel>
-                <Select
-                  name="experienceLevel"
-                  value={formData.experienceLevel}
-                  label="Experience Level"
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      experienceLevel: e.target.value as any,
-                    }))
-                  }
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SchoolOutlined
-                        sx={{ color: "text.secondary", fontSize: 20 }}
-                      />
-                    </InputAdornment>
-                  }
-                >
-                  <MenuItem value="beginner">Beginner</MenuItem>
-                  <MenuItem value="intermediate">Intermediate</MenuItem>
-                  <MenuItem value="advanced">Advanced</MenuItem>
-                </Select>
-              </FormControl>
+        {/* ───── Tier 3: Additional Questions (only if enabled) ───── */}
+        {showTier3 && tier3Questions.length > 0 && (
+          <FormCard
+            accentColor={mongoColors.purple.main}
+            accentColorEnd={mongoColors.blue.main}
+          >
+            <FormSectionHeader
+              icon={<QuizOutlined />}
+              title={formConfig?.tier3.prompt || "A Few More Questions"}
+              subtitle="Additional information from the organizers"
+            />
+
+            <Grid container spacing={2.5}>
+              {tier3Questions.map((q) => (
+                <Grid size={{ xs: 12 }} key={q.id}>
+                  <CustomQuestionRenderer
+                    question={q}
+                    value={customResponses[q.id]}
+                    onChange={(val) => handleCustomResponse(q.id, val)}
+                  />
+                </Grid>
+              ))}
             </Grid>
+          </FormCard>
+        )}
 
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Skills"
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                helperText="Comma-separated (e.g., Python, React, MongoDB)"
-                placeholder="Python, JavaScript, MongoDB"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <BuildOutlined
-                          sx={{ color: "text.secondary", fontSize: 20 }}
-                        />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Bio (Optional)"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                multiline
-                rows={3}
-                helperText="Tell us about yourself"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment
-                        position="start"
-                        sx={{ alignSelf: "flex-start", mt: 1.5 }}
-                      >
-                        <NotesOutlined
-                          sx={{ color: "text.secondary", fontSize: 20 }}
-                        />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-            </Grid>
-          </Grid>
-        </FormCard>
-
-        {/* Terms and Conditions */}
+        {/* ───── Terms and Conditions ───── */}
         <FormCard
           accentColor={mongoColors.slate.light}
           accentColorEnd={mongoColors.gray[600]}

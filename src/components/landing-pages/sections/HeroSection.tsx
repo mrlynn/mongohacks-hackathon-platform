@@ -129,7 +129,14 @@ export default function HeroSection({ config, sectionConfig, event }: SectionRen
           />
         </Stack>
 
-        <Button variant="contained" size="large" disableElevation sx={getButtonStyles()}>
+        <Button
+          variant="contained"
+          size="large"
+          disableElevation
+          component="a"
+          href={`/events/${event._id}/register`}
+          sx={getButtonStyles()}
+        >
           {ctaText}
         </Button>
       </Container>

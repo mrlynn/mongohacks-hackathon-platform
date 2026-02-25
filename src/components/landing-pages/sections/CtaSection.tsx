@@ -82,7 +82,14 @@ export default function CtaSection({ config, sectionConfig, event }: SectionRend
         >
           Join us for an incredible hackathon experience
         </Typography>
-        <Button variant="contained" size="large" disableElevation sx={getButtonStyles()}>
+        <Button
+          variant="contained"
+          size="large"
+          disableElevation
+          component="a"
+          href={`/events/${event._id}/register`}
+          sx={getButtonStyles()}
+        >
           {ctaText}
         </Button>
       </Container>
