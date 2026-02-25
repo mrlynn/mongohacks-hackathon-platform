@@ -7,11 +7,11 @@ import { createTheme } from "@mui/material/styles";
  * https://www.mongodb.design/component/palette/live-example
  */
 const mongoColors = {
-  // Primary MongoDB Green
+  // Primary MongoDB Green (toned down)
   green: {
-    light: "#00ED64",
-    main: "#00ED64",
-    dark: "#00684A",
+    light: "#13AA52",     // Softer medium green
+    main: "#00684A",      // MongoDB's dark green (more professional)
+    dark: "#004D37",      // Deep forest green
   },
   // MongoDB Slate (backgrounds)
   slate: {
@@ -51,7 +51,7 @@ export const hackathonTheme = createTheme({
       main: mongoColors.green.main,
       light: mongoColors.green.light,
       dark: mongoColors.green.dark,
-      contrastText: "#001E2B",
+      contrastText: "#FFFFFF",
     },
     secondary: {
       main: mongoColors.blue.main,
