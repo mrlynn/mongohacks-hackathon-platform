@@ -44,7 +44,7 @@ export async function POST(
 
     // Remove user from team
     team.members = team.members.filter(
-      (memberId) => memberId.toString() !== session.user.id
+      (memberId: any) => memberId.toString() !== (session.user as any).id
     );
 
     // If team is empty, delete it

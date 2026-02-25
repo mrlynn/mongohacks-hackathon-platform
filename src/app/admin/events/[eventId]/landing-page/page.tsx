@@ -615,7 +615,7 @@ export default function LandingPageBuilder({
                         placeholder="9:00 AM"
                       />
                     </Grid>
-                    <Grid item xs={12} md={9}>
+                    <Grid size={{ xs: 12, md: 9 }}>
                       <TextField
                         fullWidth
                         label="Title"

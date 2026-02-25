@@ -206,7 +206,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
             </Box>
             <Grid container spacing={4}>
               {prizes.map((prize, idx) => (
-                <Grid item xs={12} md={4} key={idx}>
+                <Grid key={idx} size={{ xs: 12, md: 4 }}>
                   <Card
                     elevation={8}
                     sx={{
@@ -349,7 +349,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
             </Box>
             <Grid container spacing={4} justifyContent="center">
               {sponsors.map((sponsor, idx) => (
-                <Grid item xs={6} sm={4} md={3} key={idx}>
+                <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card
                     elevation={3}
                     sx={{

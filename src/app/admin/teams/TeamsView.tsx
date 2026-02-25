@@ -149,7 +149,7 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
       {view === "card" && (
         <Grid container spacing={3}>
           {teams.map((team) => (
-            <Grid item xs={12} sm={6} md={4} key={team._id}>
+            <Grid key={team._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>

@@ -138,7 +138,7 @@ export default async function TeamsPage({
           </Grid>
         ) : (
           teams.map((team) => (
-            <Grid item key={team._id} xs={12} md={6} lg={4}>
+            <Grid key={team._id} size={{ xs: 12, md: 6, lg: 4 }}>
               <TeamCard
                 team={team as any}
                 eventId={eventId}

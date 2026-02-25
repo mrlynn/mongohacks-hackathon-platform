@@ -205,7 +205,7 @@ export default function JudgingPage({
       ) : (
         <Grid container spacing={3}>
           {projects.map((project) => (
-            <Grid item xs={12} key={project._id}>
+            <Grid key={project._id} size={{ xs: 12 }}>
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>

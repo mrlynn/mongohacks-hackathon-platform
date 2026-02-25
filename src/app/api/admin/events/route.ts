@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // Create event with organizer as current user
     const event = new EventModel({
       ...body,
-      organizers: [session.user.id],
+      organizers: [(session.user as any).id],
     });
 
     await event.save();

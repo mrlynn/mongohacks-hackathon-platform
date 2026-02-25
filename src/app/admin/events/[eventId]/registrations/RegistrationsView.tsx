@@ -137,7 +137,7 @@ export default function RegistrationsView({ registrations }: { registrations: Re
       {view === "card" && (
         <Grid container spacing={3}>
           {registrations.map((reg) => (
-            <Grid item xs={12} sm={6} md={4} key={reg._id}>
+            <Grid key={reg._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>

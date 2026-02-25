@@ -143,7 +143,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
       {view === "card" && (
         <Grid container spacing={3}>
           {users.map((user) => (
-            <Grid item xs={12} sm={6} md={4} key={user._id}>
+            <Grid key={user._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>

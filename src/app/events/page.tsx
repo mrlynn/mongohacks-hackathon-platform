@@ -99,7 +99,7 @@ export default function EventsPage() {
       ) : (
         <Grid container spacing={3}>
           {events.map((event) => (
-            <Grid item xs={12} sm={6} md={4} key={event._id}>
+            <Grid key={event._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card
                 sx={{
                   height: "100%",

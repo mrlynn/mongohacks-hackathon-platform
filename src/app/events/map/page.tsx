@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Box, Typography, Chip, CircularProgress, Alert, Card, CardContent } from "@mui/material";
-import EventsMap from "@/components/shared-ui/EventsMap";
+import dynamic from 'next/dynamic';
+
+// Lazy load EventsMap to avoid SSR issues with Leaflet
+const EventsMap = dynamic(() => import('@/components/shared-ui/EventsMap'), {
+  ssr: false,
+  loading: () => <CircularProgress />,
+});
 
 interface Event {
   _id: string;

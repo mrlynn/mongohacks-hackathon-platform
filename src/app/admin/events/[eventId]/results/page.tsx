@@ -202,7 +202,7 @@ export default function ResultsPage({
           {/* Top 3 Podium */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {results.slice(0, 3).map((result, idx) => (
-              <Grid item xs={12} md={4} key={result._id}>
+              <Grid key={result._id} size={{ xs: 12, md: 4 }}>
                 <Card
                   sx={{
                     background: getPodiumColor(idx + 1),

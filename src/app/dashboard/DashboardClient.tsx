@@ -130,7 +130,7 @@ export default function DashboardClient() {
       ) : (
         <Grid container spacing={3}>
           {events.map((event) => (
-            <Grid item xs={12} key={event._id}>
+            <Grid key={event._id} size={{ xs: 12 }}>
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -150,7 +150,7 @@ export default function DashboardClient() {
                   </Box>
 
                   <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <CalendarIcon fontSize="small" color="action" />
                         <Box>
@@ -165,7 +165,7 @@ export default function DashboardClient() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <LocationIcon fontSize="small" color="action" />
                         <Box>
@@ -179,7 +179,7 @@ export default function DashboardClient() {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <CalendarIcon fontSize="small" color="action" />
                         <Box>

@@ -126,7 +126,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
             </Box>
             <Grid container spacing={4}>
               {prizes.map((prize, idx) => (
-                <Grid item xs={12} md={4} key={idx}>
+                <Grid key={idx} size={{ xs: 12, md: 4 }}>
                   <Card elevation={2} sx={{ height: "100%", textAlign: "center" }}>
                     <CardContent sx={{ py: 4 }}>
                       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
@@ -208,7 +208,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
             </Box>
             <Grid container spacing={4} justifyContent="center">
               {sponsors.map((sponsor, idx) => (
-                <Grid item xs={6} sm={4} md={3} key={idx}>
+                <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card elevation={1} sx={{ p: 3, textAlign: "center" }}>
                     {sponsor.logo ? (
                       <img
