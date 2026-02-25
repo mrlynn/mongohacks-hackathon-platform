@@ -53,7 +53,7 @@ const ParticipantSchema = new Schema<IParticipant>(
   { timestamps: true }
 );
 
-ParticipantSchema.index({ email: 1 }, { unique: true });
+// Email index already created by unique: true in schema
 ParticipantSchema.index({ "registeredEvents.eventId": 1 });
 ParticipantSchema.index({ skills: 1 });
 

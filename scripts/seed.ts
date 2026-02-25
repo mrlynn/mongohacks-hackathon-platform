@@ -16,6 +16,22 @@ console.log("🌱 Seeding database...\n");
 async function seed() {
   await connectToDatabase();
 
+  // Check if data already exists
+  const existingUsers = await UserModel.countDocuments();
+  
+  if (existingUsers > 0 && !CLEAR_EXISTING) {
+    console.log("⚠️  Database already has data!");
+    console.log(`   Found ${existingUsers} existing users.\n`);
+    console.log("💡 Options:");
+    console.log("   1. Use existing data (you're all set!)");
+    console.log("   2. Run 'npm run seed:clear' to wipe and reload fresh data\n");
+    console.log("🔑 Test Credentials:");
+    console.log("   Admin:    admin@mongohacks.com / password123");
+    console.log("   Judge:    sarah.judge@mongohacks.com / password123");
+    console.log("   User:     alice@example.com / password123\n");
+    process.exit(0);
+  }
+
   // Clear existing data if flag is set
   if (CLEAR_EXISTING) {
     console.log("🗑️  Clearing existing data...");
