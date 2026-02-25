@@ -101,7 +101,7 @@ export default async function TeamsPage({
 
       <Grid container spacing={3}>
         {teams.length === 0 ? (
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <Card elevation={2}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
@@ -121,7 +121,7 @@ export default async function TeamsPage({
           </Grid>
         ) : (
           teams.map((team) => (
-            <Grid key={team._id} size={{ xs: 12, md: 6, lg: 4 }}>
+            <Grid item key={team._id} xs={12} md={6} lg={4}>
               <Card elevation={2} sx={{ height: "100%" }}>
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>

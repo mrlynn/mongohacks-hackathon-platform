@@ -11,7 +11,7 @@ import {
   Chip,
   Card,
   CardContent,
-  Grid2 as Grid,
+  Grid,
   MenuItem,
   Alert,
 } from "@mui/material";
@@ -130,7 +130,7 @@ export default function NewEventPage() {
               Basic Information
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Event Name"
@@ -140,7 +140,7 @@ export default function NewEventPage() {
                   required
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -152,7 +152,7 @@ export default function NewEventPage() {
                   required
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Theme"
@@ -163,7 +163,7 @@ export default function NewEventPage() {
                   placeholder="e.g., AI/ML, Web3, Climate Tech"
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Tags (comma-separated)"
@@ -183,7 +183,7 @@ export default function NewEventPage() {
               Dates & Time
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
                   label="Start Date"
@@ -195,7 +195,7 @@ export default function NewEventPage() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
                   label="End Date"
@@ -207,7 +207,7 @@ export default function NewEventPage() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
+              <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
                   label="Registration Deadline"
@@ -229,7 +229,7 @@ export default function NewEventPage() {
               Location & Venue
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -242,7 +242,7 @@ export default function NewEventPage() {
                   label="Virtual Event"
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Location Address"
@@ -253,7 +253,7 @@ export default function NewEventPage() {
                   placeholder="123 Main St, San Francisco, CA"
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="City"
@@ -263,7 +263,7 @@ export default function NewEventPage() {
                   placeholder="San Francisco"
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Country"
@@ -273,7 +273,7 @@ export default function NewEventPage() {
                   placeholder="United States"
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Venue Name"
@@ -283,7 +283,7 @@ export default function NewEventPage() {
                   placeholder="MongoDB HQ"
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Latitude"
@@ -295,7 +295,7 @@ export default function NewEventPage() {
                   inputProps={{ step: "any" }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Longitude"
@@ -317,7 +317,7 @@ export default function NewEventPage() {
               Event Configuration
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Capacity"
@@ -328,7 +328,7 @@ export default function NewEventPage() {
                   required
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   select
@@ -342,7 +342,7 @@ export default function NewEventPage() {
                   <MenuItem value="open">Open for Registration</MenuItem>
                 </TextField>
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -353,7 +353,7 @@ export default function NewEventPage() {
                   onChange={handleChange}
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline

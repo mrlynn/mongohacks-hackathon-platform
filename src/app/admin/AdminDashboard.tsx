@@ -60,7 +60,7 @@ export default function AdminDashboard({ stats }: { stats: AdminStats }) {
       {/* Stats Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statCards.map((card) => (
-          <Grid key={card.label} size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item key={card.label} xs={12} sm={6} md={3}>
             <Card elevation={2}>
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>

@@ -8,7 +8,7 @@ import {
   Button,
   Card,
   CardContent,
-  Grid2 as Grid,
+  Grid,
   Chip,
   IconButton,
   Alert,
@@ -101,7 +101,7 @@ export default function NewTeamPage({ params }: { params: { eventId: string } })
         <Card elevation={2}>
           <CardContent>
             <Grid container spacing={3}>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Team Name"
@@ -113,7 +113,7 @@ export default function NewTeamPage({ params }: { params: { eventId: string } })
                 />
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -126,7 +126,7 @@ export default function NewTeamPage({ params }: { params: { eventId: string } })
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Maximum Team Members"
@@ -139,7 +139,7 @@ export default function NewTeamPage({ params }: { params: { eventId: string } })
                 />
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Skills We're Looking For
                 </Typography>

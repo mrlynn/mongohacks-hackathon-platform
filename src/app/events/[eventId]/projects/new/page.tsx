@@ -8,7 +8,7 @@ import {
   Button,
   Card,
   CardContent,
-  Grid2 as Grid,
+  Grid,
   Chip,
   Alert,
   MenuItem,
@@ -128,7 +128,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
               Project Information
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Project Name"
@@ -140,7 +140,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 />
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -154,7 +154,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   select
@@ -172,7 +172,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Technologies Used
                 </Typography>
@@ -207,7 +207,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 </Box>
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -229,7 +229,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
               Links & Resources
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Repository URL"
@@ -241,7 +241,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Demo URL (optional)"
@@ -252,7 +252,7 @@ export default function NewProjectPage({ params }: { params: { eventId: string }
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
                   label="Documentation URL (optional)"
