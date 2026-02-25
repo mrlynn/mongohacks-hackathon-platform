@@ -8,6 +8,13 @@ export interface IEvent extends Document {
   endDate: Date;
   registrationDeadline: Date;
   location: string;
+  city?: string;
+  country?: string;
+  coordinates?: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  venue?: string;
   capacity: number;
   isVirtual: boolean;
   tags: string[];
@@ -29,6 +36,20 @@ const EventSchema = new Schema<IEvent>(
     endDate: { type: Date, required: true },
     registrationDeadline: { type: Date, required: true },
     location: { type: String, required: true },
+    city: { type: String },
+    country: { type: String },
+    coordinates: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: "2dsphere",
+      },
+    },
+    venue: { type: String },
     capacity: { type: Number, required: true },
     isVirtual: { type: Boolean, default: false },
     tags: [{ type: String }],
@@ -45,9 +66,12 @@ const EventSchema = new Schema<IEvent>(
   { timestamps: true }
 );
 
+// Indexes
 EventSchema.index({ status: 1 });
 EventSchema.index({ startDate: 1 });
 EventSchema.index({ tags: 1 });
+EventSchema.index({ coordinates: "2dsphere" }); // Geospatial index for map queries
+EventSchema.index({ country: 1, city: 1 });
 
 export const EventModel =
   mongoose.models.Event || mongoose.model<IEvent>("Event", EventSchema);
