@@ -17,6 +17,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
+  Web as WebIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -109,6 +110,16 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 />
               </TableCell>
               <TableCell align="right">
+                <Tooltip title="Landing Page">
+                  <IconButton
+                    size="small"
+                    component={Link}
+                    href={`/admin/events/${event._id}/landing-page`}
+                    color="success"
+                  >
+                    <WebIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="View Details">
                   <IconButton
                     size="small"

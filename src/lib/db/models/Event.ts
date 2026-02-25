@@ -23,6 +23,24 @@ export interface IEvent extends Document {
   organizers: Types.ObjectId[];
   status: "draft" | "open" | "in_progress" | "concluded";
   descriptionEmbedding?: number[];
+  landingPage?: {
+    template: "modern" | "bold" | "tech";
+    slug: string; // URL slug (e.g., "mongodb-hackathon-2024")
+    published: boolean;
+    customContent: {
+      hero?: {
+        headline?: string;
+        subheadline?: string;
+        ctaText?: string;
+        backgroundImage?: string;
+      };
+      about?: string;
+      prizes?: Array<{ title: string; description: string; value?: string }>;
+      schedule?: Array<{ time: string; title: string; description?: string }>;
+      sponsors?: Array<{ name: string; logo: string; tier: string }>;
+      faq?: Array<{ question: string; answer: string }>;
+    };
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +80,51 @@ const EventSchema = new Schema<IEvent>(
       default: "draft",
     },
     descriptionEmbedding: { type: [Number], select: false },
+    landingPage: {
+      template: {
+        type: String,
+        enum: ["modern", "bold", "tech"],
+        default: "modern",
+      },
+      slug: { type: String, unique: true, sparse: true }, // Unique URL slug
+      published: { type: Boolean, default: false },
+      customContent: {
+        hero: {
+          headline: String,
+          subheadline: String,
+          ctaText: String,
+          backgroundImage: String,
+        },
+        about: String,
+        prizes: [
+          {
+            title: String,
+            description: String,
+            value: String,
+          },
+        ],
+        schedule: [
+          {
+            time: String,
+            title: String,
+            description: String,
+          },
+        ],
+        sponsors: [
+          {
+            name: String,
+            logo: String,
+            tier: String,
+          },
+        ],
+        faq: [
+          {
+            question: String,
+            answer: String,
+          },
+        ],
+      },
+    },
   },
   { timestamps: true }
 );
@@ -72,6 +135,8 @@ EventSchema.index({ startDate: 1 });
 EventSchema.index({ tags: 1 });
 EventSchema.index({ coordinates: "2dsphere" }); // Geospatial index for map queries
 EventSchema.index({ country: 1, city: 1 });
+EventSchema.index({ "landingPage.slug": 1 }); // Landing page slug lookup
+EventSchema.index({ "landingPage.published": 1 });
 
 export const EventModel =
   mongoose.models.Event || mongoose.model<IEvent>("Event", EventSchema);
