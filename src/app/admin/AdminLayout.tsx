@@ -1,6 +1,15 @@
 "use client";
 
-import { Box, Container, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, AppBar } from "@mui/material";
+import {
+  Box,
+  Container,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 import Link from "next/link";
 import {
   Dashboard as DashboardIcon,
@@ -9,40 +18,36 @@ import {
   Gavel as GavelIcon,
   Folder as FolderIcon,
   Settings as SettingsIcon,
+  Groups as TeamsIcon,
 } from "@mui/icons-material";
+import { usePathname } from "next/navigation";
 
-const drawerWidth = 260;
+const drawerWidth = 240;
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: <DashboardIcon /> },
   { label: "Events", href: "/admin/events", icon: <EventIcon /> },
   { label: "Users", href: "/admin/users", icon: <PeopleIcon /> },
+  { label: "Teams", href: "/admin/teams", icon: <TeamsIcon /> },
   { label: "Judges", href: "/admin/judges", icon: <GavelIcon /> },
   { label: "Projects", href: "/admin/projects", icon: <FolderIcon /> },
   { label: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href);
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
-      {/* Top App Bar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          bgcolor: "primary.main",
-        }}
-      >
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            MongoHacks Admin Console
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            Administrator
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
       {/* Side Navigation Drawer */}
       <Drawer
         variant="permanent"
@@ -55,36 +60,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             bgcolor: "background.paper",
             borderRight: "1px solid",
             borderColor: "divider",
+            top: 64,
+            height: "calc(100% - 64px)",
           },
         }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: "auto", mt: 2 }}>
+        <Box sx={{ overflow: "auto", mt: 1 }}>
           <List disablePadding>
             {navItems.map((item) => (
               <ListItem key={item.href} disablePadding>
-                <ListItemButton
-                  component={Link}
+                <Link
                   href={item.href}
-                  sx={{
-                    mx: 1,
-                    borderRadius: 1,
-                    "&:hover": {
-                      bgcolor: "action.hover",
-                    },
-                  }}
+                  style={{ textDecoration: "none", color: "inherit", width: "100%" }}
                 >
-                  <ListItemIcon sx={{ minWidth: 40, color: "primary.main" }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontSize: "0.95rem",
-                      fontWeight: 500,
+                  <ListItemButton
+                    selected={isActive(item.href)}
+                    sx={{
+                      mx: 1,
+                      borderRadius: 1,
+                      "&.Mui-selected": {
+                        bgcolor: "primary.main",
+                        color: "white",
+                        "&:hover": { bgcolor: "primary.dark" },
+                        "& .MuiListItemIcon-root": { color: "white" },
+                      },
                     }}
-                  />
-                </ListItemButton>
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: "primary.main" }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontSize: "0.95rem",
+                        fontWeight: 500,
+                      }}
+                    />
+                  </ListItemButton>
+                </Link>
               </ListItem>
             ))}
           </List>
@@ -98,13 +111,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           flexGrow: 1,
           bgcolor: "background.default",
           p: 3,
-          minHeight: "100vh",
+          minHeight: "calc(100vh - 64px)",
         }}
       >
-        <Toolbar />
-        <Container maxWidth="xl" sx={{ mt: 2 }}>
-          {children}
-        </Container>
+        <Container maxWidth="xl">{children}</Container>
       </Box>
     </Box>
   );

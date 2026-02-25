@@ -40,37 +40,37 @@ export default function HomePageClient({ user }: { user: User | null }) {
                 Ready to continue your hackathon journey?
               </Typography>
               <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  component={Link}
-                  href="/dashboard"
-                  sx={{
-                    bgcolor: "white",
-                    color: "primary.main",
-                    "&:hover": { bgcolor: "grey.100" },
-                  }}
-                >
-                  Go to Dashboard
-                </Button>
-                {isAdmin && (
+                <Link href="/dashboard" passHref legacyBehavior>
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     size="large"
-                    component={Link}
-                    href="/admin"
-                    startIcon={<AdminIcon />}
                     sx={{
-                      borderColor: "white",
-                      color: "white",
-                      "&:hover": {
-                        borderColor: "white",
-                        bgcolor: "rgba(255, 255, 255, 0.1)",
-                      },
+                      bgcolor: "white",
+                      color: "primary.main",
+                      "&:hover": { bgcolor: "grey.100" },
                     }}
                   >
-                    Admin Console
+                    Go to Dashboard
                   </Button>
+                </Link>
+                {isAdmin && (
+                  <Link href="/admin" passHref legacyBehavior>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      startIcon={<AdminIcon />}
+                      sx={{
+                        borderColor: "white",
+                        color: "white",
+                        "&:hover": {
+                          borderColor: "white",
+                          bgcolor: "rgba(255, 255, 255, 0.1)",
+                        },
+                      }}
+                    >
+                      Admin Console
+                    </Button>
+                  </Link>
                 )}
               </Box>
             </>
@@ -83,35 +83,35 @@ export default function HomePageClient({ user }: { user: User | null }) {
                 Discover, organize, and participate in hackathons around the world
               </Typography>
               <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  component={Link}
-                  href="/register"
-                  sx={{
-                    bgcolor: "white",
-                    color: "primary.main",
-                    "&:hover": { bgcolor: "grey.100" },
-                  }}
-                >
-                  Get Started
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  component={Link}
-                  href="/events"
-                  sx={{
-                    borderColor: "white",
-                    color: "white",
-                    "&:hover": {
+                <Link href="/register" passHref legacyBehavior>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      bgcolor: "white",
+                      color: "primary.main",
+                      "&:hover": { bgcolor: "grey.100" },
+                    }}
+                  >
+                    Get Started
+                  </Button>
+                </Link>
+                <Link href="/events" passHref legacyBehavior>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{
                       borderColor: "white",
-                      bgcolor: "rgba(255, 255, 255, 0.1)",
-                    },
-                  }}
-                >
-                  Browse Events
-                </Button>
+                      color: "white",
+                      "&:hover": {
+                        borderColor: "white",
+                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                      },
+                    }}
+                  >
+                    Browse Events
+                  </Button>
+                </Link>
               </Box>
             </>
           )}
@@ -192,44 +192,32 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/events/new"
-                >
-                  Create Event
-                </Button>
+                <Link href="/admin/events/new" passHref legacyBehavior>
+                  <Button fullWidth variant="outlined">
+                    Create Event
+                  </Button>
+                </Link>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/users"
-                >
-                  Manage Users
-                </Button>
+                <Link href="/admin/users" passHref legacyBehavior>
+                  <Button fullWidth variant="outlined">
+                    Manage Users
+                  </Button>
+                </Link>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  component={Link}
-                  href="/admin/projects"
-                >
-                  View Projects
-                </Button>
+                <Link href="/admin/projects" passHref legacyBehavior>
+                  <Button fullWidth variant="outlined">
+                    View Projects
+                  </Button>
+                </Link>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  component={Link}
-                  href="/admin"
-                >
-                  Admin Dashboard
-                </Button>
+                <Link href="/admin" passHref legacyBehavior>
+                  <Button fullWidth variant="outlined">
+                    Admin Dashboard
+                  </Button>
+                </Link>
               </Grid>
             </Grid>
           </Box>

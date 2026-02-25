@@ -1,6 +1,7 @@
 import { Box, Typography, Chip } from "@mui/material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
+import { serializeDocs } from "@/lib/utils/serialize";
 import ProjectsView from "./ProjectsView";
 
 async function getProjects() {
@@ -10,15 +11,7 @@ async function getProjects() {
     .limit(100)
     .lean();
 
-  return projects.map((project) => ({
-    ...project,
-    _id: project._id.toString(),
-    eventId: project.eventId?.toString(),
-    teamId: project.teamId?.toString(),
-    technologies: project.technologies || [],
-    createdAt: project.createdAt?.toISOString() || new Date().toISOString(),
-    updatedAt: project.updatedAt?.toISOString() || new Date().toISOString(),
-  }));
+  return serializeDocs(projects);
 }
 
 const statusColors: Record<string, "default" | "success" | "info" | "warning" | "error"> = {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { serializeDoc } from "@/lib/utils/serialize";
 
 export async function GET(
   request: NextRequest,
@@ -22,21 +23,22 @@ export async function GET(
 
     // Extract registration details
     const registrations = participants.map((participant) => {
-      const registration = participant.registeredEvents.find(
-        (reg: any) => reg.eventId.toString() === eventId
+      const serializedParticipant = serializeDoc(participant);
+      const registration = serializedParticipant.registeredEvents.find(
+        (reg: any) => reg.eventId === eventId
       );
 
       return {
-        _id: participant._id.toString(),
-        userId: participant.userId,
-        name: participant.name,
-        email: participant.email,
-        bio: participant.bio,
-        skills: participant.skills,
-        experienceLevel: participant.experience_level,
-        registrationDate: registration?.registrationDate?.toISOString(),
+        _id: serializedParticipant._id,
+        userId: serializedParticipant.userId,
+        name: serializedParticipant.name,
+        email: serializedParticipant.email,
+        bio: serializedParticipant.bio || "",
+        skills: serializedParticipant.skills || [],
+        experienceLevel: serializedParticipant.experience_level || "beginner",
+        registrationDate: registration?.registrationDate || new Date().toISOString(),
         status: registration?.status || "registered",
-        teamId: participant.teamId?.toString() || null,
+        teamId: serializedParticipant.teamId || null,
       };
     });
 

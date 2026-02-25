@@ -1,6 +1,7 @@
 import { Box, Typography, Chip } from "@mui/material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
+import { serializeDocs } from "@/lib/utils/serialize";
 import TeamsView from "./TeamsView";
 
 async function getTeams() {
@@ -13,23 +14,22 @@ async function getTeams() {
     .limit(100)
     .lean();
 
-  return teams.map((team) => ({
-    _id: team._id.toString(),
+  const serialized = serializeDocs(teams);
+
+  // Transform to match expected shape
+  return serialized.map((team: any) => ({
+    _id: team._id,
     name: team.name,
     description: team.description || "",
-    event: (team.eventId as any)?.name || "Unknown Event",
-    eventId: (team.eventId as any)?._id?.toString() || "",
-    leader: (team.leaderId as any)?.name || "Unknown",
-    leaderId: (team.leaderId as any)?._id?.toString() || "",
+    event: team.eventId?.name || "Unknown Event",
+    eventId: team.eventId?._id || team.eventId || "",
+    leader: team.leaderId?.name || "Unknown",
+    leaderId: team.leaderId?._id || team.leaderId || "",
     memberCount: team.members?.length || 0,
-    members: team.members?.map((m: any) => ({
-      _id: m._id.toString(),
-      name: m.name,
-      email: m.email,
-    })) || [],
+    members: team.members || [],
     lookingForMembers: team.lookingForMembers || false,
     requiredSkills: team.requiredSkills || [],
-    createdAt: team.createdAt?.toISOString() || new Date().toISOString(),
+    createdAt: team.createdAt || new Date().toISOString(),
   }));
 }
 

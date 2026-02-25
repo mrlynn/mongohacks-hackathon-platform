@@ -1,6 +1,7 @@
 import { Box, Typography, Chip } from "@mui/material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { serializeDocs } from "@/lib/utils/serialize";
 import UsersView from "./UsersView";
 
 async function getUsers() {
@@ -11,12 +12,7 @@ async function getUsers() {
     .limit(100)
     .lean();
 
-  return users.map((user) => ({
-    ...user,
-    _id: user._id.toString(),
-    createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-    updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-  }));
+  return serializeDocs(users);
 }
 
 const roleColors: Record<string, "primary" | "secondary" | "success" | "info" | "warning" | "error"> = {

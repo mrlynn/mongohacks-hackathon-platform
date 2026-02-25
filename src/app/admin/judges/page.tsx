@@ -2,6 +2,7 @@ import { Box, Typography, Chip, Button } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { serializeDocs } from "@/lib/utils/serialize";
 import JudgesView from "./JudgesView";
 import Link from "next/link";
 
@@ -12,11 +13,7 @@ async function getJudges() {
     .sort({ createdAt: -1 })
     .lean();
 
-  return judges.map((judge) => ({
-    ...judge,
-    _id: judge._id.toString(),
-    createdAt: judge.createdAt?.toISOString() || new Date().toISOString(),
-  }));
+  return serializeDocs(judges);
 }
 
 export default async function AdminJudgesPage() {
