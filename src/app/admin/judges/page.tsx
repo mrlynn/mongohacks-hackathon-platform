@@ -13,7 +13,7 @@ async function getJudges() {
   return judges.map((judge) => ({
     ...judge,
     _id: judge._id.toString(),
-    createdAt: judge.createdAt.toISOString(),
+    createdAt: judge.createdAt?.toISOString() || new Date().toISOString(),
   }));
 }
 

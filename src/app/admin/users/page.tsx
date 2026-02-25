@@ -14,8 +14,8 @@ async function getUsers() {
   return users.map((user) => ({
     ...user,
     _id: user._id.toString(),
-    createdAt: user.createdAt.toISOString(),
-    updatedAt: user.updatedAt.toISOString(),
+    createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+    updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
   }));
 }
 

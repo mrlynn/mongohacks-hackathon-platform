@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Card, CardContent, Chip, Grid2 as Grid } from "@mui/material";
+import { Box, Typography, Button, Card, CardContent, Chip, Grid } from "@mui/material";
 import { Add as AddIcon, People as PeopleIcon } from "@mui/icons-material";
 import Link from "next/link";
 import { connectToDatabase } from "@/lib/db/connection";
@@ -25,8 +25,8 @@ async function getTeams(eventId: string) {
       ...(team.leaderId as any),
       _id: (team.leaderId as any)._id.toString(),
     } : null,
-    createdAt: team.createdAt.toISOString(),
-    updatedAt: team.updatedAt.toISOString(),
+    createdAt: team.createdAt?.toISOString() || new Date().toISOString(),
+    updatedAt: team.updatedAt?.toISOString() || new Date().toISOString(),
   }));
 }
 
@@ -38,9 +38,9 @@ async function getEvent(eventId: string) {
   return {
     ...event,
     _id: event._id.toString(),
-    startDate: event.startDate.toISOString(),
-    endDate: event.endDate.toISOString(),
-    registrationDeadline: event.registrationDeadline.toISOString(),
+    startDate: event.startDate?.toISOString() || new Date().toISOString(),
+    endDate: event.endDate?.toISOString() || new Date().toISOString(),
+    registrationDeadline: event.registrationDeadline?.toISOString() || new Date().toISOString(),
   };
 }
 
