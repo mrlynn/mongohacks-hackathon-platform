@@ -13,6 +13,10 @@ import {
   MenuItem,
   Chip,
   IconButton,
+  Avatar,
+  Divider,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   AccountCircle as AccountCircleIcon,
@@ -21,6 +25,8 @@ import {
   Logout as LogoutIcon,
   EmojiEvents as EmojiEventsIcon,
   Map as MapIcon,
+  Settings as SettingsIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -126,33 +132,79 @@ export default function Navbar() {
                     />
 
                     <IconButton
-                      size="large"
                       onClick={handleMenu}
-                      color="inherit"
+                      sx={{ ml: 1 }}
                     >
-                      <AccountCircleIcon />
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: "secondary.main",
+                          fontSize: "0.875rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {user?.name?.charAt(0).toUpperCase() || "U"}
+                      </Avatar>
                     </IconButton>
                     <Menu
                       anchorEl={anchorEl}
                       open={Boolean(anchorEl)}
                       onClose={handleClose}
+                      transformOrigin={{ horizontal: "right", vertical: "top" }}
+                      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                      PaperProps={{
+                        elevation: 3,
+                        sx: {
+                          minWidth: 220,
+                          mt: 1,
+                        },
+                      }}
                     >
-                      <MenuItem disabled>
-                        <Box>
-                          <Typography variant="body2" fontWeight={600}>
-                            {user?.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {user?.email}
-                          </Typography>
-                        </Box>
+                      {/* User Info Header */}
+                      <Box sx={{ px: 2, py: 1.5 }}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          {user?.name || "User"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {user?.email}
+                        </Typography>
+                      </Box>
+                      
+                      <Divider />
+                      
+                      {/* Profile */}
+                      <MenuItem
+                        onClick={handleClose}
+                        component={Link}
+                        href="/profile"
+                      >
+                        <ListItemIcon>
+                          <PersonIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Profile</ListItemText>
                       </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} href="/profile">
-                        Profile
+                      
+                      {/* Settings */}
+                      <MenuItem
+                        onClick={handleClose}
+                        component={Link}
+                        href="/settings"
+                      >
+                        <ListItemIcon>
+                          <SettingsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Settings</ListItemText>
                       </MenuItem>
+                      
+                      <Divider />
+                      
+                      {/* Sign Out */}
                       <MenuItem onClick={handleSignOut}>
-                        <LogoutIcon sx={{ mr: 1 }} fontSize="small" />
-                        Sign Out
+                        <ListItemIcon>
+                          <LogoutIcon fontSize="small" color="error" />
+                        </ListItemIcon>
+                        <ListItemText>Sign Out</ListItemText>
                       </MenuItem>
                     </Menu>
                   </>
