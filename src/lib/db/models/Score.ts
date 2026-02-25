@@ -28,7 +28,7 @@ const ScoreSchema = new Schema<IScore>(
       impact: { type: Number, min: 1, max: 10, required: true },
       presentation: { type: Number, min: 1, max: 10, required: true },
     },
-    totalScore: { type: Number, required: true },
+    totalScore: { type: Number },
     comments: { type: String, default: "" },
     submittedAt: { type: Date, default: Date.now },
   },
@@ -41,7 +41,7 @@ ScoreSchema.index({ eventId: 1 });
 ScoreSchema.index({ judgeId: 1 });
 
 // Pre-save hook to calculate total score
-ScoreSchema.pre("save", function (next) {
+ScoreSchema.pre<IScore>("save", function () {
   if (this.scores) {
     this.totalScore =
       this.scores.innovation +
@@ -49,7 +49,6 @@ ScoreSchema.pre("save", function (next) {
       this.scores.impact +
       this.scores.presentation;
   }
-  next();
 });
 
 export const ScoreModel =
