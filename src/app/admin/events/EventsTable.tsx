@@ -19,6 +19,7 @@ import {
   Visibility as ViewIcon,
   Web as WebIcon,
   People as PeopleIcon,
+  EmojiEvents as TrophyIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -111,6 +112,16 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 />
               </TableCell>
               <TableCell align="right">
+                <Tooltip title="Results">
+                  <IconButton
+                    size="small"
+                    component={Link}
+                    href={`/admin/events/${event._id}/results`}
+                    sx={{ color: "warning.main" }}
+                  >
+                    <TrophyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Registrations">
                   <IconButton
                     size="small"
