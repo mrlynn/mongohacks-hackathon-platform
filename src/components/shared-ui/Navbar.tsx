@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import {
   AppBar,
   Toolbar,
@@ -24,31 +25,13 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-interface User {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  role?: string;
-}
-
 export default function Navbar() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  useEffect(() => {
-    // Fetch session on mount
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((session) => {
-        if (session?.user) {
-          setUser(session.user);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const user = session?.user as { id?: string; name?: string; email?: string; role?: string } | undefined;
+  const loading = status === "loading";
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -59,10 +42,8 @@ export default function Navbar() {
   };
 
   const handleSignOut = async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
-    setUser(null);
     handleClose();
-    router.push("/");
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -107,7 +88,7 @@ export default function Navbar() {
                 {user ? (
                   <>
                     {/* Show Admin link for admin users */}
-                    {user.role === "admin" && (
+                    {(user as any).role === "admin" && (
                       <Button
                         color="inherit"
                         component={Link}
@@ -134,7 +115,7 @@ export default function Navbar() {
                     </Button>
 
                     <Chip
-                      label={user.role || "user"}
+                      label={(user as any).role || "user"}
                       size="small"
                       sx={{
                         bgcolor: "rgba(255, 255, 255, 0.2)",
@@ -159,10 +140,10 @@ export default function Navbar() {
                       <MenuItem disabled>
                         <Box>
                           <Typography variant="body2" fontWeight={600}>
-                            {user.name}
+                            {user?.name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {user.email}
+                            {user?.email}
                           </Typography>
                         </Box>
                       </MenuItem>

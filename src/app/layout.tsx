@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ThemeRegistry from "@/components/shared-ui/ThemeRegistry";
+import SessionProvider from "@/components/providers/SessionProvider";
 import Navbar from "@/components/shared-ui/Navbar";
 import "./globals.css";
 
@@ -18,8 +19,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeRegistry>
-          <Navbar />
-          {children}
+          <SessionProvider>
+            <Navbar />
+            {children}
+          </SessionProvider>
         </ThemeRegistry>
       </body>
     </html>
