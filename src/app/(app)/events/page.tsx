@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   CardActions,
@@ -14,6 +13,7 @@ import {
   TextField,
   MenuItem,
   CircularProgress,
+  Stack,
 } from "@mui/material";
 import Link from "next/link";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -101,9 +101,19 @@ export default function EventsPage() {
           </Typography>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: 3,
+          }}
+        >
           {events.map((event) => (
-            <Grid item key={event._id} xs={12} sm={6} md={4}>
+            <Box key={event._id}>
               <Card
                 sx={{
                   height: "100%",
@@ -201,9 +211,9 @@ export default function EventsPage() {
                   )}
                 </CardActions>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Container>
   );
