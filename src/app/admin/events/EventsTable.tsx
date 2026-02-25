@@ -14,7 +14,7 @@ import {
   Box,
 } from "@mui/material";
 import {
-  Edit as EditIcon,
+  // Edit as EditIcon, // TODO: Re-enable when edit page is built
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   Web as WebIcon,
@@ -129,7 +129,8 @@ export default function EventsTable({ events }: { events: Event[] }) {
                     <ViewIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Edit">
+                {/* TODO: Build event edit page */}
+                {/* <Tooltip title="Edit">
                   <IconButton
                     size="small"
                     component={Link}
@@ -138,7 +139,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
-                </Tooltip>
+                </Tooltip> */}
                 <Tooltip title="Delete">
                   <IconButton
                     size="small"
