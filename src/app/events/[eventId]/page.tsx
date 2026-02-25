@@ -129,7 +129,7 @@ export default function EventDetailPage() {
         {event.description}
       </Typography>
 
-      {event.tags.length > 0 && (
+      {event.tags && event.tags.length > 0 && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" gutterBottom>
             Tags
@@ -151,7 +151,7 @@ export default function EventDetailPage() {
         </Paper>
       )}
 
-      {event.judging_criteria.length > 0 && (
+      {event.judging_criteria && event.judging_criteria.length > 0 && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" gutterBottom>
             Judging Criteria
