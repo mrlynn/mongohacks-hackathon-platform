@@ -18,7 +18,18 @@ export async function GET(
       return errorResponse("Event not found", 404);
     }
 
-    return successResponse({ event });
+    // Serialize dates properly
+    const serializedEvent = {
+      ...event,
+      _id: event._id.toString(),
+      startDate: event.startDate?.toISOString() || new Date().toISOString(),
+      endDate: event.endDate?.toISOString() || new Date().toISOString(),
+      registrationDeadline: event.registrationDeadline?.toISOString() || new Date().toISOString(),
+      createdAt: event.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: event.updatedAt?.toISOString() || new Date().toISOString(),
+    };
+
+    return successResponse({ event: serializedEvent });
   } catch (error) {
     console.error("GET /api/events/[eventId] error:", error);
     return errorResponse("Failed to fetch event", 500);

@@ -44,7 +44,7 @@ export default function EventDetailPage() {
         const res = await fetch(`/api/events/${eventId}`);
         if (res.ok) {
           const data = await res.json();
-          setEvent(data);
+          setEvent(data.event || data);
         }
       } catch (error) {
         console.error("Failed to fetch event:", error);
