@@ -1,6 +1,7 @@
-import { Box, Typography, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Box, Typography, Chip } from "@mui/material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
+import ProjectsView from "./ProjectsView";
 
 async function getProjects() {
   await connectToDatabase();
@@ -14,7 +15,9 @@ async function getProjects() {
     _id: project._id.toString(),
     eventId: project.eventId?.toString(),
     teamId: project.teamId?.toString(),
+    technologies: project.technologies || [],
     createdAt: project.createdAt?.toISOString() || new Date().toISOString(),
+    updatedAt: project.updatedAt?.toISOString() || new Date().toISOString(),
   }));
 }
 
@@ -54,55 +57,7 @@ export default async function AdminProjectsPage() {
         <Chip label={`${stats.judged} Judged`} color="success" variant="outlined" />
       </Box>
 
-      <TableContainer component={Paper} elevation={2}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Project Name</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Technologies</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Submitted</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projects.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                  No projects submitted yet
-                </TableCell>
-              </TableRow>
-            ) : (
-              projects.map((project) => (
-                <TableRow key={project._id} hover>
-                  <TableCell sx={{ fontWeight: 500 }}>{project.name}</TableCell>
-                  <TableCell>{project.category || "Uncategorized"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={project.status.replace("_", " ")}
-                      size="small"
-                      color={statusColors[project.status] || "default"}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                      {project.technologies?.slice(0, 3).map((tech: string) => (
-                        <Chip key={tech} label={tech} size="small" variant="outlined" />
-                      ))}
-                      {(project.technologies?.length || 0) > 3 && (
-                        <Chip label={`+${(project.technologies?.length || 0) - 3}`} size="small" variant="outlined" />
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <ProjectsView projects={projects} />
     </Box>
   );
 }

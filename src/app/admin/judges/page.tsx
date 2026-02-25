@@ -1,7 +1,9 @@
-import { Box, Typography, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from "@mui/material";
+import { Box, Typography, Chip, Button } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import JudgesView from "./JudgesView";
+import Link from "next/link";
 
 async function getJudges() {
   await connectToDatabase();
@@ -42,6 +44,8 @@ export default async function AdminJudgesPage() {
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
+          component={Link}
+          href="/admin/users"
           sx={{ fontWeight: 600 }}
         >
           Assign Judge
@@ -52,46 +56,7 @@ export default async function AdminJudgesPage() {
         <Chip label={`${judges.length} Active Judges`} color="info" />
       </Box>
 
-      <TableContainer component={Paper} elevation={2}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Joined</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Assigned Projects</TableCell>
-              <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {judges.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                  No judges assigned yet. Promote users to judge role to get started.
-                </TableCell>
-              </TableRow>
-            ) : (
-              judges.map((judge) => (
-                <TableRow key={judge._id} hover>
-                  <TableCell sx={{ fontWeight: 500 }}>{judge.name}</TableCell>
-                  <TableCell>{judge.email}</TableCell>
-                  <TableCell>
-                    {new Date(judge.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Chip label="0 projects" size="small" variant="outlined" />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button size="small" variant="outlined">
-                      Manage Assignments
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <JudgesView judges={judges} />
     </Box>
   );
 }
