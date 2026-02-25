@@ -138,6 +138,39 @@ export default function DataView({ items }: { items: Item[] }) {
 - CSV: Registration data with transformed fields
 - Skill chips with overflow indicator (+N)
 
+### ✅ Projects (Admin)
+
+**Location:** `/app/admin/projects/ProjectsView.tsx`
+
+**Features:**
+- Table: Name, category, status, technologies, links, submission date
+- Card: Project cards with GitHub/Demo/Docs buttons
+- CSV: Full project data including URLs
+- Direct links to GitHub, demo, documentation
+- Tech stack chips with overflow indicator
+
+### ✅ Teams (Admin)
+
+**Location:** `/app/admin/teams/TeamsView.tsx`
+
+**Features:**
+- Table: Name, event, leader, members, skills, status, created
+- Card: Team profile with member avatars (AvatarGroup)
+- CSV: Team data with leader and member info
+- "Looking for Members" status badge
+- Member avatars with name tooltips
+
+### ✅ Judges (Admin)
+
+**Location:** `/app/admin/judges/JudgesView.tsx`
+
+**Features:**
+- Table: Name, email, joined, assignments, actions
+- Card: Judge profile with gavel icon
+- CSV: Judge data export
+- "Assign Judge" button (links to Users page)
+- Projects assigned count (future feature)
+
 ## Design Guidelines
 
 ### Table View
@@ -277,6 +310,6 @@ export default function TeamsPage() {
 
 ---
 
-**Status:** ✅ Implemented  
-**Last Updated:** 2026-02-25  
-**Coverage:** Events, Users, Registrations
+**Status:** ✅ Complete  
+**Last Updated:** 2026-02-25 07:00 EST  
+**Coverage:** Events, Users, Registrations, Projects, Teams, Judges (6/6 admin screens)
