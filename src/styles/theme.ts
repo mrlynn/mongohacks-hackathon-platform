@@ -158,27 +158,34 @@ export const hackathonTheme = createTheme({
       fontFamily: "'Source Serif Pro', Georgia, serif",
       fontWeight: 700,
       letterSpacing: "-0.02em",
+      fontSize: "clamp(2rem, 5vw, 3.5rem)",
     },
     h2: {
       fontFamily: "'Source Serif Pro', Georgia, serif",
       fontWeight: 700,
       letterSpacing: "-0.01em",
+      fontSize: "clamp(1.75rem, 4vw, 3rem)",
     },
     h3: {
       fontWeight: 600,
+      fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
     },
     h4: {
       fontWeight: 600,
+      fontSize: "clamp(1.25rem, 2.5vw, 2rem)",
     },
     h5: {
       fontWeight: 600,
+      fontSize: "clamp(1.125rem, 2vw, 1.5rem)",
     },
     h6: {
       fontWeight: 600,
+      fontSize: "clamp(1rem, 1.5vw, 1.25rem)",
     },
     button: {
       fontWeight: 600,
       letterSpacing: "0.02em",
+      textTransform: "none",
     },
   },
   components: {

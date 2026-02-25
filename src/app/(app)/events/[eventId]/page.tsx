@@ -76,7 +76,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
           <Chip
@@ -117,13 +117,21 @@ export default function EventDetailPage() {
           </Box>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            width: { xs: "100%", sm: "auto" },
+          }}
+        >
           {event.landingPage?.slug && event.landingPage.published && (
             <Button
               variant="contained"
               size="large"
               href={`/${event.landingPage.slug}`}
               sx={{
+                width: { xs: "100%", sm: "auto" },
                 background: "linear-gradient(135deg, #00ED64 0%, #00684A 100%)",
                 "&:hover": {
                   background: "linear-gradient(135deg, #00684A 0%, #023430 100%)",
@@ -138,6 +146,9 @@ export default function EventDetailPage() {
               variant="outlined"
               size="large"
               href={`/events/${eventId}/register`}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+              }}
             >
               Register Now
             </Button>
