@@ -31,6 +31,10 @@ interface Event {
   judging_criteria: string[];
   status: string;
   capacity: number;
+  landingPage?: {
+    slug?: string;
+    published?: boolean;
+  };
 }
 
 export default function EventDetailPage() {
@@ -113,11 +117,32 @@ export default function EventDetailPage() {
           </Box>
         </Box>
 
-        {event.status === "open" && (
-          <Button variant="contained" size="large">
-            Register Now
-          </Button>
-        )}
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          {event.landingPage?.slug && event.landingPage.published && (
+            <Button
+              variant="contained"
+              size="large"
+              href={`/${event.landingPage.slug}`}
+              sx={{
+                background: "linear-gradient(135deg, #00ED64 0%, #00684A 100%)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #00684A 0%, #023430 100%)",
+                },
+              }}
+            >
+              View Event Landing Page
+            </Button>
+          )}
+          {event.status === "open" && (
+            <Button
+              variant="outlined"
+              size="large"
+              href={`/events/${eventId}/register`}
+            >
+              Register Now
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <Divider sx={{ my: 3 }} />

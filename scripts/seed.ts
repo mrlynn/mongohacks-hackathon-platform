@@ -8,6 +8,8 @@ import { ProjectModel } from "../src/lib/db/models/Project";
 import { ParticipantModel } from "../src/lib/db/models/Participant";
 import { ScoreModel } from "../src/lib/db/models/Score";
 import { TemplateConfigModel } from "../src/lib/db/models/TemplateConfig";
+import { PartnerModel } from "../src/lib/db/models/Partner";
+import { PrizeModel } from "../src/lib/db/models/Prize";
 import { seedBuiltInTemplates } from "../src/lib/db/seed-templates";
 import bcrypt from "bcryptjs";
 
@@ -45,6 +47,8 @@ async function seed() {
     await ParticipantModel.deleteMany({});
     await ScoreModel.deleteMany({});
     await TemplateConfigModel.deleteMany({});
+    await PartnerModel.deleteMany({});
+    await PrizeModel.deleteMany({});
     console.log("✅ Data cleared\n");
   }
 
@@ -615,6 +619,320 @@ async function seed() {
 
   console.log(`✅ Created ${scores.length} scores\n`);
 
+  // Create Partners
+  console.log("🤝 Creating partners...");
+  const partners = await PartnerModel.insertMany([
+    {
+      name: "MongoDB Inc.",
+      description: "The leading modern, general purpose database platform. MongoDB empowers innovators to create, transform, and disrupt industries by unleashing the power of software and data.",
+      logo: "https://www.mongodb.com/assets/images/global/favicon.ico",
+      website: "https://www.mongodb.com",
+      industry: "Database Technology",
+      tier: "platinum",
+      status: "active",
+      companyInfo: {
+        size: "enterprise",
+        headquarters: "New York, NY",
+        foundedYear: 2007,
+        employeeCount: "5000+",
+      },
+      contacts: [
+        {
+          name: "Developer Relations Team",
+          email: "devrel@mongodb.com",
+          role: "Developer Relations",
+          isPrimary: true,
+        },
+      ],
+      social: {
+        linkedin: "https://www.linkedin.com/company/mongodb",
+        twitter: "https://twitter.com/MongoDB",
+        github: "https://github.com/mongodb",
+      },
+      tags: ["database", "nosql", "cloud", "atlas", "ai"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "high",
+      },
+    },
+    {
+      name: "Vercel",
+      description: "Vercel is the platform for frontend developers, providing the speed and reliability innovators need to create at the moment of inspiration.",
+      logo: "https://vercel.com/favicon.ico",
+      website: "https://vercel.com",
+      industry: "Cloud Hosting",
+      tier: "gold",
+      status: "active",
+      companyInfo: {
+        size: "medium",
+        headquarters: "San Francisco, CA",
+        foundedYear: 2015,
+        employeeCount: "500+",
+      },
+      contacts: [
+        {
+          name: "Partnership Team",
+          email: "partnerships@vercel.com",
+          role: "Partnership Manager",
+          isPrimary: true,
+        },
+      ],
+      social: {
+        linkedin: "https://www.linkedin.com/company/vercel",
+        twitter: "https://twitter.com/vercel",
+        github: "https://github.com/vercel",
+      },
+      tags: ["hosting", "serverless", "nextjs", "deployment"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "medium",
+      },
+    },
+    {
+      name: "GitHub",
+      description: "Where the world builds software. Millions of developers use GitHub to build personal projects, support their businesses, and work together on open source technologies.",
+      logo: "https://github.com/favicon.ico",
+      website: "https://github.com",
+      industry: "Developer Tools",
+      tier: "gold",
+      status: "active",
+      companyInfo: {
+        size: "enterprise",
+        headquarters: "San Francisco, CA",
+        foundedYear: 2008,
+        employeeCount: "3000+",
+      },
+      contacts: [
+        {
+          name: "Events Team",
+          email: "events@github.com",
+          role: "Event Coordinator",
+          isPrimary: true,
+        },
+      ],
+      social: {
+        linkedin: "https://www.linkedin.com/company/github",
+        twitter: "https://twitter.com/github",
+        github: "https://github.com/github",
+      },
+      tags: ["git", "version-control", "open-source", "collaboration"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "high",
+      },
+    },
+    {
+      name: "JetBrains",
+      description: "Essential tools for software developers and teams. Intelligent IDEs and productivity tools designed to help developers work more efficiently.",
+      logo: "https://www.jetbrains.com/favicon.ico",
+      website: "https://www.jetbrains.com",
+      industry: "Developer Tools",
+      tier: "silver",
+      status: "active",
+      companyInfo: {
+        size: "large",
+        headquarters: "Prague, Czech Republic",
+        foundedYear: 2000,
+        employeeCount: "2000+",
+      },
+      contacts: [
+        {
+          name: "Community Relations",
+          email: "community@jetbrains.com",
+          role: "Community Manager",
+          isPrimary: true,
+        },
+      ],
+      social: {
+        linkedin: "https://www.linkedin.com/company/jetbrains",
+        twitter: "https://twitter.com/jetbrains",
+        github: "https://github.com/JetBrains",
+      },
+      tags: ["ide", "productivity", "development-tools"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "medium",
+      },
+    },
+    {
+      name: "Sticker Mule",
+      description: "The internet's most kick-ass brand. Custom printing that's surprisingly easy and backed by a super-fun guarantee.",
+      logo: "https://www.stickermule.com/favicon.ico",
+      website: "https://www.stickermule.com",
+      industry: "Printing & Merchandise",
+      tier: "bronze",
+      status: "active",
+      companyInfo: {
+        size: "small",
+        headquarters: "Amsterdam, NY",
+        foundedYear: 2010,
+        employeeCount: "100+",
+      },
+      contacts: [
+        {
+          name: "Sponsorship Team",
+          email: "sponsor@stickermule.com",
+          role: "Sponsorship Coordinator",
+          isPrimary: true,
+        },
+      ],
+      social: {
+        twitter: "https://twitter.com/stickermule",
+      },
+      tags: ["swag", "stickers", "merchandise"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "low",
+      },
+    },
+    {
+      name: "Local Tech Community",
+      description: "Supporting local developers and fostering innovation in our community.",
+      industry: "Community",
+      tier: "community",
+      status: "active",
+      contacts: [
+        {
+          name: "Community Lead",
+          email: "hello@localtech.community",
+          role: "Organizer",
+          isPrimary: true,
+        },
+      ],
+      tags: ["community", "local", "grassroots"],
+      engagement: {
+        eventsParticipated: [],
+        prizesOffered: [],
+        engagementLevel: "medium",
+      },
+    },
+  ]);
+
+  console.log(`✅ Created ${partners.length} partners\n`);
+
+  // Create Prizes linked to Partners
+  console.log("🏆 Creating prizes...");
+  
+  const mongodb = partners.find((p) => p.name === "MongoDB Inc.");
+  const vercel = partners.find((p) => p.name === "Vercel");
+  const github = partners.find((p) => p.name === "GitHub");
+  const jetbrains = partners.find((p) => p.name === "JetBrains");
+
+  const prizes = await PrizeModel.insertMany([
+    // MongoDB Spring Hackathon prizes
+    {
+      eventId: springEvent._id,
+      title: "Grand Prize",
+      description: "Overall winner of MongoDB Spring Hackathon 2026",
+      category: "grand",
+      value: "$5,000 + MongoDB Atlas Credits",
+      monetaryValue: 5000,
+      displayOrder: 1,
+      isActive: true,
+    },
+    {
+      eventId: springEvent._id,
+      partnerId: mongodb?._id,
+      title: "Best MongoDB Integration",
+      description: "Best use of MongoDB Atlas features and capabilities",
+      category: "sponsor",
+      value: "$2,500 + 1 Year MongoDB Atlas M10 Cluster",
+      monetaryValue: 2500,
+      eligibility: "Must use MongoDB Atlas in the project",
+      criteria: ["Creative use of MongoDB features", "Data model design", "Query optimization"],
+      displayOrder: 2,
+      isActive: true,
+    },
+    {
+      eventId: springEvent._id,
+      partnerId: vercel?._id,
+      title: "Best Deployment",
+      description: "Best project deployed and hosted on Vercel",
+      category: "sponsor",
+      value: "$1,000 Vercel Pro subscription",
+      monetaryValue: 1000,
+      displayOrder: 3,
+      isActive: true,
+    },
+    {
+      eventId: springEvent._id,
+      partnerId: github?._id,
+      title: "Best Open Source Project",
+      description: "Best project with clean code, documentation, and community potential",
+      category: "sponsor",
+      value: "$500 + GitHub Swag Pack",
+      monetaryValue: 500,
+      displayOrder: 4,
+      isActive: true,
+    },
+    {
+      eventId: springEvent._id,
+      partnerId: jetbrains?._id,
+      title: "Most Innovative Code",
+      description: "Most creative and innovative coding solution",
+      category: "special",
+      value: "JetBrains All Products Pack (1 year)",
+      monetaryValue: 649,
+      displayOrder: 5,
+      isActive: true,
+    },
+    // AI Challenge prizes
+    {
+      eventId: aiEvent._id,
+      title: "AI Champion",
+      description: "Best overall AI-powered application",
+      category: "grand",
+      value: "$3,000",
+      monetaryValue: 3000,
+      displayOrder: 1,
+      isActive: true,
+    },
+    {
+      eventId: aiEvent._id,
+      partnerId: mongodb?._id,
+      title: "Best Vector Search Implementation",
+      description: "Most innovative use of MongoDB Vector Search",
+      category: "sponsor",
+      value: "$1,500 + MongoDB Atlas AI Credits",
+      monetaryValue: 1500,
+      displayOrder: 2,
+      isActive: true,
+    },
+  ]);
+
+  console.log(`✅ Created ${prizes.length} prizes\n`);
+
+  // Update partner engagement with event and prize references
+  for (const prize of prizes) {
+    if (prize.partnerId) {
+      await PartnerModel.findByIdAndUpdate(prize.partnerId, {
+        $addToSet: {
+          "engagement.eventsParticipated": prize.eventId,
+          "engagement.prizesOffered": prize._id,
+        },
+        $set: {
+          "engagement.lastEngagementDate": new Date(),
+        },
+      });
+    }
+  }
+
+  // Update events with partner references
+  await EventModel.findByIdAndUpdate(springEvent._id, {
+    $set: { partners: [mongodb?._id, vercel?._id, github?._id, jetbrains?._id].filter(Boolean) },
+  });
+
+  await EventModel.findByIdAndUpdate(aiEvent._id, {
+    $set: { partners: [mongodb?._id].filter(Boolean) },
+  });
+
+  console.log("✅ Updated partner-event relationships\n");
+
   // Seed built-in templates
   console.log("🎨 Seeding built-in templates...");
   const templatesInserted = await seedBuiltInTemplates();
@@ -628,6 +946,8 @@ async function seed() {
   console.log(`   Teams: ${teams.length}`);
   console.log(`   Projects: ${projects.length}`);
   console.log(`   Scores: ${scores.length}`);
+  console.log(`   Partners: ${partners.length}`);
+  console.log(`   Prizes: ${prizes.length}`);
   console.log(`   Templates: ${templatesInserted}\n`);
 
   console.log("🔑 Test Credentials:");

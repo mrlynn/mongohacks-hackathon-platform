@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -90,6 +90,8 @@ const statusColors = {
 
 export default function PartnersView() {
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [filterTier, setFilterTier] = useState<string>("all");
@@ -106,6 +108,31 @@ export default function PartnersView() {
     status: "pending" as Partner["status"],
     tags: [] as string[],
   });
+
+  // Fetch partners on mount
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch("/api/partners");
+        const data = await response.json();
+        
+        if (response.ok && data.partners) {
+          setPartners(data.partners);
+        } else {
+          setError(data.error || "Failed to load partners");
+        }
+      } catch (err) {
+        setError("Failed to connect to server");
+        console.error("Error fetching partners:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartners();
+  }, []);
 
   const handleOpenDialog = (partner?: Partner) => {
     if (partner) {
@@ -142,9 +169,70 @@ export default function PartnersView() {
   };
 
   const handleSubmit = async () => {
-    // TODO: Implement API call
-    console.log("Submitting partner:", formData);
-    handleCloseDialog();
+    try {
+      const url = editingPartner
+        ? `/api/partners/${editingPartner._id}`
+        : "/api/partners";
+      const method = editingPartner ? "PATCH" : "POST";
+
+      const payload = {
+        ...formData,
+        contacts: editingPartner?.contacts || [
+          {
+            name: "Contact",
+            email: "contact@example.com",
+            role: "Contact",
+            isPrimary: true,
+          },
+        ],
+      };
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Refresh partners list
+        const refreshResponse = await fetch("/api/partners");
+        const refreshData = await refreshResponse.json();
+        if (refreshData.partners) {
+          setPartners(refreshData.partners);
+        }
+        handleCloseDialog();
+      } else {
+        setError(data.error || "Failed to save partner");
+      }
+    } catch (err) {
+      setError("Failed to save partner");
+      console.error("Error saving partner:", err);
+    }
+  };
+
+  const handleDelete = async (partnerId: string) => {
+    if (!confirm("Are you sure you want to delete this partner?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/partners/${partnerId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Refresh partners list
+        setPartners(partners.filter((p) => p._id !== partnerId));
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to delete partner");
+      }
+    } catch (err) {
+      setError("Failed to delete partner");
+      console.error("Error deleting partner:", err);
+    }
   };
 
   const filteredPartners = partners.filter((partner) => {
@@ -197,38 +285,56 @@ export default function PartnersView() {
         </Button>
       </Stack>
 
-      {/* Filters */}
-      <Stack direction="row" spacing={2} mb={3}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Tier</InputLabel>
-          <Select
-            value={filterTier}
-            label="Tier"
-            onChange={(e) => setFilterTier(e.target.value)}
-          >
-            <MenuItem value="all">All Tiers</MenuItem>
-            <MenuItem value="platinum">Platinum</MenuItem>
-            <MenuItem value="gold">Gold</MenuItem>
-            <MenuItem value="silver">Silver</MenuItem>
-            <MenuItem value="bronze">Bronze</MenuItem>
-            <MenuItem value="community">Community</MenuItem>
-          </Select>
-        </FormControl>
+      {/* Loading State */}
+      {loading && (
+        <Box sx={{ textAlign: "center", py: 8 }}>
+          <Typography variant="body1" color="text.secondary">
+            Loading partners...
+          </Typography>
+        </Box>
+      )}
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filterStatus}
-            label="Status"
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
-            <MenuItem value="pending">Pending</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
+      {/* Error State */}
+      {error && !loading && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Filters */}
+      {!loading && !error && (
+        <Stack direction="row" spacing={2} mb={3}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Tier</InputLabel>
+            <Select
+              value={filterTier}
+              label="Tier"
+              onChange={(e) => setFilterTier(e.target.value)}
+            >
+              <MenuItem value="all">All Tiers</MenuItem>
+              <MenuItem value="platinum">Platinum</MenuItem>
+              <MenuItem value="gold">Gold</MenuItem>
+              <MenuItem value="silver">Silver</MenuItem>
+              <MenuItem value="bronze">Bronze</MenuItem>
+              <MenuItem value="community">Community</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={filterStatus}
+              label="Status"
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="inactive">Inactive</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
+      )}
 
       {/* Partners Grid */}
       {filteredPartners.length === 0 ? (
@@ -397,6 +503,7 @@ export default function PartnersView() {
                     </IconButton>
                     <IconButton
                       size="small"
+                      onClick={() => handleDelete(partner._id)}
                       sx={{ color: mongoBrand.errorRed }}
                     >
                       <DeleteIcon fontSize="small" />

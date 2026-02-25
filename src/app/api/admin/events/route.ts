@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { PartnerModel } from "@/lib/db/models/Partner";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,17 @@ export async function POST(request: NextRequest) {
     });
 
     await event.save();
+
+    // Sync partners: add this event to each partner's eventsParticipated
+    if (body.partners && body.partners.length > 0) {
+      await PartnerModel.updateMany(
+        { _id: { $in: body.partners } },
+        {
+          $addToSet: { "engagement.eventsParticipated": event._id },
+          $set: { "engagement.lastEngagementDate": new Date() },
+        }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -48,6 +60,7 @@ export async function GET(request: NextRequest) {
 
     const events = await EventModel.find(query)
       .populate("organizers", "name email")
+      .populate("partners", "name tier logo")
       .sort({ createdAt: -1 })
       .limit(100);
 

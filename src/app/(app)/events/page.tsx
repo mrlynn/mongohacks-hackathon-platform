@@ -31,6 +31,10 @@ interface Event {
   tags: string[];
   status: string;
   capacity: number;
+  landingPage?: {
+    slug?: string;
+    published?: boolean;
+  };
 }
 
 export default function EventsPage() {
@@ -99,7 +103,7 @@ export default function EventsPage() {
       ) : (
         <Grid container spacing={3}>
           {events.map((event) => (
-            <Grid key={event._id} size={{ xs: 12, sm: 6, md: 4 }}>
+            <Grid item key={event._id} xs={12} sm={6} md={4}>
               <Card
                 sx={{
                   height: "100%",
@@ -173,14 +177,28 @@ export default function EventsPage() {
                     </Typography>
                   </Box>
                 </CardContent>
-                <CardActions>
+                <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
                   <Button
                     size="small"
-                   
                     href={`/events/${event._id}`}
                   >
-                    View Details
+                    Details
                   </Button>
+                  {event.landingPage?.slug && event.landingPage.published && (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      href={`/${event.landingPage.slug}`}
+                      sx={{
+                        background: "linear-gradient(135deg, #00ED64 0%, #00684A 100%)",
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #00684A 0%, #023430 100%)",
+                        },
+                      }}
+                    >
+                      Register
+                    </Button>
+                  )}
                 </CardActions>
               </Card>
             </Grid>

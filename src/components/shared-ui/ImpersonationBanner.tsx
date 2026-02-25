@@ -38,9 +38,17 @@ export default function ImpersonationBanner() {
       });
 
       if (res.ok) {
+        // Immediately update UI state
         setIsImpersonating(false);
+        setImpersonatedUser("");
+        
+        // Navigate back to admin users page
         router.push("/admin/users");
-        router.refresh();
+        
+        // Force a hard refresh to clear any cached session data
+        window.location.href = "/admin/users";
+      } else {
+        console.error("Failed to stop impersonation - server returned error");
       }
     } catch (err) {
       console.error("Failed to stop impersonation:", err);

@@ -20,6 +20,8 @@ import {
   Settings as SettingsIcon,
   Groups as TeamsIcon,
   Palette as PaletteIcon,
+  Business as BusinessIcon,
+  Analytics as AnalyticsIcon,
 } from "@mui/icons-material";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -28,11 +30,13 @@ const drawerWidth = 240;
 
 const baseNavItems = [
   { label: "Dashboard", href: "/admin", icon: <DashboardIcon /> },
+  { label: "Analytics", href: "/admin/analytics", icon: <AnalyticsIcon /> },
   { label: "Events", href: "/admin/events", icon: <EventIcon /> },
   { label: "Users", href: "/admin/users", icon: <PeopleIcon /> },
   { label: "Teams", href: "/admin/teams", icon: <TeamsIcon /> },
   { label: "Judges", href: "/admin/judges", icon: <GavelIcon /> },
   { label: "Projects", href: "/admin/projects", icon: <FolderIcon /> },
+  { label: "Partners", href: "/admin/partners", icon: <BusinessIcon /> },
   { label: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
 ];
 

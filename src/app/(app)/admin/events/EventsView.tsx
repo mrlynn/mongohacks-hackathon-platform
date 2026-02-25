@@ -27,6 +27,7 @@ import {
   People as PeopleIcon,
   EmojiEvents as TrophyIcon,
   OpenInNew as OpenInNewIcon,
+  Business as BusinessIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -49,6 +50,7 @@ interface Event {
     slug?: string;
     published?: boolean;
   };
+  partners?: Array<{ _id: string; name: string; tier: string; logo?: string }>;
 }
 
 const statusColors: Record<string, "default" | "success" | "info" | "warning" | "error"> = {
@@ -124,6 +126,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Capacity</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Partners</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Landing Page</TableCell>
                 <TableCell sx={{ fontWeight: 600 }} align="right">
                   Actions
@@ -152,6 +155,32 @@ export default function EventsView({ events }: { events: Event[] }) {
                       size="small"
                       variant="outlined"
                     />
+                  </TableCell>
+                  <TableCell>
+                    {event.partners && event.partners.length > 0 ? (
+                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                        {event.partners.slice(0, 3).map((p) => (
+                          <Chip
+                            key={p._id}
+                            label={p.name}
+                            size="small"
+                            variant="outlined"
+                            icon={<BusinessIcon sx={{ fontSize: "14px !important" }} />}
+                          />
+                        ))}
+                        {event.partners.length > 3 && (
+                          <Chip
+                            label={`+${event.partners.length - 3}`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">
+                        None
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     {event.landingPage?.published ? (
@@ -283,6 +312,19 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Typography variant="caption" color="text.secondary" display="block">
                       📍 {event.location}
                     </Typography>
+                  )}
+                  {event.partners && event.partners.length > 0 && (
+                    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
+                      {event.partners.map((p) => (
+                        <Chip
+                          key={p._id}
+                          label={p.name}
+                          size="small"
+                          variant="outlined"
+                          icon={<BusinessIcon sx={{ fontSize: "14px !important" }} />}
+                        />
+                      ))}
+                    </Box>
                   )}
                 </CardContent>
                 <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>

@@ -73,8 +73,20 @@ export async function DELETE() {
       message: "Stopped impersonation",
     });
 
-    response.cookies.delete("impersonate_user_id");
-    response.cookies.delete("impersonate_user_name");
+    // Clear cookies by setting them with maxAge: 0
+    response.cookies.set("impersonate_user_id", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 0,
+      path: "/",
+    });
+
+    response.cookies.set("impersonate_user_name", "", {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 0,
+      path: "/",
+    });
 
     return response;
   } catch (error) {

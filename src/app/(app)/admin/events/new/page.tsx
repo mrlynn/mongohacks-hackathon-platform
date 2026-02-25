@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -13,6 +13,8 @@ import {
   InputAdornment,
   Paper,
   Typography,
+  Autocomplete,
+  Chip,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -32,6 +34,7 @@ import {
   CheckCircleOutline as CheckCircleIcon,
   Web as WebIcon,
   List as ListIcon,
+  Business as BusinessIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
@@ -47,6 +50,24 @@ export default function NewEventPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
+
+  const [allPartners, setAllPartners] = useState<
+    { _id: string; name: string; tier: string }[]
+  >([]);
+  const [selectedPartnerIds, setSelectedPartnerIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function fetchPartners() {
+      try {
+        const res = await fetch("/api/partners?status=active&limit=200");
+        const data = await res.json();
+        if (res.ok) setAllPartners(data.partners || data);
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchPartners();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -89,6 +110,7 @@ export default function NewEventPage() {
     try {
       const payload = {
         ...formData,
+        partners: selectedPartnerIds,
         capacity: Number(formData.capacity),
         tags: formData.tags
           .split(",")
@@ -467,6 +489,55 @@ export default function NewEventPage() {
                     ),
                   },
                 }}
+              />
+            </Grid>
+          </Grid>
+        </FormCard>
+
+        <FormCard
+          accentColor="#FFC010"
+          accentColorEnd="#E6AC00"
+        >
+          <FormSectionHeader
+            icon={<BusinessIcon />}
+            title="Partners"
+            subtitle="Select partners participating in this event"
+          />
+          <Grid container spacing={2.5}>
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                multiple
+                options={allPartners}
+                getOptionLabel={(option) =>
+                  `${option.name} (${option.tier})`
+                }
+                value={allPartners.filter((p) =>
+                  selectedPartnerIds.includes(p._id)
+                )}
+                onChange={(_e, newValue) => {
+                  setSelectedPartnerIds(newValue.map((p) => p._id));
+                }}
+                isOptionEqualToValue={(option, value) =>
+                  option._id === value._id
+                }
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      label={option.name}
+                      size="small"
+                      {...getTagProps({ index })}
+                      key={option._id}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Event Partners"
+                    placeholder="Search partners..."
+                    helperText="Select one or more partners contributing to this event"
+                  />
+                )}
               />
             </Grid>
           </Grid>

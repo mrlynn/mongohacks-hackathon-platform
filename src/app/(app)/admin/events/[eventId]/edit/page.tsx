@@ -13,6 +13,8 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  Autocomplete,
+  Chip,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -28,6 +30,7 @@ import {
   TuneOutlined,
   PeopleOutlined,
   Assignment as AssignmentIcon,
+  Business as BusinessIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
@@ -55,6 +58,11 @@ export default function EditEventPage({
   >([]);
   const [selectedFormConfig, setSelectedFormConfig] = useState("");
 
+  const [allPartners, setAllPartners] = useState<
+    { _id: string; name: string; tier: string }[]
+  >([]);
+  const [selectedPartnerIds, setSelectedPartnerIds] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -77,6 +85,7 @@ export default function EditEventPage({
       fetchEvent(p.eventId);
     });
     fetchRegistrationForms();
+    fetchPartners();
   }, []);
 
   const fetchRegistrationForms = async () => {
@@ -86,6 +95,16 @@ export default function EditEventPage({
       if (data.success) setRegistrationForms(data.forms);
     } catch {
       // Non-critical, selector will just be empty
+    }
+  };
+
+  const fetchPartners = async () => {
+    try {
+      const res = await fetch("/api/partners?status=active&limit=200");
+      const data = await res.json();
+      if (res.ok) setAllPartners(data.partners || data);
+    } catch {
+      // Non-critical
     }
   };
 
@@ -113,6 +132,14 @@ export default function EditEventPage({
           isVirtual: event.isVirtual || false,
           status: event.status || "draft",
         });
+        // Set selected partners (may be populated objects or plain IDs)
+        if (event.partners && event.partners.length > 0) {
+          setSelectedPartnerIds(
+            event.partners.map((p: { _id?: string } | string) =>
+              typeof p === "object" && p._id ? String(p._id) : String(p)
+            )
+          );
+        }
         if (event.landingPage?.registrationFormConfig) {
           setSelectedFormConfig(
             String(event.landingPage.registrationFormConfig)
@@ -152,6 +179,7 @@ export default function EditEventPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          partners: selectedPartnerIds,
           startDate: new Date(formData.startDate).toISOString(),
           endDate: new Date(formData.endDate).toISOString(),
           registrationDeadline: new Date(
@@ -435,6 +463,55 @@ export default function EditEventPage({
                 }
                 label="Virtual Event"
                 sx={{ mt: 1 }}
+              />
+            </Grid>
+          </Grid>
+        </FormCard>
+
+        <FormCard
+          accentColor="#FFC010"
+          accentColorEnd="#E6AC00"
+        >
+          <FormSectionHeader
+            icon={<BusinessIcon />}
+            title="Partners"
+            subtitle="Select partners participating in this event"
+          />
+          <Grid container spacing={2.5}>
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                multiple
+                options={allPartners}
+                getOptionLabel={(option) =>
+                  `${option.name} (${option.tier})`
+                }
+                value={allPartners.filter((p) =>
+                  selectedPartnerIds.includes(p._id)
+                )}
+                onChange={(_e, newValue) => {
+                  setSelectedPartnerIds(newValue.map((p) => p._id));
+                }}
+                isOptionEqualToValue={(option, value) =>
+                  option._id === value._id
+                }
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      label={option.name}
+                      size="small"
+                      {...getTagProps({ index })}
+                      key={option._id}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Event Partners"
+                    placeholder="Search partners..."
+                    helperText="Select one or more partners contributing to this event"
+                  />
+                )}
               />
             </Grid>
           </Grid>
