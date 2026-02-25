@@ -72,7 +72,7 @@ export default function RegisterPage() {
             <Typography color="text.secondary" sx={{ mb: 3 }}>
               Your account has been created. You can now sign in.
             </Typography>
-            <Button variant="contained" component={Link} href="/login">
+            <Button variant="contained" href="/login">
               Sign In
             </Button>
           </CardContent>

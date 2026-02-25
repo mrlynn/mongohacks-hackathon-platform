@@ -138,7 +138,7 @@ export default function TeamCard({ team, eventId, userId, userTeamId }: TeamCard
             variant="outlined"
             size="small"
             fullWidth
-            component={Link}
+           
             href={`/events/${eventId}/teams/${team._id}`}
           >
             View Details

@@ -8,7 +8,6 @@ import {
   Map as MapIcon,
   AdminPanelSettings as AdminIcon,
 } from "@mui/icons-material";
-import Link from "next/link";
 
 interface User {
   name?: string;
@@ -40,37 +39,35 @@ export default function HomePageClient({ user }: { user: User | null }) {
                 Ready to continue your hackathon journey?
               </Typography>
               <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                <Link href="/dashboard" passHref legacyBehavior>
+                <Button
+                  variant="contained"
+                  size="large"
+                  href="/dashboard"
+                  sx={{
+                    bgcolor: "white",
+                    color: "primary.main",
+                    "&:hover": { bgcolor: "grey.100" },
+                  }}
+                >
+                  Go to Dashboard
+                </Button>
+                {isAdmin && (
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     size="large"
+                    href="/admin"
+                    startIcon={<AdminIcon />}
                     sx={{
-                      bgcolor: "white",
-                      color: "primary.main",
-                      "&:hover": { bgcolor: "grey.100" },
+                      borderColor: "white",
+                      color: "white",
+                      "&:hover": {
+                        borderColor: "white",
+                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                      },
                     }}
                   >
-                    Go to Dashboard
+                    Admin Console
                   </Button>
-                </Link>
-                {isAdmin && (
-                  <Link href="/admin" passHref legacyBehavior>
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      startIcon={<AdminIcon />}
-                      sx={{
-                        borderColor: "white",
-                        color: "white",
-                        "&:hover": {
-                          borderColor: "white",
-                          bgcolor: "rgba(255, 255, 255, 0.1)",
-                        },
-                      }}
-                    >
-                      Admin Console
-                    </Button>
-                  </Link>
                 )}
               </Box>
             </>
@@ -83,35 +80,33 @@ export default function HomePageClient({ user }: { user: User | null }) {
                 Discover, organize, and participate in hackathons around the world
               </Typography>
               <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                <Link href="/register" passHref legacyBehavior>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      bgcolor: "white",
-                      color: "primary.main",
-                      "&:hover": { bgcolor: "grey.100" },
-                    }}
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-                <Link href="/events" passHref legacyBehavior>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{
+                <Button
+                  variant="contained"
+                  size="large"
+                  href="/register"
+                  sx={{
+                    bgcolor: "white",
+                    color: "primary.main",
+                    "&:hover": { bgcolor: "grey.100" },
+                  }}
+                >
+                  Get Started
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  href="/events"
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
                       borderColor: "white",
-                      color: "white",
-                      "&:hover": {
-                        borderColor: "white",
-                        bgcolor: "rgba(255, 255, 255, 0.1)",
-                      },
-                    }}
-                  >
-                    Browse Events
-                  </Button>
-                </Link>
+                      bgcolor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  Browse Events
+                </Button>
               </Box>
             </>
           )}
@@ -192,32 +187,24 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Link href="/admin/events/new" passHref legacyBehavior>
-                  <Button fullWidth variant="outlined">
-                    Create Event
-                  </Button>
-                </Link>
+                <Button fullWidth variant="outlined" href="/admin/events/new">
+                  Create Event
+                </Button>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Link href="/admin/users" passHref legacyBehavior>
-                  <Button fullWidth variant="outlined">
-                    Manage Users
-                  </Button>
-                </Link>
+                <Button fullWidth variant="outlined" href="/admin/users">
+                  Manage Users
+                </Button>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Link href="/admin/projects" passHref legacyBehavior>
-                  <Button fullWidth variant="outlined">
-                    View Projects
-                  </Button>
-                </Link>
+                <Button fullWidth variant="outlined" href="/admin/projects">
+                  View Projects
+                </Button>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Link href="/admin" passHref legacyBehavior>
-                  <Button fullWidth variant="outlined">
-                    Admin Dashboard
-                  </Button>
-                </Link>
+                <Button fullWidth variant="outlined" href="/admin">
+                  Admin Dashboard
+                </Button>
               </Grid>
             </Grid>
           </Box>

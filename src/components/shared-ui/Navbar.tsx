@@ -28,8 +28,10 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -44,6 +46,11 @@ export default function Navbar() {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleNavigate = (href: string) => {
+    handleClose();
+    router.push(href);
   };
 
   const handleSignOut = async () => {
@@ -73,43 +80,48 @@ export default function Navbar() {
           </Link>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <Link href="/events" passHref legacyBehavior>
-              <Button color="inherit" startIcon={<EmojiEventsIcon />}>
-                Events
-              </Button>
-            </Link>
-            <Link href="/events/map" passHref legacyBehavior>
-              <Button color="inherit" startIcon={<MapIcon />}>
-                Map
-              </Button>
-            </Link>
+            <Button
+              color="inherit"
+              href="/events"
+              startIcon={<EmojiEventsIcon />}
+            >
+              Events
+            </Button>
+            <Button
+              color="inherit"
+              href="/events/map"
+              startIcon={<MapIcon />}
+            >
+              Map
+            </Button>
 
             {!loading && (
               <>
                 {user ? (
                   <>
                     {user.role === "admin" && (
-                      <Link href="/admin" passHref legacyBehavior>
-                        <Button
-                          color="inherit"
-                          startIcon={<AdminIcon />}
-                          sx={{
-                            bgcolor: "rgba(255, 255, 255, 0.1)",
-                            "&:hover": {
-                              bgcolor: "rgba(255, 255, 255, 0.2)",
-                            },
-                          }}
-                        >
-                          Admin
-                        </Button>
-                      </Link>
+                      <Button
+                        color="inherit"
+                        href="/admin"
+                        startIcon={<AdminIcon />}
+                        sx={{
+                          bgcolor: "rgba(255, 255, 255, 0.1)",
+                          "&:hover": {
+                            bgcolor: "rgba(255, 255, 255, 0.2)",
+                          },
+                        }}
+                      >
+                        Admin
+                      </Button>
                     )}
 
-                    <Link href="/dashboard" passHref legacyBehavior>
-                      <Button color="inherit" startIcon={<DashboardIcon />}>
-                        Dashboard
-                      </Button>
-                    </Link>
+                    <Button
+                      color="inherit"
+                      href="/dashboard"
+                      startIcon={<DashboardIcon />}
+                    >
+                      Dashboard
+                    </Button>
 
                     <Chip
                       label={user.role || "user"}
@@ -163,29 +175,19 @@ export default function Navbar() {
 
                       <Divider />
 
-                      <Link
-                        href="/profile"
-                        style={{ textDecoration: "none", color: "inherit" }}
-                      >
-                        <MenuItem onClick={handleClose}>
-                          <ListItemIcon>
-                            <PersonIcon fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText>Profile</ListItemText>
-                        </MenuItem>
-                      </Link>
+                      <MenuItem onClick={() => handleNavigate("/profile")}>
+                        <ListItemIcon>
+                          <PersonIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Profile</ListItemText>
+                      </MenuItem>
 
-                      <Link
-                        href="/settings"
-                        style={{ textDecoration: "none", color: "inherit" }}
-                      >
-                        <MenuItem onClick={handleClose}>
-                          <ListItemIcon>
-                            <SettingsIcon fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText>Settings</ListItemText>
-                        </MenuItem>
-                      </Link>
+                      <MenuItem onClick={() => handleNavigate("/settings")}>
+                        <ListItemIcon>
+                          <SettingsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Settings</ListItemText>
+                      </MenuItem>
 
                       <Divider />
 
@@ -199,35 +201,33 @@ export default function Navbar() {
                   </>
                 ) : (
                   <>
-                    <Link href="/login" passHref legacyBehavior>
-                      <Button
-                        color="inherit"
-                        variant="outlined"
-                        sx={{
-                          borderColor: "rgba(255, 255, 255, 0.5)",
-                          "&:hover": {
-                            borderColor: "rgba(255, 255, 255, 1)",
-                          },
-                        }}
-                      >
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link href="/register" passHref legacyBehavior>
-                      <Button
-                        color="inherit"
-                        variant="contained"
-                        sx={{
-                          bgcolor: "rgba(255, 255, 255, 0.9)",
-                          color: "primary.main",
-                          "&:hover": {
-                            bgcolor: "rgba(255, 255, 255, 1)",
-                          },
-                        }}
-                      >
-                        Register
-                      </Button>
-                    </Link>
+                    <Button
+                      color="inherit"
+                      href="/login"
+                      variant="outlined"
+                      sx={{
+                        borderColor: "rgba(255, 255, 255, 0.5)",
+                        "&:hover": {
+                          borderColor: "rgba(255, 255, 255, 1)",
+                        },
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      color="inherit"
+                      href="/register"
+                      variant="contained"
+                      sx={{
+                        bgcolor: "rgba(255, 255, 255, 0.9)",
+                        color: "primary.main",
+                        "&:hover": {
+                          bgcolor: "rgba(255, 255, 255, 1)",
+                        },
+                      }}
+                    >
+                      Register
+                    </Button>
                   </>
                 )}
               </>

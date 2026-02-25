@@ -176,7 +176,7 @@ export default function EventsPage() {
                 <CardActions>
                   <Button
                     size="small"
-                    component={Link}
+                   
                     href={`/events/${event._id}`}
                   >
                     View Details

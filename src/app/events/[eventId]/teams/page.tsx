@@ -104,7 +104,7 @@ export default async function TeamsPage({
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
-            component={Link}
+           
             href={`/events/${eventId}/teams/new`}
           >
             Create Team
@@ -128,7 +128,7 @@ export default async function TeamsPage({
                   variant="contained"
                   color="primary"
                   startIcon={<AddIcon />}
-                  component={Link}
+                 
                   href={`/events/${eventId}/teams/new`}
                 >
                   Create Team

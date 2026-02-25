@@ -300,7 +300,7 @@ export default function LandingPageBuilder({
             <Button
               variant="outlined"
               startIcon={<VisibilityIcon />}
-              component={Link}
+             
               href={`/${formData.slug}`}
               target="_blank"
             >

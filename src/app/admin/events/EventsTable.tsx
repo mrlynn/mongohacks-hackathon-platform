@@ -115,7 +115,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 <Tooltip title="Results">
                   <IconButton
                     size="small"
-                    component={Link}
+                   
                     href={`/admin/events/${event._id}/results`}
                     sx={{ color: "warning.main" }}
                   >
@@ -125,7 +125,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 <Tooltip title="Registrations">
                   <IconButton
                     size="small"
-                    component={Link}
+                   
                     href={`/admin/events/${event._id}/registrations`}
                     color="info"
                   >
@@ -135,7 +135,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 <Tooltip title="Landing Page">
                   <IconButton
                     size="small"
-                    component={Link}
+                   
                     href={`/admin/events/${event._id}/landing-page`}
                     color="success"
                   >
@@ -145,7 +145,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 <Tooltip title="View Details">
                   <IconButton
                     size="small"
-                    component={Link}
+                   
                     href={`/events/${event._id}`}
                   >
                     <ViewIcon fontSize="small" />
@@ -154,7 +154,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 <Tooltip title="Edit">
                   <IconButton
                     size="small"
-                    component={Link}
+                   
                     href={`/admin/events/${event._id}/edit`}
                     color="primary"
                   >

@@ -22,10 +22,16 @@ import {
   Grid,
   CardActions,
   Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { Person as PersonIcon } from "@mui/icons-material";
+import {
+  Person as PersonIcon,
+  Visibility as VisibilityIcon,
+} from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
+import { useRouter } from "next/navigation";
 
 interface User {
   _id: string;
@@ -46,6 +52,7 @@ const roleColors: Record<
 };
 
 export default function UsersView({ users: initialUsers }: { users: User[] }) {
+  const router = useRouter();
   const [view, setView] = useState<"table" | "card">("table");
   const [users, setUsers] = useState(initialUsers);
   const [success, setSuccess] = useState("");
@@ -71,6 +78,30 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
       }
     } catch (err) {
       setError("Failed to update role");
+    }
+  };
+
+  const handleViewAsUser = async (userId: string, userName: string) => {
+    try {
+      const res = await fetch("/api/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSuccess(`Now viewing as ${userName}`);
+        // Redirect to user dashboard
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
+      } else {
+        setError(data.error || "Failed to impersonate user");
+      }
+    } catch (err) {
+      setError("Failed to impersonate user");
     }
   };
 
@@ -100,6 +131,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                 <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Joined</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -132,6 +164,17 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                     </FormControl>
                   </TableCell>
                   <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Tooltip title="View site as this user">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleViewAsUser(user._id, user.name)}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -167,7 +210,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                     Joined: {new Date(user.createdAt).toLocaleDateString()}
                   </Typography>
                 </CardContent>
-                <CardActions>
+                <CardActions sx={{ gap: 1, flexDirection: "column", alignItems: "stretch" }}>
                   <FormControl size="small" fullWidth>
                     <Select
                       value={user.role}
@@ -181,6 +224,15 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                       <MenuItem value="admin">Admin</MenuItem>
                     </Select>
                   </FormControl>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => handleViewAsUser(user._id, user.name)}
+                    fullWidth
+                  >
+                    View As User
+                  </Button>
                 </CardActions>
               </Card>
             </Grid>

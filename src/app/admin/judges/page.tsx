@@ -41,7 +41,7 @@ export default async function AdminJudgesPage() {
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          component={Link}
+         
           href="/admin/users"
           sx={{ fontWeight: 600 }}
         >

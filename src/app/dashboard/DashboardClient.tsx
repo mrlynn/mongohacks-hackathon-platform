@@ -122,7 +122,7 @@ export default function DashboardClient() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Browse hackathons and register to get started!
             </Typography>
-            <Button variant="contained" component={Link} href="/events">
+            <Button variant="contained" href="/events">
               Browse Events
             </Button>
           </CardContent>

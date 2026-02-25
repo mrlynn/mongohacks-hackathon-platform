@@ -9,24 +9,24 @@ export function serializeDoc<T extends Record<string, any>>(doc: T): any {
   const serialized: any = {};
 
   for (const key in doc) {
-    const value = doc[key];
+    const value: unknown = doc[key];
 
     if (value === null || value === undefined) {
       serialized[key] = value;
-    } else if (typeof value === "object" && value._bsontype === "ObjectId") {
+    } else if (typeof value === "object" && value !== null && (value as Record<string, unknown>)._bsontype === "ObjectId") {
       // Serialize ObjectId to string
-      serialized[key] = value.toString();
+      serialized[key] = String(value);
     } else if (value instanceof Date) {
       // Serialize Date to ISO string
       serialized[key] = value.toISOString();
     } else if (Array.isArray(value)) {
       // Recursively serialize arrays
-      serialized[key] = value.map((item) =>
-        typeof item === "object" && item !== null ? serializeDoc(item) : item
+      serialized[key] = value.map((item: unknown) =>
+        typeof item === "object" && item !== null ? serializeDoc(item as Record<string, unknown>) : item
       );
-    } else if (typeof value === "object" && value !== null && !Buffer.isBuffer(value)) {
+    } else if (typeof value === "object" && value !== null && !Buffer.isBuffer(value as never)) {
       // Recursively serialize nested objects (but not Buffers)
-      serialized[key] = serializeDoc(value);
+      serialized[key] = serializeDoc(value as Record<string, unknown>);
     } else {
       serialized[key] = value;
     }

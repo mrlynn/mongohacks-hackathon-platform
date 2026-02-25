@@ -42,7 +42,7 @@ export default function EventsPageClient({ events }: { events: Event[] }) {
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          component={Link}
+         
           href="/admin/events/new"
           sx={{ fontWeight: 600 }}
         >
