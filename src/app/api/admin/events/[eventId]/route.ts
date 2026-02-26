@@ -74,6 +74,7 @@ export async function DELETE(
   }
 }
 
+// PATCH endpoint to update event fields (including resultsPublished)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
@@ -129,6 +130,13 @@ export async function PATCH(
           }
         );
       }
+    }
+
+    // Special handling for resultsPublished
+    if (body.resultsPublished === true && !body.resultsPublishedAt) {
+      body.resultsPublishedAt = new Date();
+    } else if (body.resultsPublished === false) {
+      body.resultsPublishedAt = null;
     }
 
     const updatedEvent = await EventModel.findByIdAndUpdate(
