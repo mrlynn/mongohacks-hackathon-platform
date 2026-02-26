@@ -32,6 +32,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
   ContentCopy as CopyIcon,
   Link as LinkIcon,
+  Handshake as HandshakeIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -42,6 +43,13 @@ interface TemplateOption {
   slug: string;
   description: string;
   isBuiltIn: boolean;
+}
+
+interface EventPartner {
+  _id: string;
+  name: string;
+  tier: string;
+  logo?: string;
 }
 
 interface LandingPageFormData {
@@ -58,7 +66,6 @@ interface LandingPageFormData {
     about: string;
     prizes: Array<{ title: string; description: string; value: string }>;
     schedule: Array<{ time: string; title: string; description: string }>;
-    sponsors: Array<{ name: string; logo: string; tier: string }>;
     faq: Array<{ question: string; answer: string }>;
   };
 }
@@ -76,6 +83,7 @@ export default function LandingPageBuilder({
   const [success, setSuccess] = useState("");
   const [eventName, setEventName] = useState("");
   const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
+  const [eventPartners, setEventPartners] = useState<EventPartner[]>([]);
 
   const [formData, setFormData] = useState<LandingPageFormData>({
     template: "modern",
@@ -91,7 +99,6 @@ export default function LandingPageBuilder({
       about: "",
       prizes: [],
       schedule: [],
-      sponsors: [],
       faq: [],
     },
   });
@@ -120,15 +127,21 @@ export default function LandingPageBuilder({
       
       if (res.ok && data.event) {
         setEventName(data.event.name);
-        
+
+        // Load partners linked to this event
+        if (data.event.partners && Array.isArray(data.event.partners)) {
+          setEventPartners(data.event.partners);
+        }
+
         // Load existing landing page if exists
         if (data.event.landingPage) {
           console.log('Loading existing landing page:', data.event.landingPage);
+          const { sponsors: _sponsors, ...restContent } = data.event.landingPage.customContent || {};
           setFormData({
             template: data.event.landingPage.template || "modern",
             slug: data.event.landingPage.slug || "",
             published: data.event.landingPage.published || false,
-            customContent: data.event.landingPage.customContent || formData.customContent,
+            customContent: { ...formData.customContent, ...restContent },
           });
         } else {
           // Generate default slug from event name
@@ -750,6 +763,58 @@ export default function LandingPageBuilder({
                   </Grid>
                 </Box>
               ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Partners Section (read-only) */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <HandshakeIcon color="primary" />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Partners
+                  </Typography>
+                </Box>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  component={Link}
+                  href={`/admin/events/${eventId}/edit`}
+                >
+                  Manage Partners
+                </Button>
+              </Box>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Partners are automatically displayed on the landing page based on the partners linked to this event.
+                Use the event editor to add or remove partners.
+              </Alert>
+              {eventPartners.length > 0 ? (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {eventPartners.map((partner) => (
+                    <Chip
+                      key={partner._id}
+                      label={`${partner.name} (${partner.tier})`}
+                      variant="outlined"
+                      color="primary"
+                      avatar={partner.logo ? (
+                        <Box
+                          component="img"
+                          src={partner.logo}
+                          alt={partner.name}
+                          sx={{ width: 24, height: 24, borderRadius: "50%", objectFit: "contain" }}
+                        />
+                      ) : undefined}
+                    />
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No partners linked to this event yet. Add partners from the event editor.
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>

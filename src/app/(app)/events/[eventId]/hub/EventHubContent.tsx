@@ -69,11 +69,10 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
           />
 
           {/* Browse Teams (if not joined) */}
-          {!team && recommendedTeams.length > 0 && (
+          {!team && recommendedTeams && recommendedTeams.length > 0 && (
             <BrowseTeamsSection
-              teams={recommendedTeams}
+              recommendedTeams={recommendedTeams}
               eventId={eventId}
-              participantId={participant._id}
             />
           )}
         </Box>

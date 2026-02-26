@@ -22,7 +22,7 @@ export interface ITemplateTypography {
 }
 
 export interface ITemplateSectionConfig {
-  type: "hero" | "about" | "prizes" | "schedule" | "sponsors" | "faq" | "cta";
+  type: "hero" | "about" | "prizes" | "schedule" | "sponsors" | "partners" | "faq" | "cta";
   enabled: boolean;
   layout: string;
   style: {
@@ -110,7 +110,7 @@ const TemplateConfigSchema = new Schema<ITemplateConfig>(
       {
         type: {
           type: String,
-          enum: ["hero", "about", "prizes", "schedule", "sponsors", "faq", "cta"],
+          enum: ["hero", "about", "prizes", "schedule", "sponsors", "partners", "faq", "cta"],
           required: true,
         },
         enabled: { type: Boolean, default: true },

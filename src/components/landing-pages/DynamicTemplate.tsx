@@ -8,6 +8,7 @@ import AboutSection from "./sections/AboutSection";
 import PrizesSection from "./sections/PrizesSection";
 import ScheduleSection from "./sections/ScheduleSection";
 import SponsorsSection from "./sections/SponsorsSection";
+import PartnersSection from "./sections/PartnersSection";
 import FaqSection from "./sections/FaqSection";
 import CtaSection from "./sections/CtaSection";
 
@@ -21,6 +22,7 @@ const sectionComponents: Record<string, React.ComponentType<{
   prizes: PrizesSection,
   schedule: ScheduleSection,
   sponsors: SponsorsSection,
+  partners: PartnersSection,
   faq: FaqSection,
   cta: CtaSection,
 };

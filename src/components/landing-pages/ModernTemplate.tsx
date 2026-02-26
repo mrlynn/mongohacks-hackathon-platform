@@ -31,8 +31,9 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
   const about = landingPage?.customContent?.about || event.description;
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
-  const sponsors = landingPage?.customContent?.sponsors || [];
   const faq = landingPage?.customContent?.faq || [];
+  const partners = (event as any).partners || [];
+  const partnerPrizes = (event as any).partnerPrizes || [];
 
   return (
     <Box>
@@ -196,47 +197,106 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
         </Container>
       )}
 
-      {/* Sponsors Section */}
-      {sponsors.length > 0 && (
+      {/* Partners Section */}
+      {partners.length > 0 && (
         <Box sx={{ bgcolor: "grey.50", py: 8 }}>
           <Container maxWidth="lg">
             <Box sx={{ textAlign: "center", mb: 6 }}>
               <BusinessIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
               <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-                Sponsors
+                Partners
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {sponsors.map((sponsor, idx) => (
-                <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
-                  <Card elevation={1} sx={{ p: 3, textAlign: "center" }}>
-                    {sponsor.logo ? (
+              {partners.map((partner: any, idx: number) => (
+                <Grid key={partner._id || idx} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <Card elevation={1} sx={{ p: 3, textAlign: "center", height: "100%" }}>
+                    {partner.logo ? (
                       <img
-                        src={sponsor.logo}
-                        alt={sponsor.name}
+                        src={partner.logo}
+                        alt={partner.name}
                         style={{ maxWidth: "100%", height: 60, objectFit: "contain" }}
                       />
                     ) : (
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {sponsor.name}
+                        {partner.name}
                       </Typography>
                     )}
                     <Chip
-                      label={sponsor.tier}
+                      label={partner.tier}
                       size="small"
                       sx={{ mt: 2 }}
                       color={
-                        sponsor.tier === "Gold"
+                        partner.tier === "platinum" || partner.tier === "gold"
                           ? "warning"
-                          : sponsor.tier === "Silver"
+                          : partner.tier === "silver"
                             ? "default"
                             : "primary"
                       }
                     />
+                    {partner.description && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mt: 1.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {partner.description}
+                      </Typography>
+                    )}
+                    {partner.website && (
+                      <Button
+                        size="small"
+                        href={partner.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ mt: 1, textTransform: "none" }}
+                      >
+                        Visit Website
+                      </Button>
+                    )}
                   </Card>
                 </Grid>
               ))}
             </Grid>
+
+            {/* Partner Prizes */}
+            {partnerPrizes.length > 0 && (
+              <Box sx={{ mt: 8 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, textAlign: "center" }}>
+                  Partner Prizes
+                </Typography>
+                <Grid container spacing={3}>
+                  {partnerPrizes.map((prize: any, idx: number) => (
+                    <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Card elevation={2} sx={{ height: "100%", textAlign: "center" }}>
+                        <CardContent sx={{ py: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                            {prize.title}
+                          </Typography>
+                          {prize.value && (
+                            <Typography variant="h5" sx={{ color: "primary.main", fontWeight: 700, mb: 1 }}>
+                              {prize.value}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            {prize.description}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Sponsored by {prize.partnerName}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
           </Container>
         </Box>
       )}

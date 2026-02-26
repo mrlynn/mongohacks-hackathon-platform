@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { PrizeModel } from "@/lib/db/models/Prize";
 import { TemplateConfigModel } from "@/lib/db/models/TemplateConfig";
 import { serializeDoc } from "@/lib/utils/serialize";
 import DynamicTemplate from "@/components/landing-pages/DynamicTemplate";
@@ -26,8 +27,34 @@ const getCachedLandingPage = cache(
       query["landingPage.published"] = true;
     }
 
-    const event = await EventModel.findOne(query).lean();
-    return event ? serializeDoc(event) : null;
+    const event = await EventModel.findOne(query)
+      .populate("partners", "name description logo website tier industry")
+      .lean();
+    if (!event) return null;
+
+    // Fetch partner-sponsored prizes for this event
+    const partnerPrizes = await PrizeModel.find({
+      eventId: event._id,
+      partnerId: { $exists: true, $ne: null },
+      isActive: true,
+    })
+      .populate("partnerId", "name logo")
+      .sort({ displayOrder: 1 })
+      .lean();
+
+    const serialized = serializeDoc(event);
+
+    // Map partner prizes into a flat format for the template
+    (serialized as any).partnerPrizes = partnerPrizes.map((p: any) => ({
+      title: p.title,
+      description: p.description,
+      value: p.value,
+      category: p.category,
+      partnerName: p.partnerId?.name || "Partner",
+      partnerLogo: p.partnerId?.logo,
+    }));
+
+    return serialized;
   }
 );
 

@@ -15,8 +15,23 @@ interface User {
   role?: string;
 }
 
-export default function HomePageClient({ user }: { user: User | null }) {
+export default function HomePageClient({
+  user,
+  heroBackground,
+}: {
+  user: User | null;
+  heroBackground: string | null;
+}) {
   const isAdmin = user?.role === "admin";
+
+  const heroSx = heroBackground
+    ? {
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/backgrounds/${heroBackground}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : {};
 
   return (
     <Box>
@@ -29,16 +44,19 @@ export default function HomePageClient({ user }: { user: User | null }) {
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
-          // Subtle grid texture
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)",
-            backgroundSize: "32px 32px",
-            pointerEvents: "none",
-          },
+          ...heroSx,
+          // Subtle grid texture (only when no photo bg)
+          ...(!heroBackground && {
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)",
+              backgroundSize: "32px 32px",
+              pointerEvents: "none",
+            },
+          }),
         }}
       >
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>

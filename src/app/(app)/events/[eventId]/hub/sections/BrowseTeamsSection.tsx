@@ -1,222 +1,373 @@
-"use client";
+'use client';
 
-import { Card, CardContent, Box, Typography, Button, Chip, Grid, Avatar } from "@mui/material";
+import React, { useState } from 'react';
 import {
-  Search as SearchIcon,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Chip,
+  Button,
+  Stack,
+  Avatar,
+  AvatarGroup,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import {
   People as PeopleIcon,
-  Add as AddIcon,
-  ArrowForward as ArrowIcon,
-} from "@mui/icons-material";
-import Link from "next/link";
+  PersonAdd as JoinIcon,
+  Info as InfoIcon,
+  Star as StarIcon,
+  TrendingUp as TrendingIcon,
+  Code as CodeIcon,
+  CheckCircle as CheckIcon,
+} from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
+
+interface TeamMember {
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  role: 'leader' | 'member';
+  joinedAt: string;
+}
+
+interface RecommendedTeam {
+  _id: string;
+  name: string;
+  description?: string;
+  members: TeamMember[];
+  maxMembers: number;
+  lookingForMembers: boolean;
+  requiredSkills?: string[];
+  preferredSkills?: string[];
+  matchScore?: number;
+  matchReasons?: string[];
+}
 
 interface BrowseTeamsSectionProps {
-  teams: any[];
+  recommendedTeams: RecommendedTeam[];
   eventId: string;
-  participantId: string;
 }
 
 export default function BrowseTeamsSection({
-  teams,
+  recommendedTeams,
   eventId,
-  participantId,
 }: BrowseTeamsSectionProps) {
+  const router = useRouter();
+  const [selectedTeam, setSelectedTeam] = useState<RecommendedTeam | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOpenTeamDialog = (team: RecommendedTeam) => {
+    setSelectedTeam(team);
+    setError(null);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedTeam(null);
+    setError(null);
+  };
+
+  const handleJoinTeam = async () => {
+    if (!selectedTeam) return;
+
+    setIsJoining(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/teams/${selectedTeam._id}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to join team');
+      }
+
+      // Success - refresh the page to update hub data
+      router.refresh();
+      handleCloseDialog();
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while joining the team');
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const getTeamLeader = (team: RecommendedTeam) => {
+    return team.members.find((m) => m.role === 'leader')?.userId;
+  };
+
+  const getMatchScoreColor = (score?: number) => {
+    if (!score) return 'default';
+    if (score >= 80) return 'success';
+    if (score >= 60) return 'primary';
+    if (score >= 40) return 'warning';
+    return 'default';
+  };
+
+  if (!recommendedTeams || recommendedTeams.length === 0) {
+    return (
+      <Box>
+        <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PeopleIcon color="primary" />
+          Browse Teams
+        </Typography>
+
+        <Card>
+          <CardContent>
+            <Alert severity="info">
+              No teams are currently looking for members. Check back later or create your own team!
+            </Alert>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
+
   return (
-    <Card elevation={2}>
-      <CardContent sx={{ p: 3 }}>
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <SearchIcon sx={{ fontSize: 32, color: "warning.main" }} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-              Find Your Team
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              You haven't joined a team yet. Browse teams looking for members.
-            </Typography>
-          </Box>
-        </Box>
+    <Box>
+      <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <PeopleIcon color="primary" />
+        Browse Teams
+      </Typography>
+      
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Join a team looking for members. We've recommended teams based on your skills and interests.
+      </Typography>
 
-        {/* Recommended Teams */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ mb: 2, fontWeight: 600, color: "text.secondary" }}
-          >
-            TEAMS LOOKING FOR MEMBERS
-          </Typography>
-          <Grid container spacing={2}>
-            {teams.slice(0, 3).map((team) => {
-              const spotsLeft = team.maxMembers - (team.members?.length || 0);
-              return (
-                <Grid key={team._id} size={{ xs: 12, md: 6, lg: 4 }}>
-                  <Box
-                    sx={{
-                      p: 2.5,
-                      border: 1,
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      bgcolor: "background.paper",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      "&:hover": {
-                        borderColor: "primary.main",
-                        boxShadow: 2,
-                      },
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {/* Team Header */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                      <Avatar
-                        sx={{
-                          bgcolor: "primary.light",
-                          color: "primary.main",
-                          width: 40,
-                          height: 40,
-                        }}
-                      >
-                        <PeopleIcon />
-                      </Avatar>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: 600,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {team.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {team.members?.length || 0}/{team.maxMembers} members
-                        </Typography>
-                      </Box>
-                    </Box>
+      <Grid container spacing={3}>
+        {recommendedTeams.map((team) => {
+          const leader = getTeamLeader(team);
+          const spotsLeft = team.maxMembers - team.members.length;
+          const matchColor = getMatchScoreColor(team.matchScore);
 
-                    {/* Description */}
-                    {team.description && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          mb: 2,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {team.description}
-                      </Typography>
+          return (
+            <Grid item xs={12} md={6} key={team._id}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4,
+                  },
+                }}
+              >
+                <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Header */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {team.name}
+                    </Typography>
+                    {team.matchScore !== undefined && (
+                      <Tooltip title={`${team.matchScore}% match based on your skills`}>
+                        <Chip
+                          icon={<StarIcon />}
+                          label={`${team.matchScore}% Match`}
+                          color={matchColor as any}
+                          size="small"
+                        />
+                      </Tooltip>
                     )}
-
-                    {/* Looking For */}
-                    {team.desiredSkills && team.desiredSkills.length > 0 && (
-                      <Box sx={{ mb: 2 }}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: "block", mb: 0.5 }}
-                        >
-                          Looking for:
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                          {team.desiredSkills.slice(0, 3).map((skill: string) => (
-                            <Chip key={skill} label={skill} size="small" variant="outlined" />
-                          ))}
-                          {team.desiredSkills.length > 3 && (
-                            <Chip
-                              label={`+${team.desiredSkills.length - 3}`}
-                              size="small"
-                              variant="outlined"
-                            />
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {/* Spots Left */}
-                    <Box sx={{ mb: 2 }}>
-                      <Chip
-                        label={`${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} available`}
-                        size="small"
-                        color={spotsLeft <= 1 ? "warning" : "success"}
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    </Box>
-
-                    {/* Actions */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 1,
-                        mt: "auto",
-                        pt: 2,
-                        borderTop: 1,
-                        borderColor: "divider",
-                      }}
-                    >
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        component={Link}
-                        href={`/events/${eventId}/teams/${team._id}`}
-                        fullWidth
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        component={Link}
-                        href={`/events/${eventId}/teams`}
-                        fullWidth
-                      >
-                        Join
-                      </Button>
-                    </Box>
                   </Box>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
 
-        {/* Call to Action */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            flexDirection: { xs: "column", sm: "row" },
-            pt: 2,
-            borderTop: 1,
-            borderColor: "divider",
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<SearchIcon />}
-            component={Link}
-            href={`/events/${eventId}/teams`}
-            endIcon={<ArrowIcon />}
-            fullWidth
-          >
-            Browse All {teams.length} Teams
+                  {/* Description */}
+                  {team.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {team.description}
+                    </Typography>
+                  )}
+
+                  {/* Match Reasons */}
+                  {team.matchReasons && team.matchReasons.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      {team.matchReasons.slice(0, 2).map((reason, idx) => (
+                        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <CheckIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {reason}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* Skills */}
+                  {(team.requiredSkills || team.preferredSkills) && (
+                    <Box sx={{ mb: 2 }}>
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ gap: 0.5 }}>
+                        {team.requiredSkills?.map((skill) => (
+                          <Chip
+                            key={skill}
+                            label={skill}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
+                        {team.preferredSkills?.slice(0, 3).map((skill) => (
+                          <Chip
+                            key={skill}
+                            label={skill}
+                            size="small"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {/* Team Info */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 32, height: 32 } }}>
+                      {team.members.map((member) => (
+                        <Avatar
+                          key={member.userId._id}
+                          alt={member.userId.name}
+                          src={member.userId.avatar}
+                        >
+                          {member.userId.name.charAt(0)}
+                        </Avatar>
+                      ))}
+                    </AvatarGroup>
+                    <Typography variant="body2" color="text.secondary">
+                      {team.members.length} / {team.maxMembers} members
+                    </Typography>
+                    {spotsLeft > 0 && (
+                      <Chip
+                        label={`${spotsLeft} spot${spotsLeft > 1 ? 's' : ''} left`}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+
+                  {/* Leader Info */}
+                  {leader && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Led by
+                      </Typography>
+                      <Avatar
+                        alt={leader.name}
+                        src={leader.avatar}
+                        sx={{ width: 20, height: 20 }}
+                      >
+                        {leader.name.charAt(0)}
+                      </Avatar>
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                        {leader.name}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Actions */}
+                  <Box sx={{ mt: 'auto', pt: 2 }}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      startIcon={<JoinIcon />}
+                      onClick={() => handleOpenTeamDialog(team)}
+                      disabled={spotsLeft === 0}
+                    >
+                      {spotsLeft === 0 ? 'Team Full' : 'Request to Join'}
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      {/* Join Team Dialog */}
+      <Dialog open={!!selectedTeam} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Join {selectedTeam?.name}
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <Typography variant="body2" color="text.secondary" paragraph>
+            You're about to request to join this team. The team leader will be notified and can accept your request.
+          </Typography>
+
+          {selectedTeam?.description && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                About this team
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {selectedTeam.description}
+              </Typography>
+            </Box>
+          )}
+
+          {selectedTeam && selectedTeam.members.length > 0 && (
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Current members ({selectedTeam.members.length})
+              </Typography>
+              <Stack spacing={1}>
+                {selectedTeam.members.map((member) => (
+                  <Box
+                    key={member.userId._id}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  >
+                    <Avatar
+                      alt={member.userId.name}
+                      src={member.userId.avatar}
+                      sx={{ width: 32, height: 32 }}
+                    >
+                      {member.userId.name.charAt(0)}
+                    </Avatar>
+                    <Typography variant="body2">
+                      {member.userId.name}
+                    </Typography>
+                    {member.role === 'leader' && (
+                      <Chip label="Leader" size="small" color="primary" />
+                    )}
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} disabled={isJoining}>
+            Cancel
           </Button>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            component={Link}
-            href={`/events/${eventId}/teams/new`}
-            fullWidth
+            onClick={handleJoinTeam}
+            disabled={isJoining}
+            startIcon={isJoining ? <CircularProgress size={16} /> : <JoinIcon />}
           >
-            Create Your Team
+            {isJoining ? 'Joining...' : 'Join Team'}
           </Button>
-        </Box>
-      </CardContent>
-    </Card>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

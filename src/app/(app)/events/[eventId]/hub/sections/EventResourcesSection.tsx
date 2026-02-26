@@ -1,268 +1,364 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import React from 'react';
 import {
+  Box,
   Card,
   CardContent,
-  Box,
   Typography,
-  Collapse,
-  IconButton,
+  Grid,
   Chip,
-  Link as MuiLink,
-} from "@mui/material";
+  Link,
+  Stack,
+  Divider,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import {
-  ExpandMore as ExpandIcon,
-  MenuBook as ResourcesIcon,
-  Schedule as ScheduleIcon,
+  Info as InfoIcon,
+  AccessTime as ClockIcon,
+  CalendarMonth as CalendarIcon,
+  Link as LinkIcon,
+  People as PeopleIcon,
   EmojiEvents as TrophyIcon,
-  Gavel as JudgeIcon,
-  Code as CodeIcon,
-  Forum as DiscordIcon,
-  FiberManualRecord as LiveIcon,
-} from "@mui/icons-material";
+  OpenInNew as ExternalIcon,
+} from '@mui/icons-material';
+import { format, parseISO, isBefore, isAfter } from 'date-fns';
+
+interface ScheduleItem {
+  _id: string;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime?: string;
+  type: 'workshop' | 'meal' | 'ceremony' | 'deadline' | 'social' | 'other';
+  location?: string;
+  required?: boolean;
+}
+
+interface EventData {
+  _id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  location: {
+    type?: 'in-person' | 'virtual' | 'hybrid';
+    venue?: string;
+    address?: string;
+    city?: string;
+    virtualLink?: string;
+  };
+  resources?: {
+    discordLink?: string;
+    slackLink?: string;
+    documentationUrl?: string;
+    faqUrl?: string;
+    rules?: string;
+  };
+  schedule?: ScheduleItem[];
+}
 
 interface EventResourcesSectionProps {
-  event: any;
-  upcomingSchedule: any[];
+  event: EventData;
+  upcomingSchedule: ScheduleItem[];
 }
 
-function isCurrentlyHappening(start: string, end: string) {
-  const now = new Date();
-  return now >= new Date(start) && now <= new Date(end);
-}
-
-function formatTime(dateString: string) {
-  return new Date(dateString).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
-}
+const scheduleTypeConfig = {
+  workshop: { color: 'primary', icon: '🎓', label: 'Workshop' },
+  meal: { color: 'success', icon: '🍕', label: 'Meal' },
+  ceremony: { color: 'warning', icon: '🎤', label: 'Ceremony' },
+  deadline: { color: 'error', icon: '⏰', label: 'Deadline' },
+  social: { color: 'info', icon: '🎉', label: 'Social' },
+  other: { color: 'default', icon: '📌', label: 'Event' },
+};
 
 export default function EventResourcesSection({
   event,
   upcomingSchedule,
 }: EventResourcesSectionProps) {
-  const [expanded, setExpanded] = useState(false);
+  const formatScheduleTime = (startTime: string, endTime?: string) => {
+    const start = parseISO(startTime);
+    const startFormatted = format(start, 'MMM d, h:mm a');
+    
+    if (endTime) {
+      const end = parseISO(endTime);
+      const endFormatted = format(end, 'h:mm a');
+      return `${startFormatted} - ${endFormatted}`;
+    }
+    
+    return startFormatted;
+  };
+
+  const hasResources = event.resources && (
+    event.resources.discordLink ||
+    event.resources.slackLink ||
+    event.resources.documentationUrl ||
+    event.resources.faqUrl
+  );
 
   return (
-    <Card elevation={2} id="resources">
-      <CardContent sx={{ p: 3 }}>
-        {/* Header */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            cursor: "pointer",
-          }}
-          onClick={() => setExpanded(!expanded)}
-        >
-          <ResourcesIcon sx={{ fontSize: 28, color: "info.main" }} />
-          <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>
-            Event Resources
-          </Typography>
-          <IconButton
-            size="small"
-            sx={{
-              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s",
-            }}
-          >
-            <ExpandIcon />
-          </IconButton>
-        </Box>
+    <Box>
+      <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <InfoIcon color="primary" />
+        Event Resources
+      </Typography>
 
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box sx={{ mt: 3 }}>
-            {/* Upcoming Schedule */}
-            {upcomingSchedule && upcomingSchedule.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <ScheduleIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Upcoming Schedule
+      <Grid container spacing={3}>
+        {/* Event Information */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CalendarIcon fontSize="small" />
+                Event Information
+              </Typography>
+              
+              <Stack spacing={2} sx={{ mt: 2 }}>
+                {/* Event Dates */}
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Event Dates
+                  </Typography>
+                  <Typography variant="body2">
+                    {format(parseISO(event.startDate), 'MMMM d, yyyy')} -{' '}
+                    {format(parseISO(event.endDate), 'MMMM d, yyyy')}
                   </Typography>
                 </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  {upcomingSchedule.map((item: any, index: number) => {
-                    const isLive = isCurrentlyHappening(item.start, item.end);
-                    return (
-                      <Box
-                        key={index}
-                        sx={{
-                          p: 2,
-                          bgcolor: isLive ? "success.light" : "grey.50",
-                          borderRadius: 1,
-                          borderLeft: 4,
-                          borderLeftColor: isLive ? "success.main" : "divider",
-                        }}
+
+                {/* Location */}
+                {event.location && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Location
+                    </Typography>
+                    {event.location.type === 'virtual' && event.location.virtualLink ? (
+                      <Link
+                        href={event.location.virtualLink}
+                        target="_blank"
+                        rel="noopener"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                       >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {formatDate(item.start)}
+                        Virtual Event
+                        <ExternalIcon fontSize="small" />
+                      </Link>
+                    ) : event.location.type === 'hybrid' ? (
+                      <Box>
+                        <Typography variant="body2">Hybrid Event</Typography>
+                        {event.location.venue && (
+                          <Typography variant="body2" color="text.secondary">
+                            {event.location.venue}
+                            {event.location.city && `, ${event.location.city}`}
                           </Typography>
-                          {isLive && (
-                            <Chip
-                              icon={<LiveIcon sx={{ fontSize: 12 }} />}
-                              label="LIVE NOW"
-                              size="small"
-                              color="success"
-                              sx={{ height: 20, fontSize: "0.7rem" }}
-                            />
-                          )}
+                        )}
+                        {event.location.virtualLink && (
+                          <Link
+                            href={event.location.virtualLink}
+                            target="_blank"
+                            rel="noopener"
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
+                          >
+                            Join Online
+                            <ExternalIcon fontSize="small" />
+                          </Link>
+                        )}
+                      </Box>
+                    ) : (
+                      <Typography variant="body2">
+                        {event.location.venue}
+                        {event.location.city && `, ${event.location.city}`}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* Description */}
+                {event.description && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      About
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {event.description}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Links & Resources */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LinkIcon fontSize="small" />
+                Links & Resources
+              </Typography>
+
+              {hasResources ? (
+                <Stack spacing={2} sx={{ mt: 2 }}>
+                  {event.resources?.discordLink && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Discord Community
+                      </Typography>
+                      <Link
+                        href={event.resources.discordLink}
+                        target="_blank"
+                        rel="noopener"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        Join Discord Server
+                        <ExternalIcon fontSize="small" />
+                      </Link>
+                    </Box>
+                  )}
+
+                  {event.resources?.slackLink && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Slack Workspace
+                      </Typography>
+                      <Link
+                        href={event.resources.slackLink}
+                        target="_blank"
+                        rel="noopener"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        Join Slack Workspace
+                        <ExternalIcon fontSize="small" />
+                      </Link>
+                    </Box>
+                  )}
+
+                  {event.resources?.documentationUrl && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Documentation
+                      </Typography>
+                      <Link
+                        href={event.resources.documentationUrl}
+                        target="_blank"
+                        rel="noopener"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        View Documentation
+                        <ExternalIcon fontSize="small" />
+                      </Link>
+                    </Box>
+                  )}
+
+                  {event.resources?.faqUrl && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        FAQ
+                      </Typography>
+                      <Link
+                        href={event.resources.faqUrl}
+                        target="_blank"
+                        rel="noopener"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        View FAQ
+                        <ExternalIcon fontSize="small" />
+                      </Link>
+                    </Box>
+                  )}
+
+                  {event.resources?.rules && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Rules & Guidelines
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {event.resources.rules}
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  No resources available yet. Check back later for event links and documentation.
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Upcoming Schedule */}
+        {upcomingSchedule && upcomingSchedule.length > 0 && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ClockIcon fontSize="small" />
+                  Upcoming Schedule
+                </Typography>
+
+                <Stack spacing={2} sx={{ mt: 2 }}>
+                  {upcomingSchedule.map((item, index) => {
+                    const config = scheduleTypeConfig[item.type] || scheduleTypeConfig.other;
+                    
+                    return (
+                      <Box key={item._id || index}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                          <Typography variant="h6" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>
+                            {config.icon}
+                          </Typography>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                {item.title}
+                              </Typography>
+                              <Chip
+                                label={config.label}
+                                color={config.color as any}
+                                size="small"
+                              />
+                              {item.required && (
+                                <Chip
+                                  label="Required"
+                                  color="error"
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              )}
+                            </Box>
+                            
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                              <ClockIcon sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
+                              {formatScheduleTime(item.startTime, item.endTime)}
+                            </Typography>
+                            
+                            {item.location && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                📍 {item.location}
+                              </Typography>
+                            )}
+                            
+                            {item.description && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                {item.description}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                          {formatTime(item.start)} - {formatTime(item.end)}
-                        </Typography>
-                        <Typography variant="body1">{item.title}</Typography>
-                        {item.description && (
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                            {item.description}
-                          </Typography>
+                        
+                        {index < upcomingSchedule.length - 1 && (
+                          <Divider sx={{ mt: 2 }} />
                         )}
                       </Box>
                     );
                   })}
-                </Box>
-              </Box>
-            )}
-
-            {/* Prizes */}
-            {event.prizes && event.prizes.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <TrophyIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Prizes
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  {event.prizes.slice(0, 5).map((prize: any) => (
-                    <Box
-                      key={prize._id}
-                      sx={{
-                        p: 2,
-                        bgcolor: "grey.50",
-                        borderRadius: 1,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {prize.name}
-                        </Typography>
-                        {prize.category && (
-                          <Typography variant="caption" color="text.secondary">
-                            {prize.category}
-                          </Typography>
-                        )}
-                      </Box>
-                      {prize.value && (
-                        <Chip
-                          label={`$${prize.value.toLocaleString()}`}
-                          color="primary"
-                          size="small"
-                        />
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            )}
-
-            {/* Judges */}
-            {event.judges && event.judges.length > 0 && (
-              <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <JudgeIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Judges ({event.judges.length})
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                  View judge profiles and expertise on the event details page.
-                </Typography>
-              </Box>
-            )}
-
-            {/* Developer Resources */}
-            <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <CodeIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Developer Resources
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <MuiLink
-                  href="https://www.mongodb.com/docs/atlas/getting-started/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
-                >
-                  <Typography variant="body2">• MongoDB Atlas Documentation</Typography>
-                </MuiLink>
-                <MuiLink
-                  href="https://www.mongodb.com/docs/atlas/atlas-vector-search/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
-                >
-                  <Typography variant="body2">• Vector Search Guide</Typography>
-                </MuiLink>
-                <MuiLink
-                  href="https://github.com/mongodb"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
-                >
-                  <Typography variant="body2">• Starter Templates (GitHub)</Typography>
-                </MuiLink>
-              </Box>
-            </Box>
-
-            {/* Community */}
-            <Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <DiscordIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Community
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                Join the event community to ask questions, share progress, and connect with other
-                participants.
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Chip
-                  label="Join Discord"
-                  component="a"
-                  href="#"
-                  clickable
-                  color="primary"
-                  variant="outlined"
-                />
-                <Chip
-                  label="Event Hashtag: #{event.name?.replace(/\s+/g, '') || 'hackathon'}"
-                  variant="outlined"
-                  size="small"
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Collapse>
-      </CardContent>
-    </Card>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+      </Grid>
+    </Box>
   );
 }

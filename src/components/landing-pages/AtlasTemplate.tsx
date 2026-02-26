@@ -42,8 +42,9 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
   const about = landingPage?.customContent?.about || event.description;
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
-  const sponsors = landingPage?.customContent?.sponsors || [];
   const faq = landingPage?.customContent?.faq || [];
+  const partners = (event as any).partners || [];
+  const partnerPrizes = (event as any).partnerPrizes || [];
 
   return (
     <Box sx={{ bgcolor: mongoColors.slate.main, color: "white" }}>
@@ -390,8 +391,8 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
         </Container>
       )}
 
-      {/* Sponsors Section */}
-      {sponsors.length > 0 && (
+      {/* Partners Section */}
+      {partners.length > 0 && (
         <Box sx={{ py: 10, bgcolor: "#112733" }}>
           <Container maxWidth="lg">
             <Box sx={{ textAlign: "center", mb: 8 }}>
@@ -399,69 +400,168 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
                 sx={{ fontSize: 52, color: mongoColors.green.light, mb: 2 }}
               />
               <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                Sponsors
+                Partners
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {sponsors.map((sponsor, idx) => (
-                <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
-                  <Card
-                    elevation={0}
-                    sx={{
-                      ...glassCard,
-                      p: 3,
-                      textAlign: "center",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        borderColor: mongoColors.green.light,
-                        boxShadow: `0 0 20px rgba(19, 170, 82, 0.15)`,
-                      },
-                    }}
-                  >
-                    {sponsor.logo ? (
-                      <img
-                        src={sponsor.logo}
-                        alt={sponsor.name}
-                        style={{
-                          maxWidth: "100%",
-                          height: 60,
-                          objectFit: "contain",
+              {partners.map((partner: any, idx: number) => {
+                const tierColor =
+                  partner.tier === "platinum" || partner.tier === "gold"
+                    ? "#FFB302"
+                    : partner.tier === "silver"
+                      ? "#B8C4C2"
+                      : mongoColors.green.light;
+                return (
+                  <Grid key={partner._id || idx} size={{ xs: 6, sm: 4, md: 3 }}>
+                    <Card
+                      elevation={0}
+                      sx={{
+                        ...glassCard,
+                        p: 3,
+                        textAlign: "center",
+                        height: "100%",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          borderColor: mongoColors.green.light,
+                          boxShadow: `0 0 20px rgba(19, 170, 82, 0.15)`,
+                        },
+                      }}
+                    >
+                      {partner.logo ? (
+                        <img
+                          src={partner.logo}
+                          alt={partner.name}
+                          style={{
+                            maxWidth: "100%",
+                            height: 60,
+                            objectFit: "contain",
+                          }}
+                        />
+                      ) : (
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "#B8C4C2" }}
+                        >
+                          {partner.name}
+                        </Typography>
+                      )}
+                      <Chip
+                        label={partner.tier}
+                        size="small"
+                        sx={{
+                          mt: 2,
+                          fontWeight: 600,
+                          bgcolor: "transparent",
+                          color: tierColor,
+                          border: `1px solid ${tierColor}`,
                         }}
                       />
-                    ) : (
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 600, color: "#B8C4C2" }}
-                      >
-                        {sponsor.name}
-                      </Typography>
-                    )}
-                    <Chip
-                      label={sponsor.tier}
-                      size="small"
-                      sx={{
-                        mt: 2,
-                        fontWeight: 600,
-                        bgcolor: "transparent",
-                        color:
-                          sponsor.tier === "Gold"
-                            ? "#FFB302"
-                            : sponsor.tier === "Silver"
-                              ? "#B8C4C2"
-                              : mongoColors.green.light,
-                        border: `1px solid ${
-                          sponsor.tier === "Gold"
-                            ? "#FFB302"
-                            : sponsor.tier === "Silver"
-                              ? "#B8C4C2"
-                              : mongoColors.green.light
-                        }`,
-                      }}
-                    />
-                  </Card>
-                </Grid>
-              ))}
+                      {partner.description && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 1.5,
+                            color: "#B8C4C2",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {partner.description}
+                        </Typography>
+                      )}
+                      {partner.website && (
+                        <Button
+                          size="small"
+                          href={partner.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            mt: 1,
+                            textTransform: "none",
+                            color: mongoColors.green.light,
+                          }}
+                        >
+                          Visit Website
+                        </Button>
+                      )}
+                    </Card>
+                  </Grid>
+                );
+              })}
             </Grid>
+
+            {/* Partner Prizes */}
+            {partnerPrizes.length > 0 && (
+              <Box sx={{ mt: 8 }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, mb: 4, textAlign: "center", color: "white" }}
+                >
+                  Partner Prizes
+                </Typography>
+                <Grid container spacing={4}>
+                  {partnerPrizes.map((prize: any, idx: number) => (
+                    <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Card
+                        elevation={0}
+                        sx={{
+                          ...glassCard,
+                          height: "100%",
+                          textAlign: "center",
+                          position: "relative",
+                          overflow: "hidden",
+                          transition: "all 0.3s ease",
+                          "&:hover": {
+                            borderColor: mongoColors.green.light,
+                            transform: "translateY(-4px)",
+                            boxShadow: `0 8px 30px rgba(19, 170, 82, 0.15)`,
+                          },
+                          "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 3,
+                            background: accentColors[idx % 3],
+                          },
+                        }}
+                      >
+                        <CardContent sx={{ py: 4, position: "relative" }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 700, mb: 1, color: "white" }}
+                          >
+                            {prize.title}
+                          </Typography>
+                          {prize.value && (
+                            <Typography
+                              variant="h4"
+                              sx={{
+                                fontWeight: 800,
+                                mb: 2,
+                                color: accentColors[idx % 3],
+                                textShadow: `0 0 20px ${accentColors[idx % 3]}66`,
+                              }}
+                            >
+                              {prize.value}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" sx={{ color: "#B8C4C2", mb: 1 }}>
+                            {prize.description}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: "#B8C4C2", opacity: 0.7 }}>
+                            Sponsored by {prize.partnerName}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
           </Container>
         </Box>
       )}

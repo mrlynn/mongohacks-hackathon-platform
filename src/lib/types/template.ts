@@ -1,5 +1,24 @@
 import { ITemplateConfig, ITemplateColors, ITemplateSectionConfig } from "@/lib/db/models/TemplateConfig";
 
+export interface LandingPagePartner {
+  _id: string;
+  name: string;
+  description: string;
+  logo?: string;
+  website?: string;
+  tier: "platinum" | "gold" | "silver" | "bronze" | "community";
+  industry: string;
+}
+
+export interface LandingPagePartnerPrize {
+  title: string;
+  description: string;
+  value?: string;
+  category: string;
+  partnerName: string;
+  partnerLogo?: string;
+}
+
 export interface TemplateRenderProps {
   config: ITemplateConfig;
   event: {
@@ -9,6 +28,8 @@ export interface TemplateRenderProps {
     startDate: string;
     endDate: string;
     location: string;
+    partners?: LandingPagePartner[];
+    partnerPrizes?: LandingPagePartnerPrize[];
     landingPage?: {
       customContent?: {
         hero?: {

@@ -39,8 +39,9 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
   const about = landingPage?.customContent?.about || event.description;
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
-  const sponsors = landingPage?.customContent?.sponsors || [];
   const faq = landingPage?.customContent?.faq || [];
+  const partners = (event as any).partners || [];
+  const partnerPrizes = (event as any).partnerPrizes || [];
 
   return (
     <Box>
@@ -381,8 +382,8 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
         </Container>
       )}
 
-      {/* Sponsors Section */}
-      {sponsors.length > 0 && (
+      {/* Partners Section */}
+      {partners.length > 0 && (
         <Box sx={{ bgcolor: "#F9FBFA", py: 10 }}>
           <Container maxWidth="lg">
             <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -393,19 +394,20 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
                 variant="h3"
                 sx={{ fontWeight: 700, color: mongoColors.slate.main }}
               >
-                Sponsors
+                Partners
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {sponsors.map((sponsor, idx) => {
+              {partners.map((partner: any, idx: number) => {
                 const accent = accentColors[idx % 3];
                 return (
-                  <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <Grid key={partner._id || idx} size={{ xs: 6, sm: 4, md: 3 }}>
                     <Card
                       elevation={0}
                       sx={{
                         p: 3,
                         textAlign: "center",
+                        height: "100%",
                         borderRadius: 4,
                         border: "1px solid #E7EEEC",
                         borderLeft: `4px solid ${accent}`,
@@ -416,10 +418,10 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
                         },
                       }}
                     >
-                      {sponsor.logo ? (
+                      {partner.logo ? (
                         <img
-                          src={sponsor.logo}
-                          alt={sponsor.name}
+                          src={partner.logo}
+                          alt={partner.name}
                           style={{
                             maxWidth: "100%",
                             height: 60,
@@ -434,11 +436,11 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
                             color: mongoColors.slate.main,
                           }}
                         >
-                          {sponsor.name}
+                          {partner.name}
                         </Typography>
                       )}
                       <Chip
-                        label={sponsor.tier}
+                        label={partner.tier}
                         size="small"
                         sx={{
                           mt: 2,
@@ -448,11 +450,120 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
                           border: `1px solid ${accent}40`,
                         }}
                       />
+                      {partner.description && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mt: 1.5,
+                            color: "#5C6C75",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {partner.description}
+                        </Typography>
+                      )}
+                      {partner.website && (
+                        <Button
+                          size="small"
+                          href={partner.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            mt: 1,
+                            textTransform: "none",
+                            color: accent,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Visit Website
+                        </Button>
+                      )}
                     </Card>
                   </Grid>
                 );
               })}
             </Grid>
+
+            {/* Partner Prizes */}
+            {partnerPrizes.length > 0 && (
+              <Box sx={{ mt: 8 }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 4,
+                    textAlign: "center",
+                    color: mongoColors.slate.main,
+                    display: "inline-block",
+                    position: "relative",
+                    width: "100%",
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: -8,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 60,
+                      height: 4,
+                      borderRadius: 2,
+                      background: mongoColors.purple.main,
+                    },
+                  }}
+                >
+                  Partner Prizes
+                </Typography>
+                <Grid container spacing={4} sx={{ mt: 2 }}>
+                  {partnerPrizes.map((prize: any, idx: number) => {
+                    const accent = accentColors[idx % 3];
+                    return (
+                      <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Card
+                          elevation={0}
+                          sx={{
+                            height: "100%",
+                            textAlign: "center",
+                            borderRadius: 4,
+                            border: "1px solid #E7EEEC",
+                            borderTop: `4px solid ${accent}`,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              transform: "translateY(-4px)",
+                              boxShadow: `0 8px 24px ${accent}20`,
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ py: 4 }}>
+                            <Typography
+                              variant="h6"
+                              sx={{ fontWeight: 700, mb: 1, color: mongoColors.slate.main }}
+                            >
+                              {prize.title}
+                            </Typography>
+                            {prize.value && (
+                              <Typography
+                                variant="h5"
+                                sx={{ color: accent, fontWeight: 800, mb: 1 }}
+                              >
+                                {prize.value}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" sx={{ color: "#5C6C75", mb: 1 }}>
+                              {prize.description}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: accent, fontWeight: 600 }}>
+                              Sponsored by {prize.partnerName}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Box>
+            )}
           </Container>
         </Box>
       )}
