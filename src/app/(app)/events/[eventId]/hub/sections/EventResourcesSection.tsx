@@ -112,7 +112,7 @@ export default function EventResourcesSection({
   );
 
   return (
-    <Box>
+    <Box id="resources">
       <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <InfoIcon color="primary" />
         Event Resources

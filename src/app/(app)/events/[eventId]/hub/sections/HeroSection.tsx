@@ -62,10 +62,16 @@ export default function HeroSection({
 
   const countdownLabel = eventStarted ? "Event Ends In:" : "Event Starts In:";
 
+  const backgroundImage = event.landingPage?.backgroundImage;
+
   return (
     <Box
       sx={{
-        background: `linear-gradient(135deg, ${mongoColors.green.main} 0%, ${mongoColors.blue.main} 100%)`,
+        background: backgroundImage
+          ? `linear-gradient(rgba(0, 104, 74, 0.85), rgba(0, 30, 43, 0.85)), url(${backgroundImage})`
+          : `linear-gradient(135deg, ${mongoColors.green.main} 0%, ${mongoColors.blue.main} 100%)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         color: "white",
         py: { xs: 4, md: 6 },
         position: "relative",
