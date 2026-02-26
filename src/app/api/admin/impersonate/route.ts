@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   try {
-    await requireAdmin();
-
+    // No auth check here — the session may show the impersonated user's role,
+    // which would fail requireAdmin(). Clearing cookies is safe for any caller.
     const response = NextResponse.json({
       success: true,
       message: "Stopped impersonation",

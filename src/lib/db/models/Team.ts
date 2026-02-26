@@ -10,6 +10,11 @@ export interface ITeam extends Document {
   desiredSkills?: string[];
   maxMembers: number;
   status: "forming" | "active" | "inactive";
+  // Communication
+  communicationPlatform?: "discord" | "slack" | "other";
+  discordChannelUrl?: string;
+  slackChannelUrl?: string;
+  otherCommunicationUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +34,14 @@ const TeamSchema = new Schema<ITeam>(
       enum: ["forming", "active", "inactive"],
       default: "forming",
     },
+    // Communication
+    communicationPlatform: {
+      type: String,
+      enum: ["discord", "slack", "other"],
+    },
+    discordChannelUrl: { type: String },
+    slackChannelUrl: { type: String },
+    otherCommunicationUrl: { type: String },
   },
   { timestamps: true }
 );

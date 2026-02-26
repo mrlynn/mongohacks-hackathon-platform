@@ -9,6 +9,10 @@ import {
   Grid,
   Alert,
   InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -17,6 +21,7 @@ import {
   DescriptionOutlined,
   PeopleOutlined,
   BuildOutlined,
+  Message as MessageIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import {
@@ -41,6 +46,10 @@ export default function NewTeamPage({
     description: "",
     maxMembers: 5,
     desiredSkills: [] as string[],
+    communicationPlatform: "" as "" | "discord" | "slack" | "other",
+    discordChannelUrl: "",
+    slackChannelUrl: "",
+    otherCommunicationUrl: "",
   });
 
   const handleChange = (
@@ -191,6 +200,125 @@ export default function NewTeamPage({
                 }
               />
             </Grid>
+          </Grid>
+        </FormCard>
+
+        <FormCard>
+          <FormSectionHeader
+            icon={<MessageIcon />}
+            title="Team Communication (Optional)"
+            subtitle="Set up a Discord, Slack, or other channel for team coordination"
+          />
+
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Communication Platform</InputLabel>
+                <Select
+                  name="communicationPlatform"
+                  value={formData.communicationPlatform}
+                  label="Communication Platform"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      communicationPlatform: e.target.value as any,
+                    }))
+                  }
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <MessageIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="">
+                    <em>None (set up later)</em>
+                  </MenuItem>
+                  <MenuItem value="discord">Discord</MenuItem>
+                  <MenuItem value="slack">Slack</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {formData.communicationPlatform === "discord" && (
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Discord Channel URL"
+                  name="discordChannelUrl"
+                  value={formData.discordChannelUrl}
+                  onChange={handleChange}
+                  placeholder="https://discord.gg/your-invite-link"
+                  helperText="Create a Discord channel and paste the invite link here"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MessageIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
+            {formData.communicationPlatform === "slack" && (
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Slack Channel URL"
+                  name="slackChannelUrl"
+                  value={formData.slackChannelUrl}
+                  onChange={handleChange}
+                  placeholder="https://your-workspace.slack.com/archives/..."
+                  helperText="Create a Slack channel and paste the link here"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MessageIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
+            {formData.communicationPlatform === "other" && (
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Communication Channel URL"
+                  name="otherCommunicationUrl"
+                  value={formData.otherCommunicationUrl}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  helperText="Paste your team's communication channel link (Telegram, WhatsApp, etc.)"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MessageIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Grid>
+            )}
+
+            {!formData.communicationPlatform && (
+              <Grid size={{ xs: 12 }}>
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    <strong>Recommended:</strong> Set up a Discord or Slack channel for your team to
+                    coordinate during the hackathon. You can also add this later from the team page.
+                  </Typography>
+                </Alert>
+              </Grid>
+            )}
           </Grid>
         </FormCard>
 

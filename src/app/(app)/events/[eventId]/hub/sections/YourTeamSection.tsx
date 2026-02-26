@@ -133,19 +133,84 @@ export default function YourTeamSection({
         </Box>
 
         {/* Communication Section */}
-        <Alert
-          severity="info"
-          icon={<MessageIcon />}
-          sx={{ mb: 3 }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-            Team Communication
-          </Typography>
-          <Typography variant="body2">
-            Coordinate with your team using Discord, Slack, or your preferred communication tool.
-            Exchange contact information with your teammates above.
-          </Typography>
-        </Alert>
+        {team.discordChannelUrl || team.slackChannelUrl || team.otherCommunicationUrl ? (
+          <Box sx={{ mb: 3, p: 2, bgcolor: "primary.light", borderRadius: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+              <MessageIcon sx={{ color: "primary.main" }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                Team Communication
+              </Typography>
+            </Box>
+            
+            {team.discordChannelUrl && (
+              <Button
+                variant="contained"
+                color="primary"
+                href={team.discordChannelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<MessageIcon />}
+                fullWidth
+                sx={{ mb: 1 }}
+              >
+                Join Team Discord Channel
+              </Button>
+            )}
+            
+            {team.slackChannelUrl && (
+              <Button
+                variant="contained"
+                color="primary"
+                href={team.slackChannelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<MessageIcon />}
+                fullWidth
+                sx={{ mb: 1 }}
+              >
+                Join Team Slack Channel
+              </Button>
+            )}
+            
+            {team.otherCommunicationUrl && !team.discordChannelUrl && !team.slackChannelUrl && (
+              <Button
+                variant="contained"
+                color="primary"
+                href={team.otherCommunicationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<MessageIcon />}
+                fullWidth
+                sx={{ mb: 1 }}
+              >
+                Join Team Chat
+              </Button>
+            )}
+            
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+              Use this channel to coordinate with your team, share progress, and ask questions.
+            </Typography>
+          </Box>
+        ) : (
+          <Alert
+            severity="info"
+            icon={<MessageIcon />}
+            sx={{ mb: 3 }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+              Team Communication
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Coordinate with your team using Discord, Slack, or your preferred communication tool.
+              Exchange contact information with your teammates above.
+            </Typography>
+            {isLeader && (
+              <Typography variant="body2" sx={{ fontWeight: 500, color: "info.dark" }}>
+                As team leader, you can set up a communication channel on the team page.
+              </Typography>
+            )}
+          </Alert>
+        )}
 
         {/* Actions */}
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
