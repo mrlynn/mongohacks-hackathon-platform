@@ -22,6 +22,9 @@ const BASE_URL =
 const getCachedLandingPage = cache(
   async (slug: string, preview: boolean) => {
     await connectToDatabase();
+    
+    // Force model registration (Turbopack caching workaround)
+    PartnerModel;
 
     const query: Record<string, unknown> = { "landingPage.slug": slug };
     if (!preview) {

@@ -12,6 +12,9 @@ export async function GET(
   try {
     const { slug } = await params;
     await connectToDatabase();
+    
+    // Force model registration (Turbopack caching workaround)
+    PartnerModel;
 
     const event = await EventModel.findOne({
       "landingPage.slug": slug,
