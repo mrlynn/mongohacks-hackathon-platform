@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { auth } from "@/lib/auth";
@@ -15,7 +16,13 @@ export async function PUT(
     }
 
     const userRole = (session.user as { role?: string }).role;
-    if (userRole !== "admin" && userRole !== "organizer") {
+    // Check impersonation cookie directly — more reliable than reading it
+    // inside NextAuth's session callback which may not have request context.
+    // Only admins can start an impersonation session, so cookie presence
+    // is sufficient proof of admin identity.
+    const cookieStore = await cookies();
+    const isImpersonating = !!cookieStore.get("impersonate_user_id")?.value;
+    if (!isImpersonating && userRole !== "admin" && userRole !== "organizer" && userRole !== "super_admin") {
       return errorResponse("Forbidden", 403);
     }
 
@@ -39,16 +46,22 @@ export async function PUT(
       }
     }
 
+    // First fetch the existing event to preserve registrationFormConfig
+    const existingEvent = await EventModel.findById(eventId).lean();
+    const existingFormConfig = existingEvent?.landingPage?.registrationFormConfig;
+
     const event = await EventModel.findByIdAndUpdate(
       eventId,
       {
         $set: {
-          landingPage: {
-            template: body.template || "modern",
-            slug: body.slug,
-            published: body.published || false,
-            customContent: body.customContent || {},
-          },
+          "landingPage.template": body.template || "modern",
+          "landingPage.slug": body.slug,
+          "landingPage.published": body.published || false,
+          "landingPage.customContent": body.customContent || {},
+          // Preserve existing registrationFormConfig — it's managed by the event edit page
+          ...(existingFormConfig && {
+            "landingPage.registrationFormConfig": existingFormConfig,
+          }),
         },
       },
       { new: true }
@@ -62,8 +75,12 @@ export async function PUT(
       message: "Landing page updated successfully",
       event,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("PUT /api/admin/events/[eventId]/landing-page error:", error);
+    // MongoDB duplicate key on slug unique index
+    if (error?.code === 11000) {
+      return errorResponse("This URL slug is already in use by another event", 409);
+    }
     return errorResponse("Failed to update landing page", 500);
   }
 }

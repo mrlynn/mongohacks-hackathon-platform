@@ -218,7 +218,7 @@ export default function LandingPageBuilder({
           setSuccess("Landing page saved!");
         }
       } else {
-        setError(data.message || "Failed to save landing page");
+        setError(data.error || data.message || "Failed to save landing page");
       }
     } catch (err) {
       console.error('Save error:', err);
@@ -244,7 +244,7 @@ export default function LandingPageBuilder({
         setSuccess("Landing page unpublished.");
       } else {
         const data = await res.json();
-        setError(data.message || "Failed to unpublish");
+        setError(data.error || data.message || "Failed to unpublish");
       }
     } catch (err) {
       setError("Failed to unpublish: " + String(err));

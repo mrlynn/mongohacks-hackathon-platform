@@ -16,6 +16,11 @@ import {
   Autocomplete,
   InputAdornment,
   IconButton,
+  MenuItem,
+  FormControl,
+  FormControlLabel,
+  Checkbox,
+  Divider,
 } from "@mui/material";
 import {
   Event as EventIcon,
@@ -26,9 +31,41 @@ import {
   Visibility,
   VisibilityOff,
   CheckCircle as SuccessIcon,
+  GitHub as GitHubIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+
+interface CustomQuestion {
+  id: string;
+  label: string;
+  type: "text" | "select" | "multiselect" | "checkbox";
+  options: string[];
+  required: boolean;
+  placeholder: string;
+}
+
+interface FormConfig {
+  _id: string;
+  name: string;
+  tier1: {
+    showExperienceLevel: boolean;
+    customQuestions: CustomQuestion[];
+  };
+  tier2: {
+    enabled: boolean;
+    prompt: string;
+    showSkills: boolean;
+    showGithub: boolean;
+    showBio: boolean;
+    customQuestions: CustomQuestion[];
+  };
+  tier3: {
+    enabled: boolean;
+    prompt: string;
+    customQuestions: CustomQuestion[];
+  };
+}
 
 interface RegistrationClientProps {
   event: any;
@@ -38,6 +75,7 @@ interface RegistrationClientProps {
   isLoggedIn: boolean;
   userEmail?: string;
   userName?: string;
+  formConfig?: FormConfig | null;
 }
 
 const skillOptions = [
@@ -50,6 +88,12 @@ const skillOptions = [
   "UI/UX Design", "Product Management", "DevOps",
 ];
 
+const experienceLevels = [
+  { value: "beginner", label: "Beginner — New to hackathons" },
+  { value: "intermediate", label: "Intermediate — A few under my belt" },
+  { value: "advanced", label: "Advanced — Seasoned hacker" },
+];
+
 export default function RegistrationClient({
   event,
   eventId,
@@ -58,6 +102,7 @@ export default function RegistrationClient({
   isLoggedIn,
   userEmail,
   userName,
+  formConfig,
 }: RegistrationClientProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -66,10 +111,25 @@ export default function RegistrationClient({
     password: "",
     skills: [] as string[],
   });
+
+  // Tier 1 fields
+  const [experienceLevel, setExperienceLevel] = useState("");
+
+  // Tier 2 fields
+  const [github, setGithub] = useState("");
+  const [bio, setBio] = useState("");
+
+  // Custom question answers (keyed by question id)
+  const [customAnswers, setCustomAnswers] = useState<Record<string, unknown>>({});
+
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const setCustomAnswer = (questionId: string, value: unknown) => {
+    setCustomAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +149,25 @@ export default function RegistrationClient({
       return;
     }
 
+    // Validate required custom questions
+    if (formConfig) {
+      const allCustomQuestions = [
+        ...formConfig.tier1.customQuestions,
+        ...(formConfig.tier2.enabled ? formConfig.tier2.customQuestions : []),
+        ...(formConfig.tier3.enabled ? formConfig.tier3.customQuestions : []),
+      ];
+      for (const q of allCustomQuestions) {
+        if (q.required) {
+          const answer = customAnswers[q.id];
+          if (!answer || (Array.isArray(answer) && answer.length === 0) || answer === "") {
+            setError(`Please answer: "${q.label}"`);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+    }
+
     try {
       const payload: Record<string, unknown> = {
         name: formData.name,
@@ -99,6 +178,25 @@ export default function RegistrationClient({
       // Only send password for new users (not logged in)
       if (!isLoggedIn) {
         payload.password = formData.password;
+      }
+
+      // Include form config fields
+      if (formConfig) {
+        if (formConfig.tier1.showExperienceLevel && experienceLevel) {
+          payload.experienceLevel = experienceLevel;
+        }
+        if (formConfig.tier2.enabled) {
+          if (formConfig.tier2.showGithub && github) {
+            payload.github = github;
+          }
+          if (formConfig.tier2.showBio && bio) {
+            payload.bio = bio;
+          }
+        }
+        // Include all custom answers
+        if (Object.keys(customAnswers).length > 0) {
+          payload.customAnswers = customAnswers;
+        }
       }
 
       const response = await fetch(`/api/events/${eventId}/register`, {
@@ -148,6 +246,91 @@ export default function RegistrationClient({
     }
   };
 
+  // Render a custom question field
+  const renderCustomQuestion = (question: CustomQuestion) => {
+    const value = customAnswers[question.id];
+
+    switch (question.type) {
+      case "text":
+        return (
+          <Grid size={{ xs: 12 }} key={question.id}>
+            <TextField
+              fullWidth
+              required={question.required}
+              label={question.label}
+              placeholder={question.placeholder}
+              value={(value as string) || ""}
+              onChange={(e) => setCustomAnswer(question.id, e.target.value)}
+            />
+          </Grid>
+        );
+
+      case "select":
+        return (
+          <Grid size={{ xs: 12 }} key={question.id}>
+            <TextField
+              fullWidth
+              select
+              required={question.required}
+              label={question.label}
+              value={(value as string) || ""}
+              onChange={(e) => setCustomAnswer(question.id, e.target.value)}
+            >
+              {question.options.map((opt) => (
+                <MenuItem key={opt} value={opt}>
+                  {opt}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+        );
+
+      case "multiselect":
+        return (
+          <Grid size={{ xs: 12 }} key={question.id}>
+            <Autocomplete
+              multiple
+              options={question.options}
+              value={(value as string[]) || []}
+              onChange={(_, newValue) => setCustomAnswer(question.id, newValue)}
+              renderTags={(vals, getTagProps) =>
+                vals.map((opt, index) => (
+                  <Chip label={opt} {...getTagProps({ index })} key={opt} size="small" />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={question.label}
+                  placeholder={question.placeholder}
+                  required={question.required && (!value || (value as string[]).length === 0)}
+                />
+              )}
+            />
+          </Grid>
+        );
+
+      case "checkbox":
+        return (
+          <Grid size={{ xs: 12 }} key={question.id}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!!value}
+                  onChange={(e) => setCustomAnswer(question.id, e.target.checked)}
+                  required={question.required}
+                />
+              }
+              label={question.label}
+            />
+          </Grid>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   if (success) {
     return (
       <Container maxWidth="md" sx={{ py: 8, textAlign: "center" }}>
@@ -171,6 +354,14 @@ export default function RegistrationClient({
   const percentFull = spotsRemaining !== null
     ? Math.round((registeredCount / event.capacity) * 100)
     : null;
+
+  // Gather all custom questions by tier for rendering
+  const tier1Questions = formConfig?.tier1.customQuestions || [];
+  const tier2Questions = formConfig?.tier2.enabled ? formConfig.tier2.customQuestions : [];
+  const tier3Questions = formConfig?.tier3.enabled ? formConfig.tier3.customQuestions : [];
+  const hasTier1Extras = formConfig && (formConfig.tier1.showExperienceLevel || tier1Questions.length > 0);
+  const hasTier2 = formConfig?.tier2.enabled && (formConfig.tier2.showSkills || formConfig.tier2.showGithub || formConfig.tier2.showBio || tier2Questions.length > 0);
+  const hasTier3 = formConfig?.tier3.enabled && tier3Questions.length > 0;
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
@@ -221,10 +412,12 @@ export default function RegistrationClient({
       <Card elevation={2}>
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-            Quick Registration
+            {formConfig ? formConfig.name : "Quick Registration"}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Just the essentials — you can complete your profile later.
+            {formConfig
+              ? "Fill out the form below to register for this event."
+              : "Just the essentials — you can complete your profile later."}
           </Typography>
 
           {error && (
@@ -235,6 +428,8 @@ export default function RegistrationClient({
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2.5}>
+              {/* === Core Fields (always shown) === */}
+
               {/* Name */}
               <Grid size={{ xs: 12 }}>
                 <TextField
@@ -307,47 +502,143 @@ export default function RegistrationClient({
                 </Grid>
               )}
 
-              {/* Skills */}
-              <Grid size={{ xs: 12 }}>
-                <Autocomplete
-                  multiple
-                  options={skillOptions}
-                  value={formData.skills}
-                  onChange={(_, newValue) => setFormData({ ...formData, skills: newValue })}
-                  freeSolo
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        label={option}
-                        {...getTagProps({ index })}
-                        key={option}
-                        color="primary"
-                        size="small"
-                      />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Your Skills"
-                      placeholder={formData.skills.length === 0 ? "Pick 2-3 skills..." : ""}
-                      required={formData.skills.length === 0}
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <>
-                            <InputAdornment position="start">
-                              <CodeIcon sx={{ color: "action.active" }} />
-                            </InputAdornment>
-                            {params.InputProps.startAdornment}
-                          </>
-                        ),
-                      }}
-                      helperText="Helps us match you with the right team"
-                    />
+              {/* === Tier 1: Experience Level + Custom Questions === */}
+              {hasTier1Extras && (
+                <>
+                  <Grid size={{ xs: 12 }}>
+                    <Divider sx={{ my: 0.5 }} />
+                  </Grid>
+
+                  {formConfig!.tier1.showExperienceLevel && (
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        select
+                        label="Experience Level"
+                        value={experienceLevel}
+                        onChange={(e) => setExperienceLevel(e.target.value)}
+                      >
+                        {experienceLevels.map((level) => (
+                          <MenuItem key={level.value} value={level.value}>
+                            {level.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
                   )}
-                />
-              </Grid>
+
+                  {tier1Questions.map(renderCustomQuestion)}
+                </>
+              )}
+
+              {/* === Tier 2: Skills, GitHub, Bio + Custom Questions === */}
+              {hasTier2 && (
+                <>
+                  <Grid size={{ xs: 12 }}>
+                    <Divider sx={{ my: 0.5 }} />
+                    {formConfig!.tier2.prompt && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {formConfig!.tier2.prompt}
+                      </Typography>
+                    )}
+                  </Grid>
+
+                  {formConfig!.tier2.showGithub && (
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        label="GitHub Username"
+                        placeholder="e.g. octocat"
+                        value={github}
+                        onChange={(e) => setGithub(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <GitHubIcon sx={{ color: "action.active" }} />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                  )}
+
+                  {formConfig!.tier2.showBio && (
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label="Short Bio"
+                        placeholder="Tell us a bit about yourself and what you want to build..."
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                      />
+                    </Grid>
+                  )}
+
+                  {tier2Questions.map(renderCustomQuestion)}
+                </>
+              )}
+
+              {/* Skills — show always (core field), but respect tier2.showSkills if form config exists */}
+              {(!formConfig || !formConfig.tier2.enabled || formConfig.tier2.showSkills) && (
+                <Grid size={{ xs: 12 }}>
+                  <Autocomplete
+                    multiple
+                    options={skillOptions}
+                    value={formData.skills}
+                    onChange={(_, newValue) => setFormData({ ...formData, skills: newValue })}
+                    freeSolo
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip
+                          label={option}
+                          {...getTagProps({ index })}
+                          key={option}
+                          color="primary"
+                          size="small"
+                        />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Your Skills"
+                        placeholder={formData.skills.length === 0 ? "Pick 2-3 skills..." : ""}
+                        required={formData.skills.length === 0}
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <>
+                              <InputAdornment position="start">
+                                <CodeIcon sx={{ color: "action.active" }} />
+                              </InputAdornment>
+                              {params.InputProps.startAdornment}
+                            </>
+                          ),
+                        }}
+                        helperText="Helps us match you with the right team"
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
+
+              {/* === Tier 3: Additional Questions === */}
+              {hasTier3 && (
+                <>
+                  <Grid size={{ xs: 12 }}>
+                    <Divider sx={{ my: 0.5 }} />
+                    {formConfig!.tier3.prompt && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {formConfig!.tier3.prompt}
+                      </Typography>
+                    )}
+                  </Grid>
+
+                  {tier3Questions.map(renderCustomQuestion)}
+                </>
+              )}
 
               {/* Submit Button */}
               <Grid size={{ xs: 12 }}>

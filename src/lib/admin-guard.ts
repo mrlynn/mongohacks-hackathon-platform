@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 type UserRole =
@@ -11,6 +12,27 @@ type UserRole =
 const ADMIN_ROLES: UserRole[] = ["super_admin", "admin"];
 
 /**
+ * Returns true if the current request is an admin-initiated impersonation.
+ * Reads the httpOnly cookie directly — reliable in server components, route
+ * handlers, server actions, and middleware (unlike reading it via the
+ * NextAuth session callback where cookies() may not have request context).
+ */
+async function isImpersonationActive(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    return !!cookieStore.get("impersonate_user_id")?.value;
+  } catch {
+    return false;
+  }
+}
+
+/** Returns the effective role for authorization checks.
+ * When impersonating, the real admin's role is used so they retain admin access. */
+function effectiveRole(user: { role?: string; realAdminRole?: string; isImpersonating?: boolean }): UserRole {
+  return ((user.isImpersonating ? user.realAdminRole : user.role) ?? user.role ?? "") as UserRole;
+}
+
+/**
  * Admin Guard - Server-side protection for admin routes
  * Accepts both "admin" and "super_admin" roles
  */
@@ -21,9 +43,9 @@ export async function requireAdmin() {
     redirect("/login");
   }
 
-  const userRole = (session.user as { role?: string }).role as UserRole;
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
 
-  if (!ADMIN_ROLES.includes(userRole)) {
+  if (!ADMIN_ROLES.includes(role) && !(await isImpersonationActive())) {
     redirect("/dashboard");
   }
 
@@ -41,9 +63,9 @@ export async function requireSuperAdmin() {
     redirect("/login");
   }
 
-  const userRole = (session.user as { role?: string }).role;
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
 
-  if (userRole !== "super_admin") {
+  if (role !== "super_admin") {
     redirect("/admin");
   }
 
@@ -57,8 +79,14 @@ export async function isUserAdmin(): Promise<boolean> {
   const session = await auth();
   if (!session?.user) return false;
 
-  const userRole = (session.user as { role?: string }).role as UserRole;
-  return ADMIN_ROLES.includes(userRole);
+  // First check via session (works in page contexts where impersonation cookie
+  // is reliably propagated into the session object)
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
+  if (ADMIN_ROLES.includes(role)) return true;
+
+  // Fallback: if the session shows a non-admin role but the impersonation cookie
+  // exists, the real user must be an admin (only admins can start impersonation)
+  return isImpersonationActive();
 }
 
 /**
@@ -68,8 +96,8 @@ export async function isUserSuperAdmin(): Promise<boolean> {
   const session = await auth();
   if (!session?.user) return false;
 
-  const userRole = (session.user as { role?: string }).role;
-  return userRole === "super_admin";
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
+  return role === "super_admin";
 }
 
 /**
@@ -81,6 +109,6 @@ export async function hasRole(
   const session = await auth();
   if (!session?.user) return false;
 
-  const userRole = (session.user as { role?: string }).role;
-  return roles.includes(userRole as UserRole);
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
+  return roles.includes(role);
 }

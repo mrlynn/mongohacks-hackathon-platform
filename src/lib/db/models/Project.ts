@@ -6,6 +6,8 @@ export interface IProject extends Document {
   name: string;
   description: string;
   descriptionEmbedding?: number[];
+  aiSummary?: string;
+  aiFeedback?: string;
   category: string;
   technologies: string[];
   repoUrl: string;
@@ -27,6 +29,8 @@ const ProjectSchema = new Schema<IProject>(
     name: { type: String, required: true },
     description: { type: String, required: true },
     descriptionEmbedding: { type: [Number], select: false },
+    aiSummary: { type: String },
+    aiFeedback: { type: String },
     category: { type: String, required: true },
     technologies: [{ type: String }],
     repoUrl: { type: String, required: true },

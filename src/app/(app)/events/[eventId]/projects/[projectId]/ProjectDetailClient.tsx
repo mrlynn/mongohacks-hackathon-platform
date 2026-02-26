@@ -22,6 +22,7 @@ import {
   Launch as LaunchIcon,
   People as PeopleIcon,
   Send as SubmitIcon,
+  AutoAwesome as AIIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -63,6 +64,10 @@ export default function ProjectDetailClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [aiFeedback, setAiFeedback] = useState<string | null>(
+    project.aiFeedback || null
+  );
+  const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
 
   const handleSubmitProject = async () => {
     setIsSubmitting(true);
@@ -88,6 +93,26 @@ export default function ProjectDetailClient({
       setError(err.message || 'Failed to submit project. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateFeedback = async () => {
+    setIsFetchingFeedback(true);
+    try {
+      const res = await fetch(
+        `/api/events/${eventId}/projects/${projectId}/feedback`,
+        { method: "POST" }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setAiFeedback(data.aiFeedback);
+      } else {
+        setError(data.error || "Failed to generate feedback");
+      }
+    } catch {
+      setError("Failed to generate feedback");
+    } finally {
+      setIsFetchingFeedback(false);
     }
   };
 
@@ -274,6 +299,56 @@ export default function ProjectDetailClient({
                 Submitted on {new Date(project.submittedAt).toLocaleString()}
               </Typography>
             </Box>
+          )}
+
+          {/* AI Feedback (shown for judged projects) */}
+          {(project.status === "judged" || aiFeedback) && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <AIIcon color="primary" />
+                  <Typography variant="h6">Judge Feedback</Typography>
+                </Box>
+                {aiFeedback ? (
+                  <Box
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 1,
+                      bgcolor: "primary.50",
+                      border: "1px solid",
+                      borderColor: "primary.100",
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}>
+                      {aiFeedback}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Synthesized feedback from all judges is ready to generate.
+                    </Typography>
+                    {isTeamMember && (
+                      <Button
+                        variant="outlined"
+                        startIcon={
+                          isFetchingFeedback ? (
+                            <CircularProgress size={16} />
+                          ) : (
+                            <AIIcon />
+                          )
+                        }
+                        onClick={handleGenerateFeedback}
+                        disabled={isFetchingFeedback}
+                      >
+                        {isFetchingFeedback ? "Generating…" : "Generate AI Feedback"}
+                      </Button>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </>
           )}
 
           {/* Actions */}

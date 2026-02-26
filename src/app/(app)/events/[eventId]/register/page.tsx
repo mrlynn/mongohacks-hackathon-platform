@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { RegistrationFormConfigModel } from "@/lib/db/models/RegistrationFormConfig";
 import { serializeDoc } from "@/lib/utils/serialize";
 import RegistrationClient from "./RegistrationClient";
 import { Container, Alert } from "@mui/material";
@@ -39,12 +40,24 @@ async function getEventData(eventId: string, userId?: string) {
   const spotsRemaining = event.capacity ? event.capacity - registeredCount : null;
   const isFull = spotsRemaining !== null && spotsRemaining <= 0;
 
+  // Fetch the registration form config if one is linked
+  let formConfig = null;
+  if (event.landingPage?.registrationFormConfig) {
+    const config = await RegistrationFormConfigModel.findById(
+      event.landingPage.registrationFormConfig
+    ).lean();
+    if (config) {
+      formConfig = serializeDoc(config);
+    }
+  }
+
   return {
     event: serializeDoc(event),
     alreadyRegistered,
     registeredCount,
     spotsRemaining,
     isFull,
+    formConfig,
   };
 }
 
@@ -92,6 +105,7 @@ export default async function RegisterPage({
       isLoggedIn={!!session?.user}
       userEmail={session?.user?.email ?? undefined}
       userName={session?.user?.name ?? undefined}
+      formConfig={data.formConfig}
     />
   );
 }

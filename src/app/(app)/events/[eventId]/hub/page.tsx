@@ -8,6 +8,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { serializeDoc, serializeDocs } from "@/lib/utils/serialize";
+import { findMatchingTeams } from "@/lib/ai/matching-engine";
 import EventHubContent from "./EventHubContent";
 
 // Calculate next milestone
@@ -142,17 +143,19 @@ async function getHubData(eventId: string, userId: string) {
     }).lean();
   }
 
-  // Get recommended teams (if no team)
+  // Get recommended teams using vector/skill matching (if no team)
   let recommendedTeams: any[] = [];
   if (!team) {
-    recommendedTeams = await TeamModel.find({
-      eventId,
-      lookingForMembers: true,
-    })
-      .populate("members", "name email")
-      .populate("leaderId", "name email")
-      .limit(5)
-      .lean();
+    try {
+      recommendedTeams = await findMatchingTeams(participant as any, eventId, 6);
+    } catch {
+      // Fallback to simple query if matching fails
+      recommendedTeams = await TeamModel.find({ eventId, lookingForMembers: true })
+        .populate("members", "name email")
+        .populate("leaderId", "name email")
+        .limit(6)
+        .lean();
+    }
   }
 
   const nextMilestone = calculateNextMilestone(event, participant, team, project);

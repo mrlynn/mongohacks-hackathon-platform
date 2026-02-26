@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     }
 
     const userRole = (session.user as { role?: string }).role;
-    if (userRole !== "admin" && userRole !== "organizer") {
+    const isImpersonating = (session.user as { isImpersonating?: boolean }).isImpersonating;
+    if (!isImpersonating && userRole !== "admin" && userRole !== "organizer") {
       return errorResponse("Forbidden: insufficient permissions", 403);
     }
 

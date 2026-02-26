@@ -19,6 +19,7 @@ import {
   Gavel as GavelIcon,
   GitHub as GitHubIcon,
   Launch as LaunchIcon,
+  AutoAwesome as AIIcon,
 } from "@mui/icons-material";
 
 interface Assignment {
@@ -27,6 +28,7 @@ interface Assignment {
     _id: string;
     name: string;
     description: string;
+    aiSummary?: string;
     repoUrl?: string;
     demoUrl?: string;
     videoUrl?: string;
@@ -171,21 +173,44 @@ export default function JudgingDashboardClient({
                     Team: <strong>{project.teamId?.name || "Unknown"}</strong>
                   </Typography>
 
-                  {/* Description */}
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      mb: 2,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {project.description || "No description provided"}
-                  </Typography>
+                  {/* AI Summary (shown when available, otherwise fall back to description) */}
+                  {project.aiSummary ? (
+                    <Box
+                      sx={{
+                        mb: 2,
+                        p: 1.5,
+                        borderRadius: 1,
+                        bgcolor: "primary.50",
+                        border: "1px solid",
+                        borderColor: "primary.100",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
+                        <AIIcon sx={{ fontSize: 14, color: "primary.main" }} />
+                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600 }}>
+                          AI Summary
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.primary" sx={{ fontStyle: "italic" }}>
+                        {project.aiSummary}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 2,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
+                      {project.description || "No description provided"}
+                    </Typography>
+                  )}
 
                   {/* Technologies */}
                   {project.technologies && project.technologies.length > 0 && (

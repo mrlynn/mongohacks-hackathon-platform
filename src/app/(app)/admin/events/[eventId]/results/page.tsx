@@ -33,6 +33,7 @@ import {
   ArrowBack as ArrowBackIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
+  AutoAwesome as AIIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -81,6 +82,7 @@ export default function ResultsPage({
   const [resultsPublished, setResultsPublished] = useState(false);
   const [publishLoading, setPublishLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   useEffect(() => {
     params.then((p) => {
@@ -135,6 +137,36 @@ export default function ResultsPage({
       });
     } finally {
       setPublishLoading(false);
+    }
+  };
+
+  const handleGenerateAllFeedback = async () => {
+    setFeedbackLoading(true);
+    try {
+      const res = await fetch(`/api/admin/events/${eventId}/generate-all-feedback`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        setSnackbar({
+          open: true,
+          message: data.message || `✅ Generated feedback for ${data.generated} project(s)`,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: `❌ ${data.error || "Failed to generate feedback"}`,
+        });
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "❌ Failed to generate feedback",
+      });
+    } finally {
+      setFeedbackLoading(false);
     }
   };
 
@@ -218,14 +250,24 @@ export default function ResultsPage({
               {eventName}
             </Typography>
           </Box>
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={exportToCSV}
-            disabled={results.length === 0}
-          >
-            Export CSV
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={feedbackLoading ? <CircularProgress size={20} /> : <AIIcon />}
+              onClick={handleGenerateAllFeedback}
+              disabled={results.length === 0 || feedbackLoading}
+            >
+              {feedbackLoading ? "Generating..." : "Generate All Feedback"}
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={exportToCSV}
+              disabled={results.length === 0}
+            >
+              Export CSV
+            </Button>
+          </Box>
         </Box>
       </Box>
 

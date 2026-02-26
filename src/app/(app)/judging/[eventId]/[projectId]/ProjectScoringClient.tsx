@@ -221,6 +221,36 @@ export default function ProjectScoringClient({
         </CardContent>
       </Card>
 
+      {/* AI-Generated Summary */}
+      {project.aiSummary && (
+        <Alert 
+          severity="info" 
+          sx={{ 
+            mb: 3,
+            bgcolor: "rgba(0, 237, 100, 0.08)",
+            borderLeft: 4,
+            borderColor: "#00ED64",
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+            🤖 AI-Generated Summary
+          </Typography>
+          <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
+            {project.aiSummary}
+          </Typography>
+        </Alert>
+      )}
+
+      {/* Summary Generating Message */}
+      {!project.aiSummary && project.status === "submitted" && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            AI summary is being generated... This usually takes 10-30 seconds after submission. 
+            Refresh the page in a moment to see the summary.
+          </Typography>
+        </Alert>
+      )}
+
       {/* Alerts */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>

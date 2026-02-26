@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
 import { EventModel } from "@/lib/db/models/Event";
+import { generateProjectSummary } from "@/lib/ai/summary-service";
 
 export async function PATCH(
   request: NextRequest,
@@ -198,6 +199,22 @@ export async function POST(
       project.status = "submitted";
       project.submittedAt = new Date();
       await project.save();
+
+      // Fire-and-forget: generate AI summary asynchronously
+      if (!project.aiSummary) {
+        generateProjectSummary({
+          name: project.name,
+          description: project.description,
+          technologies: project.technologies,
+          innovations: project.innovations,
+        })
+          .then((summary) => {
+            ProjectModel.findByIdAndUpdate(projectId, { aiSummary: summary }).catch(
+              () => {}
+            );
+          })
+          .catch(() => {});
+      }
 
       return NextResponse.json({
         success: true,

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { generateEmbedding } from "@/lib/ai/embedding-service";
 
 export async function POST(
   request: NextRequest,
@@ -44,6 +45,21 @@ export async function POST(
     });
 
     await team.save();
+
+    // Fire-and-forget: generate embedding for desired skills to power vector matching
+    if (body.desiredSkills?.length || body.description) {
+      const skillText = [
+        ...(body.desiredSkills || []),
+        body.description || "",
+      ].join(" ");
+      generateEmbedding(skillText)
+        .then((embedding) =>
+          TeamModel.findByIdAndUpdate(team._id, {
+            desiredSkillsEmbedding: embedding,
+          }).catch(() => {})
+        )
+        .catch(() => {});
+    }
 
     // Update participant's teamId
     await ParticipantModel.findOneAndUpdate(

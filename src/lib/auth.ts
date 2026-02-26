@@ -84,6 +84,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               (session.user as unknown as { isImpersonating: boolean }).isImpersonating = true;
               (session.user as unknown as { realAdminId: string }).realAdminId =
                 token.id as string;
+              // Preserve real admin role so guards remain functional while impersonating
+              (session.user as unknown as { realAdminRole: string }).realAdminRole =
+                token.role as string;
             }
           }
         } catch {

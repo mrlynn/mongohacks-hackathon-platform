@@ -8,6 +8,7 @@ export interface ITeam extends Document {
   description?: string;
   lookingForMembers: boolean;
   desiredSkills?: string[];
+  desiredSkillsEmbedding?: number[];
   maxMembers: number;
   status: "forming" | "active" | "inactive";
   // Communication
@@ -28,6 +29,7 @@ const TeamSchema = new Schema<ITeam>(
     description: { type: String },
     lookingForMembers: { type: Boolean, default: true },
     desiredSkills: [{ type: String }],
+    desiredSkillsEmbedding: { type: [Number], select: false },
     maxMembers: { type: Number, default: 5 },
     status: {
       type: String,

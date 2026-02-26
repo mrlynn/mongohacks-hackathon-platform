@@ -6,12 +6,18 @@ import { EventModel } from "@/lib/db/models/Event";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { z } from "zod";
+import { generateEmbedding } from "@/lib/ai/embedding-service";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters").optional(),
   skills: z.array(z.string()).min(1, "Select at least one skill").max(10).default([]),
+  // Extended fields from registration form config
+  experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+  github: z.string().optional(),
+  bio: z.string().max(1000).optional(),
+  customAnswers: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function POST(
@@ -164,6 +170,26 @@ export async function POST(
         participant.skills = [...new Set([...participant.skills, ...data.skills])];
       }
 
+      // Update extended profile fields if provided
+      if (data.experienceLevel) {
+        participant.experience_level = data.experienceLevel;
+      }
+      if (data.bio) {
+        participant.bio = data.bio;
+      }
+
+      // Merge custom answers (keyed by eventId to avoid collisions)
+      const eventCustomData: Record<string, unknown> = {
+        ...(data.github && { github: data.github }),
+        ...(data.customAnswers || {}),
+      };
+      if (Object.keys(eventCustomData).length > 0) {
+        if (!participant.customResponses) {
+          participant.customResponses = new Map();
+        }
+        participant.customResponses.set(eventId, eventCustomData);
+      }
+
       await participant.save();
     } else {
       // Create new participant
@@ -172,6 +198,17 @@ export async function POST(
         email: data.email.toLowerCase(),
         name: data.name,
         skills: data.skills,
+        ...(data.experienceLevel && { experience_level: data.experienceLevel }),
+        ...(data.bio && { bio: data.bio }),
+        ...(() => {
+          const eventCustomData: Record<string, unknown> = {
+            ...(data.github && { github: data.github }),
+            ...(data.customAnswers || {}),
+          };
+          return Object.keys(eventCustomData).length > 0
+            ? { customResponses: { [eventId]: eventCustomData } }
+            : {};
+        })(),
         registeredEvents: [
           {
             eventId: eventId,
@@ -180,6 +217,18 @@ export async function POST(
           },
         ],
       });
+    }
+
+    // Fire-and-forget: generate skills embedding for vector team matching
+    if (data.skills?.length) {
+      const skillText = data.skills.join(" ");
+      generateEmbedding(skillText)
+        .then((embedding) =>
+          ParticipantModel.findByIdAndUpdate(participant!._id, {
+            skillsEmbedding: embedding,
+          }).catch(() => {})
+        )
+        .catch(() => {});
     }
 
     return NextResponse.json({

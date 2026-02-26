@@ -24,6 +24,7 @@ async function getJudgingData(eventId: string, userId: string) {
   })
     .populate({
       path: "projectId",
+      select: "name description repoUrl demoUrl videoUrl technologies innovations aiSummary teamId status",
       populate: {
         path: "teamId",
         select: "name members",
