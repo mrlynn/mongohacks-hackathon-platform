@@ -105,7 +105,7 @@ export default function HomePageClient({
               >
                 The{" "}
                 <Box component="span" sx={{ color: "primary.main" }}>
-                  MongoHacks
+                  MongoDB Hackathons
                 </Box>{" "}
                 Platform
               </Typography>

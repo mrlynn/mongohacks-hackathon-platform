@@ -114,7 +114,7 @@ export default function RegisterPage() {
           textAlign="center"
           sx={{ mb: 4 }}
         >
-          Join MongoHacks to participate in hackathons
+          Join MongoDB Hackathons to participate in hackathons
         </Typography>
 
         {error && (

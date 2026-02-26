@@ -77,7 +77,7 @@ export function AuthCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─── Auth Branding ─── trophy icon + MongoHacks heading ─── */
+/* ─── Auth Branding ─── trophy icon + MongoDB Hackathons heading ─── */
 /* Intentionally always white text — sits on dark auth background */
 export function AuthBranding() {
   return (
@@ -105,7 +105,7 @@ export function AuthBranding() {
           letterSpacing: "-0.01em",
         }}
       >
-        MongoHacks
+        MongoDB Hackathons
       </Typography>
       <Typography
         variant="body2"

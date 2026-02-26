@@ -104,7 +104,7 @@ export async function generateMetadata({
       title: heroHeadline,
       description,
       url: `${BASE_URL}/${slug}`,
-      siteName: "MongoHacks",
+      siteName: "MongoDB Hackathons",
       type: "website",
       images: [
         {

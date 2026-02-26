@@ -55,6 +55,14 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
               />
             )}
 
+            {/* Browse Teams (if not joined) */}
+            {!team && (
+              <BrowseTeamsSection
+                recommendedTeams={recommendedTeams || []}
+                eventId={eventId}
+              />
+            )}
+
             {/* Your Project (if created) */}
             {project && (
               <YourProjectSection
@@ -69,14 +77,6 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
               event={event}
               upcomingSchedule={upcomingSchedule}
             />
-
-            {/* Browse Teams (if not joined) */}
-            {!team && recommendedTeams && recommendedTeams.length > 0 && (
-              <BrowseTeamsSection
-                recommendedTeams={recommendedTeams}
-                eventId={eventId}
-              />
-            )}
           </Box>
         </Container>
       </Box>

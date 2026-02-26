@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
             fontFamily: "system-ui, -apple-system, sans-serif",
           }}
         >
-          {/* MongoHacks branding */}
+          {/* MongoDB Hackathons branding */}
           <div
             style={{
               display: "flex",
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
             fontFamily: "system-ui, sans-serif",
           }}
         >
-          <div style={{ fontSize: "48px", fontWeight: 800 }}>MongoHacks</div>
+          <div style={{ fontSize: "48px", fontWeight: 800 }}>MongoDB Hackathons</div>
           <div style={{ fontSize: "24px", opacity: 0.8, marginTop: "16px" }}>
             Hackathon Management Platform
           </div>

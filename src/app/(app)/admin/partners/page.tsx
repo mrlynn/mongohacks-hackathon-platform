@@ -1,7 +1,7 @@
 import PartnersView from "./PartnersView";
 
 export const metadata = {
-  title: "Partners | MongoHacks Admin",
+  title: "Partners | MongoDB Hackathons Admin",
   description: "Manage hackathon partners and sponsors",
 };
 

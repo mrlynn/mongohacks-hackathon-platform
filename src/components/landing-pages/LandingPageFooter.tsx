@@ -30,7 +30,7 @@ export default function LandingPageFooter() {
             "&:hover": { textDecoration: "underline" },
           }}
         >
-          MongoHacks
+          MongoDB Hackathons
         </Box>
       </Typography>
     </Box>

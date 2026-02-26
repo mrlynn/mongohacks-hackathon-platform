@@ -69,7 +69,7 @@ export default function EventsMapPage() {
     <Box sx={{ p: 3 }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-          MongoHacks World Map
+          MongoDB Hackathons World Map
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Discover hackathons happening around the world

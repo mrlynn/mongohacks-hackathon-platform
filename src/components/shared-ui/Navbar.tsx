@@ -39,6 +39,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { useColorScheme } from "@mui/material/styles";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -119,9 +120,9 @@ export default function Navbar() {
     >
       <Box sx={{ px: 2, pb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <EmojiEventsIcon sx={{ color: "primary.main" }} />
+          <Image src="/mongodb-icon.svg" alt="MongoDB" width={24} height={24} style={{ filter: "brightness(0) invert(1)" }} />
           <Typography variant="h6" fontWeight={700}>
-            MongoHacks
+            MongoDB Hackathons
           </Typography>
         </Box>
         <IconButton onClick={toggleMobileDrawer} edge="end">
@@ -324,7 +325,7 @@ export default function Navbar() {
             )}
 
             {/* Logo */}
-            <EmojiEventsIcon sx={{ mr: 1, fontSize: { xs: 28, sm: 32 } }} />
+            <Image src="/mongodb-icon.svg" alt="MongoDB" width={28} height={28} style={{ marginRight: 8, filter: "brightness(0) invert(1)" }} />
             <Link
               href="/"
               style={{
@@ -341,7 +342,7 @@ export default function Navbar() {
                   fontSize: { xs: "1.1rem", sm: "1.25rem" },
                 }}
               >
-                MongoHacks
+                MongoDB Hackathons
               </Typography>
             </Link>
 

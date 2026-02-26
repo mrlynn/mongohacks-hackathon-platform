@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { UserModel } from "@/lib/db/models/User";
@@ -21,6 +22,10 @@ export async function POST(
     await connectToDatabase();
     const { eventId } = await params;
     const body = await request.json();
+
+    // Check if user is already authenticated
+    const session = await auth();
+    const isAuthenticated = !!session?.user;
 
     // Validate input
     const validationResult = registrationSchema.safeParse(body);
@@ -73,13 +78,13 @@ export async function POST(
       );
     }
 
-    // Check if user already exists
+    // Resolve the user account
     let user = await UserModel.findOne({ email: data.email.toLowerCase() });
     let isNewUser = false;
 
     if (user) {
-      // Existing user with password — verify it or redirect to login
-      if (user.passwordHash) {
+      // User already exists — if they're already logged in, skip password check
+      if (!isAuthenticated && user.passwordHash) {
         if (!data.password) {
           return NextResponse.json(
             {
