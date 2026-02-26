@@ -108,9 +108,9 @@ export default function YourTeamSection({
             Team Members:
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {team.members?.map((member: any) => (
+            {team.members?.map((member: any, index: number) => (
               <Box
-                key={member._id}
+                key={member.userId?._id || member._id || `member-${index}`}
                 sx={{
                   display: "flex",
                   alignItems: "center",
