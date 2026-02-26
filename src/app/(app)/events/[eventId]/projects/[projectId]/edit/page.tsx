@@ -1,20 +1,14 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+"use client";
+
 import { Container, Alert, Typography, Button, Box } from "@mui/material";
 import { ArrowBack as BackIcon } from "@mui/icons-material";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
-export default async function EditProjectPage({
-  params,
-}: {
-  params: Promise<{ eventId: string; projectId: string }>;
-}) {
-  const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  const { eventId, projectId } = await params;
+export default function EditProjectPage() {
+  const params = useParams();
+  const router = useRouter();
+  const eventId = params.eventId as string;
+  const projectId = params.projectId as string;
 
   // TODO: Build full edit form
   // For now, redirect to hub where Quick Edit dialog can be used
@@ -23,8 +17,7 @@ export default async function EditProjectPage({
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Button
         startIcon={<BackIcon />}
-        component={Link}
-        href={`/events/${eventId}/projects/${projectId}`}
+        onClick={() => router.push(`/events/${eventId}/projects/${projectId}`)}
         sx={{ mb: 3 }}
       >
         Back to Project
@@ -42,15 +35,13 @@ export default async function EditProjectPage({
       <Box sx={{ display: "flex", gap: 2 }}>
         <Button
           variant="contained"
-          component={Link}
-          href={`/events/${eventId}/hub`}
+          onClick={() => router.push(`/events/${eventId}/hub`)}
         >
           Go to Event Hub (Quick Edit)
         </Button>
         <Button
           variant="outlined"
-          component={Link}
-          href={`/events/${eventId}/projects/${projectId}`}
+          onClick={() => router.push(`/events/${eventId}/projects/${projectId}`)}
         >
           Back to Project
         </Button>

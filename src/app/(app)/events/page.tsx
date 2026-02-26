@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 interface Event {
   _id: string;
@@ -35,6 +36,7 @@ interface Event {
     slug?: string;
     published?: boolean;
   };
+  isRegistered?: boolean;
 }
 
 export default function EventsPage() {
@@ -117,10 +119,13 @@ export default function EventsPage() {
           {events.map((event) => (
             <Box key={event._id}>
               <Card
+                elevation={2}
                 sx={{
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
+                  border: "1px solid",
+                  borderColor: "divider",
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
@@ -196,7 +201,18 @@ export default function EventsPage() {
                   >
                     Details
                   </Button>
-                  {event.landingPage?.slug && event.landingPage.published && (
+                  {event.isRegistered ? (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      startIcon={<CheckCircleIcon />}
+                      href={`/events/${event._id}`}
+                      sx={{ pointerEvents: "auto" }}
+                    >
+                      Registered
+                    </Button>
+                  ) : event.landingPage?.slug && event.landingPage.published ? (
                     <Button
                       size="small"
                       variant="contained"
@@ -210,7 +226,7 @@ export default function EventsPage() {
                     >
                       Register
                     </Button>
-                  )}
+                  ) : null}
                 </CardActions>
               </Card>
             </Box>

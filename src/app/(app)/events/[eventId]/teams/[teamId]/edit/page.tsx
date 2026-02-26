@@ -1,20 +1,14 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+"use client";
+
 import { Container, Alert, Typography, Button, Box } from "@mui/material";
 import { ArrowBack as BackIcon } from "@mui/icons-material";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
-export default async function EditTeamPage({
-  params,
-}: {
-  params: Promise<{ eventId: string; teamId: string }>;
-}) {
-  const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  const { eventId, teamId } = await params;
+export default function EditTeamPage() {
+  const params = useParams();
+  const router = useRouter();
+  const eventId = params.eventId as string;
+  const teamId = params.teamId as string;
 
   // TODO: Build full team management interface
   // Features needed:
@@ -29,8 +23,7 @@ export default async function EditTeamPage({
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Button
         startIcon={<BackIcon />}
-        component={Link}
-        href={`/events/${eventId}/teams/${teamId}`}
+        onClick={() => router.push(`/events/${eventId}/teams/${teamId}`)}
         sx={{ mb: 3 }}
       >
         Back to Team
@@ -55,15 +48,13 @@ export default async function EditTeamPage({
       <Box sx={{ display: "flex", gap: 2 }}>
         <Button
           variant="contained"
-          component={Link}
-          href={`/events/${eventId}/teams/${teamId}`}
+          onClick={() => router.push(`/events/${eventId}/teams/${teamId}`)}
         >
           Back to Team Page
         </Button>
         <Button
           variant="outlined"
-          component={Link}
-          href={`/events/${eventId}/hub`}
+          onClick={() => router.push(`/events/${eventId}/hub`)}
         >
           Go to Event Hub
         </Button>

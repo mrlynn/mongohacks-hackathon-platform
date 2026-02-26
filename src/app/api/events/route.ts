@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { ParticipantModel } from "@/lib/db/models/Participant";
 import { createEventSchema } from "@/lib/db/schemas";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
@@ -29,8 +30,35 @@ export async function GET(request: NextRequest) {
       EventModel.countDocuments(filter),
     ]);
 
+    // Check if the current user is registered for any of these events
+    let registeredEventIds: Set<string> = new Set();
+    try {
+      const session = await auth();
+      if (session?.user) {
+        const userId = (session.user as { id: string }).id;
+        const participant = await ParticipantModel.findOne(
+          { userId },
+          { "registeredEvents.eventId": 1 }
+        ).lean();
+        if (participant?.registeredEvents) {
+          registeredEventIds = new Set(
+            participant.registeredEvents.map((re: { eventId: unknown }) =>
+              re.eventId.toString()
+            )
+          );
+        }
+      }
+    } catch {
+      // If auth fails, just return events without registration status
+    }
+
+    const eventsWithStatus = events.map((event) => ({
+      ...event,
+      isRegistered: registeredEventIds.has(event._id.toString()),
+    }));
+
     return successResponse({
-      events,
+      events: eventsWithStatus,
       pagination: {
         page,
         limit,
