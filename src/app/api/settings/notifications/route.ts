@@ -3,6 +3,39 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const userId = (session.user as { id: string }).id;
+    const user = await UserModel.findById(userId).select("notificationPreferences");
+
+    return NextResponse.json({
+      success: true,
+      preferences: user?.notificationPreferences || {
+        emailNotifications: true,
+        eventReminders: true,
+        teamInvites: true,
+        projectUpdates: true,
+        newsletter: false,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching notification preferences:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch preferences" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth();
@@ -14,23 +47,29 @@ export async function PATCH(request: NextRequest) {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id: string }).id;
     const body = await request.json();
 
-    // For now, we'll just store notification preferences in a simple way
-    // In production, you might want a separate NotificationPreferences model
-    const user = await UserModel.findById(userId);
+    const preferences: Record<string, boolean> = {};
+    const validKeys = [
+      "emailNotifications",
+      "eventReminders",
+      "teamInvites",
+      "projectUpdates",
+      "newsletter",
+    ];
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
-      );
+    for (const key of validKeys) {
+      if (typeof body[key] === "boolean") {
+        preferences[`notificationPreferences.${key}`] = body[key];
+      }
+    }
+    // Handle "newsletterSubscription" from the existing UI
+    if (typeof body.newsletterSubscription === "boolean") {
+      preferences["notificationPreferences.newsletter"] = body.newsletterSubscription;
     }
 
-    // Store notification preferences (extend User model if needed)
-    // For now, just return success
-    // TODO: Implement actual storage of notification preferences
+    await UserModel.findByIdAndUpdate(userId, { $set: preferences });
 
     return NextResponse.json({
       success: true,

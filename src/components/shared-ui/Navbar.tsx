@@ -42,6 +42,7 @@ import { useColorScheme } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import NotificationBell from "./NotificationBell";
 
 function ThemeToggle() {
   const { mode, setMode } = useColorScheme();
@@ -350,6 +351,7 @@ export default function Navbar() {
             {!isMobile && (
               <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                 <ThemeToggle />
+                {user && <NotificationBell />}
 
                 <Button
                   color="inherit"
@@ -516,6 +518,7 @@ export default function Navbar() {
             {isMobile && mounted && user && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <ThemeToggle />
+                <NotificationBell />
                 <IconButton onClick={handleMenu} size="small">
                   <Avatar
                     sx={{

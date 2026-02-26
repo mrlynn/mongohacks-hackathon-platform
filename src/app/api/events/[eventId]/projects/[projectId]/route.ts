@@ -5,6 +5,7 @@ import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
 import { EventModel } from "@/lib/db/models/Event";
 import { generateProjectSummary } from "@/lib/ai/summary-service";
+import { notifyProjectSubmitted } from "@/lib/notifications/notification-service";
 
 export async function PATCH(
   request: NextRequest,
@@ -215,6 +216,10 @@ export async function POST(
           })
           .catch(() => {});
       }
+
+      // Fire-and-forget: notify team members
+      const teamMemberIds = team.members.map((m: any) => m.toString());
+      notifyProjectSubmitted(teamMemberIds, project.name, eventId, projectId);
 
       return NextResponse.json({
         success: true,

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ScoreModel } from "@/lib/db/models/Score";
 import { ProjectModel } from "@/lib/db/models/Project";
+import { TeamModel } from "@/lib/db/models/Team";
+import { notifyScoreReceived } from "@/lib/notifications/notification-service";
 
 export async function POST(
   request: NextRequest,
@@ -85,6 +87,16 @@ export async function POST(
       project.status = "under_review";
       await project.save();
     }
+
+    // Fire-and-forget: notify team members of new score
+    TeamModel.findById(project.teamId)
+      .then((team: any) => {
+        if (team) {
+          const memberIds = team.members.map((m: any) => m.toString());
+          notifyScoreReceived(memberIds, project.name, eventId, projectId);
+        }
+      })
+      .catch(() => {});
 
     return NextResponse.json({
       success: true,

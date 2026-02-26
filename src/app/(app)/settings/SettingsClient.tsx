@@ -26,6 +26,7 @@ import {
   SettingsOutlined,
   EmailOutlined,
   AccountCircleOutlined,
+  VerifiedUserOutlined,
 } from "@mui/icons-material";
 import {
   PageHeader,
@@ -73,6 +74,10 @@ export default function SettingsClient({ user }: { user: User }) {
     confirmPassword: "",
   });
 
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [disablePassword, setDisablePassword] = useState("");
+
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     eventReminders: true,
@@ -80,6 +85,70 @@ export default function SettingsClient({ user }: { user: User }) {
     projectUpdates: true,
     newsletterSubscription: false,
   });
+
+  // Fetch 2FA status and notification preferences on mount
+  useState(() => {
+    fetch("/api/settings/2fa")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setTwoFactorEnabled(data.twoFactorEnabled);
+      })
+      .catch(() => {});
+    fetch("/api/settings/notifications")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.preferences) {
+          setNotifications({
+            emailNotifications: data.preferences.emailNotifications ?? true,
+            eventReminders: data.preferences.eventReminders ?? true,
+            teamInvites: data.preferences.teamInvites ?? true,
+            projectUpdates: data.preferences.projectUpdates ?? true,
+            newsletterSubscription: data.preferences.newsletter ?? false,
+          });
+        }
+      })
+      .catch(() => {});
+  });
+
+  const handleTwoFactorToggle = async () => {
+    setTwoFactorLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const body: { enabled: boolean; password?: string } = {
+        enabled: !twoFactorEnabled,
+      };
+      if (twoFactorEnabled) {
+        // Disabling — need password
+        if (!disablePassword) {
+          setError("Enter your password to disable 2FA");
+          setTwoFactorLoading(false);
+          return;
+        }
+        body.password = disablePassword;
+      }
+
+      const res = await fetch("/api/settings/2fa", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setTwoFactorEnabled(!twoFactorEnabled);
+        setDisablePassword("");
+        setSuccess(data.message);
+      } else {
+        setError(data.message || "Failed to update 2FA settings");
+      }
+    } catch {
+      setError("Failed to update 2FA settings");
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -292,6 +361,52 @@ export default function SettingsClient({ user }: { user: User }) {
                 </Button>
               </Grid>
             </Grid>
+
+            <Divider sx={{ my: 4 }} />
+
+            <FormSectionHeader
+              icon={<VerifiedUserOutlined />}
+              title="Two-Factor Authentication"
+              subtitle="Add an extra layer of security to your account"
+            />
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={twoFactorEnabled}
+                    onChange={handleTwoFactorToggle}
+                    disabled={twoFactorLoading}
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body1">
+                      {twoFactorEnabled ? "2FA Enabled" : "Enable 2FA"}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {twoFactorEnabled
+                        ? "A verification code will be sent to your email when you sign in"
+                        : "Require a verification code sent to your email on each login"}
+                    </Typography>
+                  </Box>
+                }
+              />
+
+              {twoFactorEnabled && (
+                <Box sx={{ ml: 6 }}>
+                  <TextField
+                    size="small"
+                    type="password"
+                    label="Password to disable"
+                    value={disablePassword}
+                    onChange={(e) => setDisablePassword(e.target.value)}
+                    helperText="Enter your password to disable 2FA"
+                    sx={{ width: 280 }}
+                  />
+                </Box>
+              )}
+            </Box>
 
             <Divider sx={{ my: 4 }} />
 

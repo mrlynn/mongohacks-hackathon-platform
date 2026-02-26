@@ -7,6 +7,7 @@ import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { z } from "zod";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
+import { notifyRegistrationConfirmed } from "@/lib/notifications/notification-service";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -230,6 +231,9 @@ export async function POST(
         )
         .catch(() => {});
     }
+
+    // Fire-and-forget: send registration confirmation notification
+    notifyRegistrationConfirmed(user._id.toString(), event.name, eventId);
 
     return NextResponse.json({
       success: true,

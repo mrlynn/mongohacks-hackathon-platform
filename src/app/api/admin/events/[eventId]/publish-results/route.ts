@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { ParticipantModel } from "@/lib/db/models/Participant";
+import { notifyResultsPublished } from "@/lib/notifications/notification-service";
 
 export async function POST(
   request: NextRequest,
@@ -50,6 +52,18 @@ export async function POST(
       event.resultsPublishedAt = new Date();
     }
     await event.save();
+
+    // Fire-and-forget: notify participants when results are published
+    if (publish) {
+      ParticipantModel.find({ "registeredEvents.eventId": eventId })
+        .select("userId")
+        .lean()
+        .then((participants: any[]) => {
+          const userIds = participants.map((p) => p.userId.toString());
+          notifyResultsPublished(userIds, event.name, eventId);
+        })
+        .catch(() => {});
+    }
 
     return NextResponse.json({
       success: true,
