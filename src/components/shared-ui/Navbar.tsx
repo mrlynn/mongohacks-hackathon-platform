@@ -307,7 +307,7 @@ export default function Navbar() {
 
   return (
     <>
-      <AppBar position="sticky" elevation={1} sx={{ bgcolor: "primary.main" }}>
+      <AppBar position="sticky" elevation={0}>
         <Container maxWidth="xl">
           <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 } }}>
             {/* Mobile Menu Icon */}

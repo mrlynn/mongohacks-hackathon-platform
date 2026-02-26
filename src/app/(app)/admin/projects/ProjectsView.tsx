@@ -95,7 +95,7 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
         <TableContainer component={Paper} elevation={2}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: "grey.50" }}>
+              <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Project Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>

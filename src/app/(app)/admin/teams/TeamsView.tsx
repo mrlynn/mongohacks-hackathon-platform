@@ -87,7 +87,7 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
         <TableContainer component={Paper} elevation={2}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: "grey.50" }}>
+              <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Team Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Event</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Leader</TableCell>

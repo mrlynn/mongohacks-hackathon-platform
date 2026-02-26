@@ -101,14 +101,16 @@ export default function AdminLayout({
                       mx: 1,
                       borderRadius: 1,
                       "&.Mui-selected": {
-                        bgcolor: "primary.main",
-                        color: "white",
-                        "&:hover": { bgcolor: "primary.dark" },
-                        "& .MuiListItemIcon-root": { color: "white" },
+                        bgcolor: "rgba(0, 237, 100, 0.1)",
+                        color: "primary.main",
+                        boxShadow: "inset 3px 0 0 currentColor",
+                        "&:hover": { bgcolor: "rgba(0, 237, 100, 0.15)" },
+                        "& .MuiListItemIcon-root": { color: "primary.main" },
+                        "& .MuiListItemText-primary": { fontWeight: 700 },
                       },
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 40, color: "primary.main" }}>
+                    <ListItemIcon sx={{ minWidth: 40, color: "text.secondary" }}>
                       {item.icon}
                     </ListItemIcon>
                     <ListItemText

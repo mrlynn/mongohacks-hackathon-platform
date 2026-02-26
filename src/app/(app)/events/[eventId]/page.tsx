@@ -202,7 +202,7 @@ export default function EventDetailPage() {
         </Box>
       )}
 
-      <Paper sx={{ p: 3, bgcolor: "grey.50" }}>
+      <Paper sx={{ p: 3, bgcolor: "background.paper" }}>
         <Typography variant="subtitle2" color="text.secondary">
           Registration Deadline
         </Typography>

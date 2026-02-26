@@ -112,9 +112,10 @@ export const hackathonTheme = createTheme({
     dark: {
       palette: {
         primary: {
-          main: mongoBrand.springGreen,
-          light: mongoBrand.mist,
-          dark: mongoBrand.forestGreen,
+          // Spring green is accent/CTA only — never use as background fill
+          main: mongoBrand.springGreen,   // #00ED64 — buttons, icons, links
+          light: "#33F07F",               // lighter green for hover states
+          dark: mongoBrand.slateBlue,     // #001E2B — used as "hero" bg via primary.dark
           contrastText: mongoBrand.slateBlue,
         },
         secondary: {
@@ -124,9 +125,11 @@ export const hackathonTheme = createTheme({
           contrastText: mongoBrand.white,
         },
         success: {
-          main: mongoBrand.springGreen,
-          light: mongoBrand.mist,
+          // Mid-range green: visible as "success" without assaulting eyes
+          main: "#00A854",
+          light: "#33C270",
           dark: mongoBrand.forestGreen,
+          contrastText: mongoBrand.white,
         },
         info: {
           main: mongoBrand.blue,
@@ -141,14 +144,14 @@ export const hackathonTheme = createTheme({
           dark: mongoBrand.errorRed,
         },
         background: {
-          default: mongoBrand.slateBlue,
-          paper: mongoBrand.evergreen,
+          default: mongoBrand.slateBlue,  // #001E2B — page background
+          paper: "#0F2235",               // dark navy-blue for cards/surfaces (not green-tinted)
         },
         text: {
-          primary: mongoBrand.white,
+          primary: "#E8EDEB",             // off-white, easier on eyes than pure white
           secondary: mongoBrand.gray[200],
         },
-        divider: "rgba(255, 255, 255, 0.12)",
+        divider: "rgba(255, 255, 255, 0.08)",
       },
     },
   },
@@ -201,7 +204,9 @@ export const hackathonTheme = createTheme({
         root: ({ theme }) => ({
           backgroundImage: "none",
           ...theme.applyStyles("dark", {
-            backgroundColor: theme.vars.palette.background.paper,
+            // Use slate navy, not spring green, as the navbar background in dark mode
+            backgroundColor: mongoBrand.slateBlue,
+            borderBottom: `1px solid rgba(255, 255, 255, 0.08)`,
           }),
         }),
       },
@@ -336,6 +341,50 @@ export const hackathonTheme = createTheme({
           borderRadius: 6,
           fontWeight: 500,
         },
+        // In dark mode, filled primary chips (e.g. role badges) use a subtle tint
+        // instead of a solid spring-green block
+        colorPrimary: ({ theme }) => ({
+          ...theme.applyStyles("dark", {
+            backgroundColor: "rgba(0, 237, 100, 0.12)",
+            color: mongoBrand.springGreen,
+          }),
+        }),
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          "& .MuiTableRow-root": {
+            // Override any hardcoded grey.50 — use a theme-aware surface instead
+            backgroundColor: "transparent",
+          },
+          "& .MuiTableCell-root": {
+            fontWeight: 600,
+            fontSize: "0.8rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: theme.vars.palette.text.secondary,
+            borderBottom: `2px solid ${theme.vars.palette.divider}`,
+            ...theme.applyStyles("dark", {
+              backgroundColor: "rgba(255, 255, 255, 0.04)",
+              color: theme.vars.palette.text.secondary,
+            }),
+            ...theme.applyStyles("light", {
+              backgroundColor: theme.vars.palette.grey[50],
+            }),
+          },
+        }),
+      },
+    },
+    MuiTableBody: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          "& .MuiTableRow-root:hover": {
+            ...theme.applyStyles("dark", {
+              backgroundColor: "rgba(255, 255, 255, 0.03)",
+            }),
+          },
+        }),
       },
     },
     MuiPaper: {

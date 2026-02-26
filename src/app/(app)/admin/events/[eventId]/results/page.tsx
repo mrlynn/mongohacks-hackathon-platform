@@ -235,7 +235,7 @@ export default function ResultsPage({
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
-                <TableRow sx={{ bgcolor: "grey.50" }}>
+                <TableRow>
                   <TableCell sx={{ fontWeight: 600 }}>Rank</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Team</TableCell>

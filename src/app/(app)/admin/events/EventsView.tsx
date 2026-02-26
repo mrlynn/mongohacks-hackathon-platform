@@ -119,7 +119,7 @@ export default function EventsView({ events }: { events: Event[] }) {
         <TableContainer component={Paper} elevation={2}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: "grey.50" }}>
+              <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Event Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Theme</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Start Date</TableCell>

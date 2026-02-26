@@ -20,33 +20,56 @@ export default function HomePageClient({ user }: { user: User | null }) {
 
   return (
     <Box>
-      {/* Hero Section */}
+      {/* Hero Section — dark navy in dark mode, deep forest green in light mode */}
       <Box
         sx={{
-          bgcolor: "primary.main",
+          bgcolor: "primary.dark",
           color: "white",
-          py: 8,
+          py: { xs: 8, md: 12 },
           textAlign: "center",
+          position: "relative",
+          overflow: "hidden",
+          // Subtle grid texture
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)",
+            backgroundSize: "32px 32px",
+            pointerEvents: "none",
+          },
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
           {user ? (
             <>
-              <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-                Welcome back, {user.name}!
+              <Typography
+                variant="h3"
+                sx={{ fontWeight: 700, mb: 2, color: "white" }}
+              >
+                Welcome back,{" "}
+                <Box component="span" sx={{ color: "primary.main" }}>
+                  {user.name}
+                </Box>
+                !
               </Typography>
-              <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 5, color: "rgba(255,255,255,0.7)", fontWeight: 400 }}
+              >
                 Ready to continue your hackathon journey?
               </Typography>
-              <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+              <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
                 <Button
                   variant="contained"
                   size="large"
                   href="/dashboard"
                   sx={{
-                    bgcolor: "white",
-                    color: "primary.main",
-                    "&:hover": { bgcolor: "grey.100" },
+                    bgcolor: "primary.main",
+                    color: "primary.dark",
+                    fontWeight: 700,
+                    "&:hover": { bgcolor: "#33F07F" },
                   }}
                 >
                   Go to Dashboard
@@ -58,11 +81,11 @@ export default function HomePageClient({ user }: { user: User | null }) {
                     href="/admin"
                     startIcon={<AdminIcon />}
                     sx={{
-                      borderColor: "white",
+                      borderColor: "rgba(255,255,255,0.4)",
                       color: "white",
                       "&:hover": {
                         borderColor: "white",
-                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                        bgcolor: "rgba(255,255,255,0.08)",
                       },
                     }}
                   >
@@ -73,21 +96,32 @@ export default function HomePageClient({ user }: { user: User | null }) {
             </>
           ) : (
             <>
-              <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-                MongoHacks Platform
+              <Typography
+                variant="h3"
+                sx={{ fontWeight: 700, mb: 2, color: "white" }}
+              >
+                The{" "}
+                <Box component="span" sx={{ color: "primary.main" }}>
+                  MongoHacks
+                </Box>{" "}
+                Platform
               </Typography>
-              <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
+              <Typography
+                variant="h6"
+                sx={{ mb: 5, color: "rgba(255,255,255,0.7)", fontWeight: 400 }}
+              >
                 Discover, organize, and participate in hackathons around the world
               </Typography>
-              <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+              <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
                 <Button
                   variant="contained"
                   size="large"
                   href="/register"
                   sx={{
-                    bgcolor: "white",
-                    color: "primary.main",
-                    "&:hover": { bgcolor: "grey.100" },
+                    bgcolor: "primary.main",
+                    color: "primary.dark",
+                    fontWeight: 700,
+                    "&:hover": { bgcolor: "#33F07F" },
                   }}
                 >
                   Get Started
@@ -97,11 +131,11 @@ export default function HomePageClient({ user }: { user: User | null }) {
                   size="large"
                   href="/events"
                   sx={{
-                    borderColor: "white",
+                    borderColor: "rgba(255,255,255,0.4)",
                     color: "white",
                     "&:hover": {
                       borderColor: "white",
-                      bgcolor: "rgba(255, 255, 255, 0.1)",
+                      bgcolor: "rgba(255,255,255,0.08)",
                     },
                   }}
                 >
@@ -181,7 +215,7 @@ export default function HomePageClient({ user }: { user: User | null }) {
 
         {/* Quick Links for Admin */}
         {isAdmin && (
-          <Box sx={{ mt: 8, p: 4, bgcolor: "grey.50", borderRadius: 2 }}>
+          <Box sx={{ mt: 8, p: 4, bgcolor: "background.paper", borderRadius: 2, border: 1, borderColor: "divider" }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
               Admin Quick Links
             </Typography>
