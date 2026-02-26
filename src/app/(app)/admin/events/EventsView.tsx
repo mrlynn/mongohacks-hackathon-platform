@@ -116,8 +116,8 @@ export default function EventsView({ events }: { events: Event[] }) {
 
       {/* Table View */}
       {view === "table" && (
-        <TableContainer component={Paper} elevation={2}>
-          <Table>
+        <TableContainer component={Paper} elevation={2} sx={{ overflowX: "auto" }}>
+          <Table sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Event Name</TableCell>

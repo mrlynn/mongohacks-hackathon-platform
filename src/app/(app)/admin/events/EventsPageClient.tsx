@@ -26,12 +26,14 @@ export default function EventsPageClient({ events }: { events: Event[] }) {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
           mb: 3,
         }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.25rem", sm: "2rem" } }}>
             Events Management
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -50,7 +52,7 @@ export default function EventsPageClient({ events }: { events: Event[] }) {
         </Button>
       </Box>
 
-      <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
+      <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
         <Chip label={`${events.length} Total Events`} />
         <Chip
           label={`${events.filter((e) => e.status === "open").length} Open`}

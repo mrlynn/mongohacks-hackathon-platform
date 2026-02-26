@@ -159,14 +159,14 @@ export default function NextStepsSection({
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: { xs: 1.5, sm: 2 }, flexDirection: { xs: "column", sm: "row" } }}>
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 56,
-              height: 56,
+              width: { xs: 48, sm: 56 },
+              height: { xs: 48, sm: 56 },
               borderRadius: 2,
               bgcolor: `${priorityColor}.light`,
               color: `${priorityColor}.main`,
@@ -186,7 +186,7 @@ export default function NextStepsSection({
                 flexWrap: "wrap",
               }}
             >
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>
                 {nextMilestone.title}
               </Typography>
               {nextMilestone.priority === "high" && (

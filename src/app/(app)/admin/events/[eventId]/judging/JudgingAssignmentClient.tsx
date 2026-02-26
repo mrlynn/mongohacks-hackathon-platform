@@ -200,10 +200,10 @@ export default function JudgingAssignmentClient({
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.25rem", sm: "2rem" } }}>
           Judging Assignments
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -395,8 +395,8 @@ export default function JudgingAssignmentClient({
                   No assignments yet. Use the form on the left to assign projects to judges.
                 </Alert>
               ) : (
-                <TableContainer sx={{ maxHeight: 600 }}>
-                  <Table stickyHeader size="small">
+                <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
+                  <Table stickyHeader size="small" sx={{ minWidth: 400 }}>
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600 }}>Judge</TableCell>

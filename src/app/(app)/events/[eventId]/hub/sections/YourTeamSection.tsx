@@ -91,10 +91,10 @@ export default function YourTeamSection({
     <Card elevation={2} id="your-team">
       <CardContent sx={{ p: 3 }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-          <PeopleIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
+          <PeopleIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: "primary.main" }} />
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>
               Your Team
             </Typography>
             <Typography variant="body2" color="text.secondary">

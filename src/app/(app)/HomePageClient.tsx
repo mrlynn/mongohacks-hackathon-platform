@@ -49,7 +49,7 @@ export default function HomePageClient({
             <>
               <Typography
                 variant="h3"
-                sx={{ fontWeight: 700, mb: 2, color: "white" }}
+                sx={{ fontWeight: 700, mb: 2, color: "white", fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" } }}
               >
                 Welcome back,{" "}
                 <Box component="span" sx={{ color: "primary.main" }}>
@@ -101,7 +101,7 @@ export default function HomePageClient({
             <>
               <Typography
                 variant="h3"
-                sx={{ fontWeight: 700, mb: 2, color: "white" }}
+                sx={{ fontWeight: 700, mb: 2, color: "white", fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" } }}
               >
                 The{" "}
                 <Box component="span" sx={{ color: "primary.main" }}>

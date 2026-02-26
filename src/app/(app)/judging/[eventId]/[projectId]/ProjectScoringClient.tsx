@@ -129,7 +129,7 @@ export default function ProjectScoringClient({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       {/* Back Button */}
       <Button
         startIcon={<BackIcon />}
@@ -146,10 +146,10 @@ export default function ProjectScoringClient({
 
       {/* Project Header */}
       <Card elevation={2} sx={{ mb: 3, bgcolor: "primary.light" }}>
-        <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-            <Box>
-              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2, flexWrap: "wrap", gap: 1 }}>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.25rem", sm: "2rem" } }}>
                 {project.name}
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -235,8 +235,8 @@ export default function ProjectScoringClient({
 
       {/* Scoring Form */}
       <Card elevation={2}>
-        <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
             Score This Project
           </Typography>
 
@@ -331,7 +331,7 @@ export default function ProjectScoringClient({
           />
 
           {/* Submit Button */}
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
             <Button
               variant="contained"
               size="large"
@@ -348,6 +348,7 @@ export default function ProjectScoringClient({
               size="large"
               onClick={() => router.push(`/judging/${eventId}`)}
               disabled={isSubmitting}
+              sx={{ flexShrink: 0 }}
             >
               Cancel
             </Button>

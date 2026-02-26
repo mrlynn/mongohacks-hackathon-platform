@@ -63,8 +63,8 @@ export default function UsersTableClient({ users: initialUsers }: { users: User[
 
   return (
     <>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+        <Table sx={{ minWidth: 500 }}>
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>

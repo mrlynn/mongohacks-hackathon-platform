@@ -59,11 +59,11 @@ export default function JudgingDashboardClient({
   const progress = totalCount > 0 ? Math.round((scoredCount / totalCount) * 100) : 0;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-          <GavelIcon sx={{ mr: 2, verticalAlign: "middle", fontSize: 36 }} />
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.25rem", sm: "2rem" } }}>
+          <GavelIcon sx={{ mr: 1, verticalAlign: "middle", fontSize: { xs: 28, sm: 36 } }} />
           Judging: {event.name}
         </Typography>
         <Typography variant="body1" color="text.secondary">

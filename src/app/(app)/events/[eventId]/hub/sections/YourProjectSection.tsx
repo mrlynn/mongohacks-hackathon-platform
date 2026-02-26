@@ -201,13 +201,13 @@ export default function YourProjectSection({
     <Card elevation={2} id="your-project">
       <CardContent sx={{ p: 3 }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
-          <RocketIcon sx={{ fontSize: 32, color: "secondary.main" }} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3, flexWrap: "wrap" }}>
+          <RocketIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: "secondary.main" }} />
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>
               Your Project
             </Typography>
-            <Typography variant="h6" sx={{ color: "text.secondary" }}>
+            <Typography variant="h6" sx={{ color: "text.secondary", fontSize: { xs: "0.95rem", sm: "1.25rem" } }}>
               {project.name}
             </Typography>
           </Box>
@@ -334,11 +334,12 @@ export default function YourProjectSection({
         </Box>
 
         {/* Actions */}
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
             onClick={handleQuickEdit}
+            size="small"
           >
             Quick Edit
           </Button>
@@ -349,6 +350,7 @@ export default function YourProjectSection({
               startIcon={<SubmitIcon />}
               onClick={handleSubmitProject}
               disabled={isSubmitting}
+              size="small"
             >
               {isSubmitting ? 'Submitting...' : 'Submit for Judging'}
             </Button>
@@ -359,11 +361,12 @@ export default function YourProjectSection({
               color="warning"
               onClick={handleUnsubmitProject}
               disabled={isSubmitting}
+              size="small"
             >
               {isSubmitting ? 'Unsubmitting...' : 'Unsubmit Project'}
             </Button>
           )}
-          
+
           {/* Quick Actions */}
           <Box sx={{ display: "flex", gap: 0.5 }}>
             <Tooltip title="Copy project link">
@@ -377,13 +380,14 @@ export default function YourProjectSection({
               </IconButton>
             </Tooltip>
           </Box>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
+
+          <Box sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }} />
+
           <Button
             variant="outlined"
             component={Link}
             href={`/events/${eventId}/projects/${project._id}`}
+            size="small"
           >
             View Full Details
           </Button>

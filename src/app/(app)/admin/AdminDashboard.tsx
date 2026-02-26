@@ -48,8 +48,8 @@ export default function AdminDashboard({ stats }: { stats: AdminStats }) {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.5rem", sm: "2rem" } }}>
           Admin Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
