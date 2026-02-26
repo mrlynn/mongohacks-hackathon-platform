@@ -121,8 +121,8 @@ export default function RegistrationClient({
 
       setSuccess(true);
 
-      // Auto-login for new users, then redirect to hub
-      if (!isLoggedIn && data.data.isNewUser) {
+      // Auto-login if not logged in, then redirect to hub
+      if (!isLoggedIn && formData.password) {
         const signInResult = await signIn("credentials", {
           email: formData.email,
           password: formData.password,
@@ -130,14 +130,15 @@ export default function RegistrationClient({
         });
 
         if (signInResult?.ok) {
-          router.push(`/events/${eventId}/hub`);
+          // Full page reload so server picks up the new session cookie
+          window.location.href = `/events/${eventId}/hub`;
         } else {
           // Sign-in failed but registration succeeded — send to login
-          router.push(`/login?redirect=/events/${eventId}/hub`);
+          window.location.href = `/login?redirect=/events/${eventId}/hub`;
         }
       } else {
-        // Already logged in — go straight to hub
-        router.push(`/events/${eventId}/hub`);
+        // Already logged in — full reload to hub
+        window.location.href = `/events/${eventId}/hub`;
       }
     } catch (err: any) {
       setError(err.message || "Failed to register. Please try again.");

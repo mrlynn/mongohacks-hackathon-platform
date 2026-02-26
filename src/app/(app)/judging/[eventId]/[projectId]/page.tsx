@@ -83,7 +83,7 @@ export default async function ProjectScoringPage({
   const userId = (session.user as { id: string }).id;
   const data = await getScoringData(eventId, projectId, userId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

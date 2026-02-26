@@ -225,7 +225,7 @@ export default function JudgingAssignmentClient({
 
       {/* Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
@@ -237,7 +237,7 @@ export default function JudgingAssignmentClient({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
@@ -249,7 +249,7 @@ export default function JudgingAssignmentClient({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
@@ -266,7 +266,7 @@ export default function JudgingAssignmentClient({
       {/* Assignment Interface */}
       <Grid container spacing={3}>
         {/* Left: Assign Projects */}
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
@@ -383,7 +383,7 @@ export default function JudgingAssignmentClient({
         </Grid>
 
         {/* Right: Current Assignments */}
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>

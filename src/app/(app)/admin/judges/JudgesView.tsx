@@ -17,6 +17,7 @@ import {
   Grid,
   Button,
   CardActions,
+  Alert,
 } from "@mui/material";
 import {
   Gavel as GavelIcon,
@@ -60,6 +61,12 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
 
   return (
     <Box>
+      {/* Instructions */}
+      <Alert severity="info" sx={{ mb: 3 }}>
+        <Typography variant="body2">
+          <strong>To assign judges to projects:</strong> Go to Events → Select an event → Judging tab → Assign judges to projects
+        </Typography>
+      </Alert>
       {/* Toolbar */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <ViewToggle view={view} onChange={setView} />
@@ -91,8 +98,12 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
                     <Chip label="0 projects" size="small" variant="outlined" />
                   </TableCell>
                   <TableCell align="right">
-                    <Button size="small" variant="outlined">
-                      Manage Assignments
+                    <Button 
+                      size="small" 
+                      variant="outlined"
+                      href="/admin/events"
+                    >
+                      View Events
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -135,8 +146,13 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small" variant="outlined" fullWidth>
-                    Manage Assignments
+                  <Button 
+                    size="small" 
+                    variant="outlined" 
+                    fullWidth
+                    href="/admin/events"
+                  >
+                    View Events to Assign
                   </Button>
                 </CardActions>
               </Card>

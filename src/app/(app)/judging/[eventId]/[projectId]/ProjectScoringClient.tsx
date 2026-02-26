@@ -250,7 +250,7 @@ export default function ProjectScoringClient({
               const score = scores[criterion.key as keyof typeof scores];
               
               return (
-                <Grid item xs={12} key={criterion.key}>
+                <Grid size={{ xs: 12 }} key={criterion.key}>
                   <Box>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>

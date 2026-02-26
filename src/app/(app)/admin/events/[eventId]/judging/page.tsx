@@ -64,7 +64,7 @@ export default async function JudgingPage({
   const { eventId } = await params;
   const data = await getJudgingData(eventId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

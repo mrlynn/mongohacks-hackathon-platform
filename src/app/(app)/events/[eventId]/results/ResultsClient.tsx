@@ -112,7 +112,7 @@ export default function ResultsClient({
           
           <Grid container spacing={3} justifyContent="center">
             {topThree.map((result) => (
-              <Grid item xs={12} sm={6} md={4} key={result.projectId}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.projectId}>
                 <Card
                   sx={{
                     height: "100%",

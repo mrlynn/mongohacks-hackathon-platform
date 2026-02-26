@@ -198,7 +198,7 @@ export default async function EventHubPage({
   const userId = (session.user as { id: string }).id;
   const data = await getHubData(eventId, userId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

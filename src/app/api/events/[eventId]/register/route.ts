@@ -78,17 +78,32 @@ export async function POST(
     let isNewUser = false;
 
     if (user) {
-      // Existing user with password — they should log in first, then register for the event
-      if (user.passwordHash && !data.password) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "An account with this email already exists. Please log in first.",
-            code: "EXISTING_USER",
-            loginUrl: `/login?redirect=/events/${eventId}/register`,
-          },
-          { status: 409 }
-        );
+      // Existing user with password — verify it or redirect to login
+      if (user.passwordHash) {
+        if (!data.password) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "An account with this email already exists. Please log in first.",
+              code: "EXISTING_USER",
+              loginUrl: `/login?redirect=/events/${eventId}/register`,
+            },
+            { status: 409 }
+          );
+        }
+        // Verify the password
+        const isValid = await bcrypt.compare(data.password, user.passwordHash);
+        if (!isValid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Incorrect password. If you already have an account, please log in first.",
+              code: "EXISTING_USER",
+              loginUrl: `/login?redirect=/events/${eventId}/register`,
+            },
+            { status: 401 }
+          );
+        }
       }
     } else {
       // New user — password is required

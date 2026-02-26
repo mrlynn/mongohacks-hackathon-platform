@@ -41,7 +41,7 @@ export default async function ResultsPage({
 
   const data = await getResults(eventId, isAdmin);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="info">{data.error}</Alert>

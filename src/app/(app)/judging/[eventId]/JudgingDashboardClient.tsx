@@ -128,7 +128,7 @@ export default function JudgingDashboardClient({
           const isScored = assignment.hasScore;
 
           return (
-            <Grid item xs={12} md={6} key={assignment._id}>
+            <Grid size={{ xs: 12, md: 6 }} key={assignment._id}>
               <Card
                 sx={{
                   height: "100%",
