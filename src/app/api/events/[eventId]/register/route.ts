@@ -1,135 +1,142 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db/connection";
+import { EventModel } from "@/lib/db/models/Event";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
-import { EventModel } from "@/lib/db/models/Event";
-import { signIn } from "@/lib/auth";
+import { z } from "zod";
+
+const registrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  bio: z.string().optional().default(""),
+  skills: z.array(z.string()).optional().default([]),
+  interests: z.array(z.string()).optional().default([]),
+  experience_level: z.enum(["beginner", "intermediate", "advanced"]).optional().default("beginner"),
+});
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
+    await connectToDatabase();
     const { eventId } = await params;
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.name || !body.email || !body.password) {
+    // Validate input
+    const validationResult = registrationSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
-          message: "Name, email, and password are required",
-        },
-        { status: 422 }
-      );
-    }
-
-    await connectToDatabase();
-
-    // Check if event exists
-    const event = await EventModel.findById(eventId);
-    if (!event) {
-      return NextResponse.json(
-        { success: false, message: "Event not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if event registration is closed
-    const now = new Date();
-    if (new Date(event.registrationDeadline) < now) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Registration for this event has closed",
+          error: "Validation failed",
+          details: validationResult.error.issues,
         },
         { status: 400 }
       );
     }
 
-    const email = body.email.toLowerCase();
+    const data = validationResult.data;
+
+    // Check if event exists and is open for registration
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      return NextResponse.json(
+        { success: false, error: "Event not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check registration deadline
+    const now = new Date();
+    if (event.registrationDeadline && now > new Date(event.registrationDeadline)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Registration deadline has passed",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check capacity
+    const registeredCount = await ParticipantModel.countDocuments({
+      "registeredEvents.eventId": eventId,
+    });
+
+    if (event.capacity && registeredCount >= event.capacity) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Event is at full capacity",
+        },
+        { status: 400 }
+      );
+    }
 
     // Check if user already exists
-    let user = await UserModel.findOne({ email });
-
-    if (user) {
-      // User exists - check if they're already registered for this event
-      const participant = await ParticipantModel.findOne({
-        userId: user._id,
-        "registeredEvents.eventId": eventId,
+    let user = await UserModel.findOne({ email: data.email });
+    
+    if (!user) {
+      // Create new user
+      user = await UserModel.create({
+        email: data.email,
+        name: data.name,
+        role: "participant",
+        needsPasswordSetup: true, // They'll need to set password on first login
       });
+    }
 
-      if (participant) {
+    // Check if participant already exists
+    let participant = await ParticipantModel.findOne({ email: data.email });
+
+    if (participant) {
+      // Check if already registered for this event
+      const alreadyRegistered = participant.registeredEvents.some(
+        (reg) => reg.eventId.toString() === eventId
+      );
+
+      if (alreadyRegistered) {
         return NextResponse.json(
           {
             success: false,
-            message: "You are already registered for this event",
+            error: "You are already registered for this event",
+            suggestion: "Try logging in instead: /login",
           },
-          { status: 409 }
+          { status: 400 }
         );
       }
 
-      // User exists but not registered - add them to the event
-      const existingParticipant = await ParticipantModel.findOne({
-        userId: user._id,
+      // Add event to existing participant
+      participant.registeredEvents.push({
+        eventId: eventId as any,
+        registrationDate: new Date(),
+        status: "registered",
       });
 
-      if (existingParticipant) {
-        // Update existing participant
-        existingParticipant.registeredEvents.push({
-          eventId: eventId as any,
-          registrationDate: new Date(),
-          status: "registered",
-        });
-        // Merge custom responses if provided
-        if (body.customResponses) {
-          for (const [key, val] of Object.entries(body.customResponses)) {
-            existingParticipant.customResponses.set(key, val);
-          }
-        }
-        await existingParticipant.save();
-      } else {
-        // Create new participant profile
-        await ParticipantModel.create({
-          userId: user._id,
-          email: user.email,
-          name: user.name,
-          bio: body.bio || "",
-          skills: body.skills || [],
-          interests: [],
-          experience_level: body.experienceLevel || "beginner",
-          customResponses: body.customResponses || {},
-          registeredEvents: [
-            {
-              eventId: eventId,
-              registrationDate: new Date(),
-              status: "registered",
-            },
-          ],
-        });
+      // Update profile info if provided
+      if (data.bio) participant.bio = data.bio;
+      if (data.skills && data.skills.length > 0) {
+        participant.skills = [...new Set([...participant.skills, ...data.skills])];
       }
+      if (data.interests && data.interests.length > 0) {
+        participant.interests = [...new Set([...participant.interests, ...data.interests])];
+      }
+      if (data.experience_level) {
+        participant.experience_level = data.experience_level;
+      }
+
+      await participant.save();
     } else {
-      // New user - create user account
-      const passwordHash = await bcrypt.hash(body.password, 10);
-
-      user = await UserModel.create({
-        email,
-        name: body.name,
-        passwordHash,
-        role: "participant",
-      });
-
-      // Create participant profile
-      await ParticipantModel.create({
+      // Create new participant
+      participant = await ParticipantModel.create({
         userId: user._id,
-        email: user.email,
-        name: user.name,
-        bio: body.bio || "",
-        skills: body.skills || [],
-        interests: [],
-        experience_level: body.experienceLevel || "beginner",
-        customResponses: body.customResponses || {},
+        email: data.email,
+        name: data.name,
+        bio: data.bio,
+        skills: data.skills,
+        interests: data.interests,
+        experience_level: data.experience_level,
         registeredEvents: [
           {
             eventId: eventId,
@@ -140,38 +147,20 @@ export async function POST(
       });
     }
 
-    // Sign in the user
-    await signIn("credentials", {
-      email: body.email,
-      password: body.password,
-      redirect: false,
-    });
-
     return NextResponse.json({
       success: true,
-      message: "Registration successful",
-      userId: user._id.toString(),
-    });
-  } catch (error: any) {
-    console.error("Registration error:", error);
-
-    // Handle specific errors
-    if (error.code === 11000) {
-      // Duplicate key error
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Email already registered",
-        },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Registration failed. Please try again.",
+      message: "Successfully registered for the event! 🎉",
+      data: {
+        userId: user._id,
+        participantId: participant._id,
+        eventId,
+        needsPasswordSetup: user.needsPasswordSetup,
       },
+    });
+  } catch (error) {
+    console.error("POST /api/events/[eventId]/register error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to register for event" },
       { status: 500 }
     );
   }

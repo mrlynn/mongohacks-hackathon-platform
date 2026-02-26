@@ -4,6 +4,40 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const userId = (session.user as any).id;
+
+    const participant = await ParticipantModel.findOne({ userId }).lean();
+
+    return NextResponse.json({
+      success: true,
+      participant: participant
+        ? {
+            bio: (participant as any).bio || "",
+            skills: (participant as any).skills || [],
+            experience_level: (participant as any).experience_level || "intermediate",
+          }
+        : null,
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch profile" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth();

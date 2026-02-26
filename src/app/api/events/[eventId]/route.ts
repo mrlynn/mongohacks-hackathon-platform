@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { successResponse, errorResponse } from "@/lib/utils";
+import { auth } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +12,7 @@ export async function GET(
   try {
     await connectToDatabase();
     const { eventId } = await params;
+    const session = await auth();
 
     const event = await EventModel.findById(eventId).lean();
 
@@ -23,11 +25,23 @@ export async function GET(
       "registeredEvents.eventId": eventId,
     });
 
+    // Check if the current user is already registered
+    let isRegistered = false;
+    if (session?.user) {
+      const userId = (session.user as any).id;
+      const participant = await ParticipantModel.findOne({
+        userId,
+        "registeredEvents.eventId": eventId,
+      }).lean();
+      isRegistered = !!participant;
+    }
+
     // Calculate spots remaining
     const spotsRemaining = Math.max(0, event.capacity - registeredCount);
 
     return successResponse({
       event,
+      isRegistered,
       stats: {
         registered: registeredCount,
         capacity: event.capacity,

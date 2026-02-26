@@ -48,6 +48,7 @@ export default function EventDetailPage() {
   const { eventId } = useParams();
   const [event, setEvent] = useState<Event | null>(null);
   const [stats, setStats] = useState<EventStats | null>(null);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function EventDetailPage() {
           const data = await res.json();
           setEvent(data.event || data);
           setStats(data.stats || null);
+          setIsRegistered(data.isRegistered ?? false);
         }
       } catch (error) {
         console.error("Failed to fetch event:", error);
@@ -181,17 +183,25 @@ export default function EventDetailPage() {
               View Event Landing Page
             </Button>
           )}
-          {event.status === "open" && (
+          {isRegistered ? (
+            <Button
+              variant="outlined"
+              size="large"
+              href="/dashboard"
+              color="success"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
+              ✓ Registered — View Dashboard
+            </Button>
+          ) : event.status === "open" && (
             <Button
               variant="outlined"
               size="large"
               href={`/events/${eventId}/register`}
               disabled={stats?.spotsRemaining === 0}
-              sx={{
-                width: { xs: "100%", sm: "auto" },
-              }}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
             >
-              {stats?.spotsRemaining === 0 ? 'Event Full' : 'Register Now'}
+              {stats?.spotsRemaining === 0 ? "Event Full" : "Register Now"}
             </Button>
           )}
         </Box>
