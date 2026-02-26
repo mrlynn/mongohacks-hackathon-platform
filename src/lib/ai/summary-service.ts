@@ -1,6 +1,13 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 interface ProjectInput {
   name: string;
@@ -21,7 +28,8 @@ export async function generateProjectSummary(
     ? `\nInnovations: ${project.innovations}`
     : "";
 
-  const response = await openai.chat.completions.create({
+  const client = getOpenAIClient();
+  const response = await client.chat.completions.create({
     model: "gpt-4-turbo",
     messages: [
       {

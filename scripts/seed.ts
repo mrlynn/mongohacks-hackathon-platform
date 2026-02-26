@@ -1,5 +1,8 @@
 #!/usr/bin/env tsx
 
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { connectToDatabase } from "../src/lib/db/connection";
 import { UserModel } from "../src/lib/db/models/User";
 import { EventModel } from "../src/lib/db/models/Event";
@@ -12,6 +15,7 @@ import { TemplateConfigModel } from "../src/lib/db/models/TemplateConfig";
 import { PartnerModel } from "../src/lib/db/models/Partner";
 import { PrizeModel } from "../src/lib/db/models/Prize";
 import { seedBuiltInTemplates } from "../src/lib/db/seed-templates";
+import { generateProjectSummary } from "../src/lib/ai/summary-service";
 import bcrypt from "bcryptjs";
 
 const CLEAR_EXISTING = process.argv.includes("--clear");
@@ -629,6 +633,49 @@ async function seed() {
   console.log("✅ Created 7 projects\n");
 
   // ═══════════════════════════════════════════════════════════════════
+  // AI SUMMARIES — Generate for submitted/judged projects
+  // ═══════════════════════════════════════════════════════════════════
+  console.log("🤖 Generating AI summaries for submitted projects...");
+
+  const submittedProjects = [
+    springProject1,
+    springProject3,
+    aiProject1,
+    winterProject1,
+    winterProject2,
+    winterProject3,
+  ];
+
+  let summariesGenerated = 0;
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.log("⚠️  OPENAI_API_KEY not set - skipping AI summary generation");
+    console.log("   Set OPENAI_API_KEY to enable AI summaries\n");
+  } else {
+    for (const project of submittedProjects) {
+      try {
+        const summary = await generateProjectSummary({
+          name: project.name,
+          description: project.description,
+          technologies: project.technologies,
+          innovations: project.innovations,
+        });
+
+        await ProjectModel.findByIdAndUpdate(project._id, {
+          $set: { aiSummary: summary },
+        });
+
+        console.log(`   ✓ ${project.name}`);
+        summariesGenerated++;
+      } catch (error) {
+        console.log(`   ✗ ${project.name} - ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
+    }
+
+    console.log(`✅ Generated ${summariesGenerated}/${submittedProjects.length} AI summaries\n`);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // JUDGE ASSIGNMENTS — for Spring and Winter events
   // ═══════════════════════════════════════════════════════════════════
   console.log("⚖️  Creating judge assignments...");
@@ -820,6 +867,7 @@ async function seed() {
   console.log(`   Events:            4`);
   console.log(`   Teams:             11`);
   console.log(`   Projects:          7`);
+  console.log(`   AI Summaries:      ${summariesGenerated}`);
   console.log(`   Judge Assignments: ${springAssignments.length + aiAssignments.length + winterAssignments.length}`);
   console.log(`   Scores:            ${scores.length}`);
   console.log(`   Partners:          ${partners.length}`);
