@@ -277,16 +277,17 @@ export default function YourTeamSection({
         )}
 
         {/* Actions */}
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
           <Button
             variant="outlined"
             component={Link}
             href={`/events/${eventId}/teams/${team._id}`}
             fullWidth={false}
+            size="small"
           >
             View Full Team Page
           </Button>
-          
+
           {/* Quick Actions */}
           <Box sx={{ display: "flex", gap: 0.5 }}>
             <Tooltip title="Copy team link">
@@ -300,15 +301,16 @@ export default function YourTeamSection({
               </IconButton>
             </Tooltip>
           </Box>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
+
+          <Box sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }} />
+
           {isLeader && (
             <Button
               variant="outlined"
               startIcon={<InviteIcon />}
               fullWidth={false}
               onClick={shareTeam}
+              size="small"
             >
               Invite Member
             </Button>
@@ -320,6 +322,7 @@ export default function YourTeamSection({
               startIcon={<LeaveIcon />}
               fullWidth={false}
               onClick={() => setLeaveDialogOpen(true)}
+              size="small"
             >
               Leave Team
             </Button>

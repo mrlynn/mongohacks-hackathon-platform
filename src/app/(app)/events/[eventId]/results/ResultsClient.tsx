@@ -1,14 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import {
   Container,
   Typography,
   Box,
   Card,
   CardContent,
-  Grid,
-  Chip,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -16,21 +14,43 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Alert,
-  LinearProgress,
+  Chip,
+  Grid,
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Link as MuiLink,
+  Divider,
+  Stack,
 } from "@mui/material";
 import {
   EmojiEvents as TrophyIcon,
+  ExpandMore as ExpandMoreIcon,
   GitHub as GitHubIcon,
-  Launch as LaunchIcon,
-  Star as StarIcon,
+  Language as DemoIcon,
+  VideoLibrary as VideoIcon,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-interface Result {
+interface ProjectResult {
   projectId: string;
   rank: number;
-  project: any;
-  team: any;
+  project: {
+    _id: string;
+    name: string;
+    description: string;
+    repoUrl: string;
+    demoUrl?: string;
+    videoUrl?: string;
+    technologies?: string[];
+  };
+  team: {
+    _id: string;
+    name: string;
+  } | null;
   averageScores: {
     innovation: number;
     technical: number;
@@ -39,11 +59,31 @@ interface Result {
   };
   totalScore: number;
   judgeCount: number;
+  scores: Array<{
+    judgeId: any;
+    scores: {
+      innovation: number;
+      technical: number;
+      impact: number;
+      presentation: number;
+    };
+    totalScore: number;
+    comments?: string;
+    submittedAt: Date;
+  }>;
 }
 
 interface ResultsClientProps {
-  results: Result[];
-  event: any;
+  results: ProjectResult[];
+  event: {
+    _id: string;
+    name: string;
+    description?: string;
+    startDate: Date;
+    endDate: Date;
+    resultsPublished: boolean;
+    resultsPublishedAt?: Date;
+  };
   eventId: string;
   isAdmin: boolean;
 }
@@ -54,258 +94,439 @@ export default function ResultsClient({
   eventId,
   isAdmin,
 }: ResultsClientProps) {
-  const topThree = results.filter((r) => r.rank <= 3 && r.totalScore > 0);
-  const allResults = results.filter((r) => r.totalScore > 0);
+  const router = useRouter();
+  const [expandedProject, setExpandedProject] = useState<string | false>(false);
 
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return "gold";
-    if (rank === 2) return "silver";
-    if (rank === 3) return "#CD7F32"; // Bronze
-    return "default";
+  const getPodiumColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)";
+      case 2:
+        return "linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%)";
+      case 3:
+        return "linear-gradient(135deg, #CD7F32 0%, #B87333 100%)";
+      default:
+        return "none";
+    }
   };
 
-  const getTrophySize = (rank: number) => {
-    if (rank === 1) return 80;
-    if (rank === 2) return 64;
-    if (rank === 3) return 56;
-    return 40;
+  const getPodiumIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "🥇";
+      case 2:
+        return "🥈";
+      case 3:
+        return "🥉";
+      default:
+        return "";
+    }
   };
+
+  const handleAccordionChange = (projectId: string) => (
+    event: React.SyntheticEvent,
+    isExpanded: boolean
+  ) => {
+    setExpandedProject(isExpanded ? projectId : false);
+  };
+
+  // Get top 3 for podium
+  const topThree = results.filter((r) => r.rank <= 3 && r.rank > 0);
+
+  // Get all results for leaderboard
+  const allResults = results.filter((r) => r.rank > 0);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ textAlign: "center", mb: 6 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-          🏆 Final Results
-        </Typography>
-        <Typography variant="h5" color="text.secondary" sx={{ mb: 1 }}>
-          {event.name}
-        </Typography>
-        {event.resultsPublishedAt && (
-          <Typography variant="body2" color="text.secondary">
-            Published on {new Date(event.resultsPublishedAt).toLocaleDateString()}
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => router.push(`/events/${eventId}/hub`)}
+          sx={{ mb: 2 }}
+        >
+          Back to Event Hub
+        </Button>
+        <Box
+          sx={{
+            textAlign: "center",
+            background: "linear-gradient(135deg, #00684A 0%, #00ED64 100%)",
+            color: "white",
+            borderRadius: 2,
+            p: { xs: 3, sm: 4 },
+            mb: { xs: 2, sm: 4 },
+          }}
+        >
+          <TrophyIcon sx={{ fontSize: { xs: 48, sm: 80 }, mb: 2 }} />
+          <Typography variant="h2" sx={{ fontWeight: 900, mb: 1, fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3.5rem" } }}>
+            Results
           </Typography>
-        )}
+          <Typography variant="h5" sx={{ fontWeight: 500, mb: 2, fontSize: { xs: "1rem", sm: "1.5rem" } }}>
+            {event.name}
+          </Typography>
+          {event.resultsPublishedAt && (
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              Published on {new Date(event.resultsPublishedAt).toLocaleDateString()}
+            </Typography>
+          )}
+          {isAdmin && (
+            <Chip
+              label="ADMIN VIEW"
+              color="warning"
+              sx={{ mt: 2, fontWeight: 700 }}
+            />
+          )}
+        </Box>
       </Box>
 
-      {/* Admin Preview Notice */}
-      {isAdmin && !event.resultsPublished && (
-        <Alert severity="warning" sx={{ mb: 4 }}>
-          <strong>Admin Preview:</strong> Results are not yet published. Only admins can see this page.
-          Publish results from the event admin page to make them public.
-        </Alert>
-      )}
-
-      {/* No Results Yet */}
-      {allResults.length === 0 && (
-        <Alert severity="info">
-          No projects have been judged yet. Results will appear here after judging is complete.
-        </Alert>
-      )}
-
-      {/* Winner Podium */}
-      {topThree.length > 0 && (
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, textAlign: "center" }}>
-            🎉 Top Winners 🎉
+      {allResults.length === 0 ? (
+        <Paper sx={{ p: 6, textAlign: "center" }}>
+          <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
+            No results available yet
           </Typography>
-          
-          <Grid container spacing={3} justifyContent="center">
-            {topThree.map((result) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.projectId}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    border: 3,
-                    borderColor: getRankColor(result.rank),
-                    bgcolor: result.rank === 1 ? "primary.light" : "background.paper",
-                    transition: "transform 0.2s",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                    },
-                  }}
-                >
-                  <CardContent sx={{ textAlign: "center", p: 4 }}>
-                    {/* Trophy */}
-                    <TrophyIcon
+          <Typography color="text.secondary">
+            Projects are still being judged. Check back soon!
+          </Typography>
+        </Paper>
+      ) : (
+        <>
+          {/* Top 3 Podium */}
+          {topThree.length > 0 && (
+            <Box sx={{ mb: 6 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, textAlign: "center", fontSize: { xs: "1.5rem", sm: "2rem" } }}>
+                🏆 Top 3 Winners
+              </Typography>
+              <Grid container spacing={3}>
+                {topThree.map((result) => (
+                  <Grid key={result.projectId} size={{ xs: 12, md: 4 }}>
+                    <Card
                       sx={{
-                        fontSize: getTrophySize(result.rank),
-                        color: getRankColor(result.rank),
-                        mb: 2,
+                        background: getPodiumColor(result.rank),
+                        color: "white",
+                        textAlign: "center",
+                        position: "relative",
+                        overflow: "visible",
                       }}
-                    />
+                    >
+                      <CardContent sx={{ py: { xs: 3, sm: 4 } }}>
+                        <Typography variant="h1" sx={{ fontSize: { xs: 40, sm: 60 }, mb: 2 }}>
+                          {getPodiumIcon(result.rank)}
+                        </Typography>
+                        <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, fontSize: { xs: "1.5rem", sm: "2.5rem" } }}>
+                          #{result.rank}
+                        </Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>
+                          {result.project.name}
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
+                          {result.team?.name || "Individual"}
+                        </Typography>
+                        <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.3)" }} />
+                        <Typography variant="h2" sx={{ fontWeight: 900, mb: 1, fontSize: { xs: "2rem", sm: "3.5rem" } }}>
+                          {result.totalScore.toFixed(1)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                          out of 40 points
+                        </Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8, display: "block", mt: 1 }}>
+                          {result.judgeCount} judge{result.judgeCount !== 1 ? "s" : ""}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
 
-                    {/* Rank */}
-                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                      {result.rank === 1 && "🥇 1st Place"}
-                      {result.rank === 2 && "🥈 2nd Place"}
-                      {result.rank === 3 && "🥉 3rd Place"}
+          {/* Full Leaderboard */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
+              Full Leaderboard
+            </Typography>
+            <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+              <Table sx={{ minWidth: 700 }}>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "grey.100" }}>
+                    <TableCell sx={{ fontWeight: 700 }}>Rank</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Team</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Innovation
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Technical
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Impact
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Presentation
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Total Score
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Judges
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {allResults.map((result) => (
+                    <TableRow
+                      key={result.projectId}
+                      hover
+                      sx={{
+                        backgroundColor:
+                          result.rank <= 3 ? "rgba(0, 237, 100, 0.05)" : "inherit",
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            #{result.rank}
+                          </Typography>
+                          {result.rank <= 3 && (
+                            <Typography sx={{ fontSize: 24 }}>
+                              {getPodiumIcon(result.rank)}
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {result.project.name}
+                        </Typography>
+                        {result.project.description && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {result.project.description}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {result.team ? (
+                          <MuiLink
+                            component={Link}
+                            href={`/events/${eventId}/teams/${result.team._id}`}
+                            sx={{ fontWeight: 500 }}
+                          >
+                            {result.team.name}
+                          </MuiLink>
+                        ) : (
+                          <Typography color="text.secondary">Individual</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={result.averageScores.innovation.toFixed(1)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={result.averageScores.technical.toFixed(1)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={result.averageScores.impact.toFixed(1)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={result.averageScores.presentation.toFixed(1)}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={`${result.totalScore.toFixed(1)} / 40`}
+                          color="primary"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">
+                          {result.judgeCount}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+
+          {/* Project Details */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
+              Project Details
+            </Typography>
+            {allResults.map((result) => (
+              <Accordion
+                key={result.projectId}
+                expanded={expandedProject === result.projectId}
+                onChange={handleAccordionChange(result.projectId)}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      #{result.rank}
                     </Typography>
-
-                    {/* Project Name */}
-                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                    <Typography sx={{ fontWeight: 600, flex: 1 }}>
                       {result.project.name}
                     </Typography>
-
-                    {/* Team */}
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                      Team: <strong>{result.team?.name || "Unknown"}</strong>
-                    </Typography>
-
-                    {/* Score */}
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="h3" sx={{ fontWeight: 700, color: "primary.main" }}>
-                        {result.totalScore.toFixed(2)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        out of 40 points
-                      </Typography>
-                    </Box>
-
-                    {/* Judge Count */}
                     <Chip
-                      label={`Scored by ${result.judgeCount} judge${result.judgeCount !== 1 ? "s" : ""}`}
+                      label={`${result.totalScore.toFixed(1)} / 40`}
+                      color="primary"
                       size="small"
-                      sx={{ mb: 2 }}
                     />
-
-                    {/* Links */}
-                    <Box sx={{ display: "flex", gap: 1, justifyContent: "center", mt: 2 }}>
-                      {result.project.repoUrl && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<GitHubIcon />}
-                          href={result.project.repoUrl}
-                          target="_blank"
-                        >
-                          Repo
-                        </Button>
-                      )}
-                      {result.project.demoUrl && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<LaunchIcon />}
-                          href={result.project.demoUrl}
-                          target="_blank"
-                        >
-                          Demo
-                        </Button>
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {/* Full Leaderboard */}
-      {allResults.length > 0 && (
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-            📊 Full Leaderboard
-          </Typography>
-
-          <TableContainer component={Paper} elevation={2}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ bgcolor: "primary.light" }}>
-                  <TableCell sx={{ fontWeight: 600 }}>Rank</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Team</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Innovation</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Technical</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Impact</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Presentation</TableCell>
-                  <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Total</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Judges</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>Links</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {allResults.map((result) => (
-                  <TableRow
-                    key={result.projectId}
-                    hover
-                    sx={{
-                      bgcolor:
-                        result.rank === 1
-                          ? "gold"
-                          : result.rank === 2
-                          ? "silver"
-                          : result.rank === 3
-                          ? "#CD7F32"
-                          : "inherit",
-                      "& td": {
-                        color: result.rank <= 3 ? "white" : "inherit",
-                      },
-                    }}
-                  >
-                    <TableCell>
-                      <Chip
-                        label={`#${result.rank}`}
-                        size="small"
-                        sx={{
-                          fontWeight: 700,
-                          bgcolor: result.rank <= 3 ? "rgba(255,255,255,0.2)" : "default",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{result.project.name}</TableCell>
-                    <TableCell>{result.team?.name || "Unknown"}</TableCell>
-                    <TableCell align="center">{result.averageScores.innovation.toFixed(1)}</TableCell>
-                    <TableCell align="center">{result.averageScores.technical.toFixed(1)}</TableCell>
-                    <TableCell align="center">{result.averageScores.impact.toFixed(1)}</TableCell>
-                    <TableCell align="center">{result.averageScores.presentation.toFixed(1)}</TableCell>
-                    <TableCell align="center">
-                      <Typography sx={{ fontWeight: 700, fontSize: "1.1rem" }}>
-                        {result.totalScore.toFixed(2)}
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={3}>
+                    {/* Project Info */}
+                    <Box>
+                      <Typography variant="body1" sx={{ mb: 2 }}>
+                        {result.project.description}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={result.judgeCount} size="small" />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
+                      {result.project.technologies &&
+                        result.project.technologies.length > 0 && (
+                          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+                            {result.project.technologies.map((tech, idx) => (
+                              <Chip key={idx} label={tech} size="small" />
+                            ))}
+                          </Box>
+                        )}
+                      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
                         {result.project.repoUrl && (
                           <Button
+                            variant="outlined"
                             size="small"
+                            startIcon={<GitHubIcon />}
                             href={result.project.repoUrl}
                             target="_blank"
-                            sx={{ minWidth: 40, p: 0.5 }}
                           >
-                            <GitHubIcon fontSize="small" />
+                            Repository
                           </Button>
                         )}
                         {result.project.demoUrl && (
                           <Button
+                            variant="outlined"
                             size="small"
+                            startIcon={<DemoIcon />}
                             href={result.project.demoUrl}
                             target="_blank"
-                            sx={{ minWidth: 40, p: 0.5 }}
                           >
-                            <LaunchIcon fontSize="small" />
+                            Demo
                           </Button>
                         )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
+                        {result.project.videoUrl && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<VideoIcon />}
+                            href={result.project.videoUrl}
+                            target="_blank"
+                          >
+                            Video
+                          </Button>
+                        )}
+                      </Stack>
+                    </Box>
 
-      {/* Footer */}
-      <Box sx={{ mt: 6, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
-          Congratulations to all participants! 🎉
-        </Typography>
-      </Box>
+                    <Divider />
+
+                    {/* Score Breakdown */}
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                        Score Breakdown
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid size={{ xs: 6, sm: 3 }}>
+                          <Paper sx={{ p: 2, textAlign: "center" }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Innovation
+                            </Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                              {result.averageScores.innovation.toFixed(1)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              / 10
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 3 }}>
+                          <Paper sx={{ p: 2, textAlign: "center" }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Technical
+                            </Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                              {result.averageScores.technical.toFixed(1)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              / 10
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 3 }}>
+                          <Paper sx={{ p: 2, textAlign: "center" }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Impact
+                            </Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                              {result.averageScores.impact.toFixed(1)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              / 10
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 3 }}>
+                          <Paper sx={{ p: 2, textAlign: "center" }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Presentation
+                            </Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                              {result.averageScores.presentation.toFixed(1)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              / 10
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                      </Grid>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block", mt: 2, textAlign: "center" }}
+                      >
+                        Average of {result.judgeCount} judge
+                        {result.judgeCount !== 1 ? "s" : ""}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Box>
+        </>
+      )}
     </Container>
   );
 }

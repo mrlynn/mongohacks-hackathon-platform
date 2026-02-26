@@ -73,7 +73,7 @@ export default function TeamDetailClient({
   const spotsLeft = team.maxMembers - (team.members?.length || 0);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Button
         startIcon={<BackIcon />}
         component={Link}
@@ -84,12 +84,12 @@ export default function TeamDetailClient({
       </Button>
 
       <Card elevation={2}>
-        <CardContent sx={{ p: 4 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
           {/* Header */}
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
-            <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3, flexWrap: "wrap" }}>
+            <PeopleIcon sx={{ fontSize: { xs: 32, sm: 40 }, color: "primary.main" }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.5rem", sm: "2rem" } }}>
                 {team.name}
               </Typography>
               <Typography variant="body1" color="text.secondary">

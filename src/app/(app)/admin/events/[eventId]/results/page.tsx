@@ -22,12 +22,17 @@ import {
   AccordionSummary,
   AccordionDetails,
   Grid,
+  Switch,
+  FormControlLabel,
+  Snackbar,
 } from "@mui/material";
 import {
   EmojiEvents as TrophyIcon,
   ExpandMore as ExpandMoreIcon,
   Download as DownloadIcon,
   ArrowBack as ArrowBackIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -73,6 +78,9 @@ export default function ResultsPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [eventName, setEventName] = useState("");
+  const [resultsPublished, setResultsPublished] = useState(false);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
   useEffect(() => {
     params.then((p) => {
@@ -88,9 +96,45 @@ export default function ResultsPage({
       const data = await res.json();
       if (data.event) {
         setEventName(data.event.name);
+        setResultsPublished(data.event.resultsPublished || false);
       }
     } catch (err) {
       console.error("Failed to fetch event:", err);
+    }
+  };
+
+  const handlePublishToggle = async (publish: boolean) => {
+    setPublishLoading(true);
+    try {
+      const res = await fetch(`/api/admin/events/${eventId}/publish-results`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publish }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok) {
+        setResultsPublished(publish);
+        setSnackbar({
+          open: true,
+          message: publish
+            ? "✅ Results are now public!"
+            : "🔒 Results are now hidden from public view",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: `❌ ${data.error || "Failed to update"}`,
+        });
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "❌ Failed to update results visibility",
+      });
+    } finally {
+      setPublishLoading(false);
     }
   };
 
@@ -184,6 +228,48 @@ export default function ResultsPage({
           </Button>
         </Box>
       </Box>
+
+      {/* Publish Control */}
+      <Card sx={{ mb: 4, border: 2, borderColor: resultsPublished ? "success.main" : "warning.main" }}>
+        <CardContent>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {resultsPublished ? (
+                <VisibilityIcon sx={{ fontSize: 40, color: "success.main" }} />
+              ) : (
+                <VisibilityOffIcon sx={{ fontSize: 40, color: "warning.main" }} />
+              )}
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Results Visibility
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {resultsPublished
+                    ? "Results are publicly visible to all participants and visitors"
+                    : "Results are hidden - only admins can view them"}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={resultsPublished}
+                  onChange={(e) => handlePublishToggle(e.target.checked)}
+                  disabled={publishLoading || results.length === 0}
+                  color="success"
+                />
+              }
+              label={resultsPublished ? "Published" : "Hidden"}
+              labelPlacement="start"
+            />
+          </Box>
+          {results.length === 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              You need judged projects before you can publish results.
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -327,6 +413,15 @@ export default function ResultsPage({
           </Box>
         </>
       )}
+
+      {/* Snackbar for feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      />
     </Container>
   );
 }

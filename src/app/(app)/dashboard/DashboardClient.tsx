@@ -97,9 +97,9 @@ export default function DashboardClient() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" } }}>
           My Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -132,10 +132,10 @@ export default function DashboardClient() {
           {events.map((event) => (
             <Grid key={event._id} size={{ xs: 12 }}>
               <Card elevation={2}>
-                <CardContent>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, flexWrap: "wrap", gap: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>
                         {event.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -284,7 +284,7 @@ export default function DashboardClient() {
                   </Box>
                 </CardContent>
 
-                <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
+                <CardActions sx={{ px: { xs: 1.5, sm: 2 }, pb: 2, gap: 1, flexWrap: "wrap" }}>
                   <Button
                     variant="contained"
                     size="small"
