@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import TeamNotes from "@/components/shared-ui/TeamNotes";
 
 interface TeamDetailClientProps {
   team: any;
@@ -33,6 +34,7 @@ interface TeamDetailClientProps {
   isMember: boolean;
   eventId: string;
   teamId: string;
+  currentUserId: string;
 }
 
 export default function TeamDetailClient({
@@ -43,6 +45,7 @@ export default function TeamDetailClient({
   isMember,
   eventId,
   teamId,
+  currentUserId,
 }: TeamDetailClientProps) {
   const router = useRouter();
   const [isJoining, setIsJoining] = useState(false);
@@ -206,6 +209,20 @@ export default function TeamDetailClient({
               </Box>
             ))}
           </Box>
+
+          {/* Team Notes - visible to members only */}
+          {isMember && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <TeamNotes
+                teamId={teamId}
+                eventId={eventId}
+                isMember={isMember}
+                currentUserId={currentUserId}
+                isLeader={isLeader}
+              />
+            </>
+          )}
 
           {/* Actions */}
           {error && (

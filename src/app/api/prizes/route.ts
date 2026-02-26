@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { createPrizeSchema } from "@/lib/db/schemas";
-import { auth } from "@/lib/auth";
+import { isUserAdmin } from "@/lib/admin-guard";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { isValidObjectId } from "mongoose";
 
@@ -56,12 +57,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return errorResponse("Unauthorized", 401);
-    }
-
-    if ((session.user as any).role !== "admin") {
+    if (!(await isUserAdmin())) {
       return errorResponse("Forbidden - Admin access required", 403);
     }
 

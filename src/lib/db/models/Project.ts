@@ -49,7 +49,9 @@ const ProjectSchema = new Schema<IProject>(
   { timestamps: true }
 );
 
+// Indexes
 ProjectSchema.index({ eventId: 1, status: 1 });
+ProjectSchema.index({ teamId: 1, eventId: 1 }, { unique: true }); // Critical: one project per team per event
 ProjectSchema.index({ teamId: 1 });
 
 export const ProjectModel =

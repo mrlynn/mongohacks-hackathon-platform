@@ -28,6 +28,7 @@ import {
   EmojiEvents as TrophyIcon,
   OpenInNew as OpenInNewIcon,
   Business as BusinessIcon,
+  CardGiftcard as PrizesIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -170,6 +171,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                         ))}
                         {event.partners.length > 3 && (
                           <Chip
+                            key="overflow"
                             label={`+${event.partners.length - 3}`}
                             size="small"
                             variant="outlined"
@@ -204,10 +206,20 @@ export default function EventsView({ events }: { events: Event[] }) {
                     )}
                   </TableCell>
                   <TableCell align="right">
+                    <Tooltip title="Prizes">
+                      <IconButton
+                        size="small"
+
+                        href={`/admin/events/${event._id}/prizes`}
+                        sx={{ color: "secondary.main" }}
+                      >
+                        <PrizesIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Results">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/results`}
                         sx={{ color: "warning.main" }}
                       >
@@ -329,10 +341,20 @@ export default function EventsView({ events }: { events: Event[] }) {
                 </CardContent>
                 <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>
                   <Box>
+                    <Tooltip title="Prizes">
+                      <IconButton
+                        size="small"
+
+                        href={`/admin/events/${event._id}/prizes`}
+                        sx={{ color: "secondary.main" }}
+                      >
+                        <PrizesIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Results">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/results`}
                         sx={{ color: "warning.main" }}
                       >

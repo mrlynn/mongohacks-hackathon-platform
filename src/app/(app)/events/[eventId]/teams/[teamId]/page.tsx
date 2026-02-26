@@ -67,5 +67,5 @@ export default async function TeamDetailPage({
     );
   }
 
-  return <TeamDetailClient {...data} eventId={eventId} teamId={teamId} />;
+  return <TeamDetailClient {...data} eventId={eventId} teamId={teamId} currentUserId={userId} />;
 }

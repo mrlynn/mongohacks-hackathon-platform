@@ -20,6 +20,7 @@ import {
   Web as WebIcon,
   People as PeopleIcon,
   EmojiEvents as TrophyIcon,
+  CardGiftcard as PrizesIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -112,10 +113,20 @@ export default function EventsTable({ events }: { events: Event[] }) {
                 />
               </TableCell>
               <TableCell align="right">
+                <Tooltip title="Prizes">
+                  <IconButton
+                    size="small"
+
+                    href={`/admin/events/${event._id}/prizes`}
+                    sx={{ color: "secondary.main" }}
+                  >
+                    <PrizesIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Results">
                   <IconButton
                     size="small"
-                   
+
                     href={`/admin/events/${event._id}/results`}
                     sx={{ color: "warning.main" }}
                   >

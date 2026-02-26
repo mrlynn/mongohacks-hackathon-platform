@@ -217,3 +217,23 @@ export function notifyScoreReceived(
     );
   }
 }
+
+export function notifyTeamNotePosted(
+  teamMemberIds: string[],
+  authorName: string,
+  teamName: string,
+  eventId: string
+): void {
+  for (const userId of teamMemberIds) {
+    fireAndForget(() =>
+      createNotification({
+        userId,
+        type: "team_member_joined", // reuse team-related type
+        title: "New Team Note",
+        message: `${authorName} posted a note in team "${teamName}".`,
+        relatedEvent: eventId,
+        actionUrl: `/events/${eventId}/teams`,
+      })
+    );
+  }
+}

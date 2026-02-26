@@ -56,7 +56,10 @@ const ParticipantSchema = new Schema<IParticipant>(
 );
 
 // Email index already created by unique: true in schema
+// Indexes
+ParticipantSchema.index({ userId: 1 }); // Critical: user to participant lookups
 ParticipantSchema.index({ "registeredEvents.eventId": 1 });
+ParticipantSchema.index({ teamId: 1, "registeredEvents.eventId": 1 }); // Team member queries
 ParticipantSchema.index({ skills: 1 });
 
 export const ParticipantModel =

@@ -51,6 +51,8 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
+// Indexes
+UserSchema.index({ email: 1 }, { unique: true }); // Critical: email lookups on login/registration
 UserSchema.index({ magicLinkToken: 1 }, { sparse: true });
 
 export const UserModel =
