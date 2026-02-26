@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Container,
   Typography,
@@ -11,6 +12,7 @@ import {
   Grid,
   Divider,
   Link as MuiLink,
+  CircularProgress,
 } from "@mui/material";
 import {
   Rocket as RocketIcon,
@@ -19,8 +21,10 @@ import {
   GitHub as GitHubIcon,
   Launch as LaunchIcon,
   People as PeopleIcon,
+  Send as SubmitIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ProjectDetailClientProps {
   project: any;
@@ -54,7 +58,65 @@ export default function ProjectDetailClient({
   eventId,
   projectId,
 }: ProjectDetailClientProps) {
+  const router = useRouter();
   const statusColor = getStatusColor(project.status);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmitProject = async () => {
+    setIsSubmitting(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/projects/${projectId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'submit' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit project');
+      }
+
+      setSuccess(data.message || 'Project submitted successfully! 🎉');
+      setTimeout(() => router.refresh(), 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit project. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUnsubmitProject = async () => {
+    setIsSubmitting(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/projects/${projectId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unsubmit' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to unsubmit project');
+      }
+
+      setSuccess(data.message || 'Project unsubmitted. You can now make changes.');
+      setTimeout(() => router.refresh(), 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to unsubmit project. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -216,22 +278,56 @@ export default function ProjectDetailClient({
 
           {/* Actions */}
           {isTeamMember && (
-            <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
-              <Button
-                variant="contained"
-                startIcon={<EditIcon />}
-                component={Link}
-                href={`/events/${eventId}/projects/${projectId}/edit`}
-              >
-                Edit Project
-              </Button>
-
-              {project.status === "draft" && (
-                <Button variant="outlined" color="success">
-                  Submit for Judging
-                </Button>
+            <>
+              {error && (
+                <Box sx={{ p: 2, bgcolor: "error.50", borderRadius: 1, mb: 2 }}>
+                  <Typography variant="body2" color="error.dark">
+                    {error}
+                  </Typography>
+                </Box>
               )}
-            </Box>
+              {success && (
+                <Box sx={{ p: 2, bgcolor: "success.50", borderRadius: 1, mb: 2 }}>
+                  <Typography variant="body2" color="success.dark">
+                    {success}
+                  </Typography>
+                </Box>
+              )}
+
+              <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  component={Link}
+                  href={`/events/${eventId}/projects/${projectId}/edit`}
+                >
+                  Edit Project
+                </Button>
+
+                {project.status === "draft" && (
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    startIcon={<SubmitIcon />}
+                    onClick={handleSubmitProject}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? <CircularProgress size={20} /> : 'Submit for Judging'}
+                  </Button>
+                )}
+
+                {project.status === "submitted" && (
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    onClick={handleUnsubmitProject}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? <CircularProgress size={20} /> : 'Unsubmit Project'}
+                  </Button>
+                )}
+              </Box>
+            </>
           )}
         </CardContent>
       </Card>

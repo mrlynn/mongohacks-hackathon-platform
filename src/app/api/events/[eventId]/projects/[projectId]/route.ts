@@ -1,0 +1,166 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { connectToDatabase } from "@/lib/db/connection";
+import { ProjectModel } from "@/lib/db/models/Project";
+import { TeamModel } from "@/lib/db/models/Team";
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string; projectId: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const { eventId, projectId } = await params;
+    const body = await request.json();
+    const userId = (session.user as { id: string }).id;
+
+    // Get the project
+    const project = await ProjectModel.findById(projectId);
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify user is on the team
+    const team = await TeamModel.findOne({
+      _id: project.teamId,
+      eventId,
+      "members.userId": userId,
+    });
+
+    if (!team) {
+      return NextResponse.json(
+        { success: false, error: "You must be a team member to edit this project" },
+        { status: 403 }
+      );
+    }
+
+    // Allow updates to these fields
+    const allowedUpdates = ['name', 'description', 'githubUrl', 'demoUrl', 'videoUrl', 'category', 'technologies'];
+    const updates: any = {};
+    
+    for (const field of allowedUpdates) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field];
+      }
+    }
+
+    // Apply updates
+    Object.assign(project, updates);
+    await project.save();
+
+    return NextResponse.json({
+      success: true,
+      project,
+    });
+  } catch (error) {
+    console.error("PATCH /api/events/[eventId]/projects/[projectId] error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update project" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string; projectId: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const { eventId, projectId } = await params;
+    const body = await request.json();
+    const userId = (session.user as { id: string }).id;
+    const { action } = body; // "submit" or "unsubmit"
+
+    // Get the project
+    const project = await ProjectModel.findById(projectId);
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify user is on the team
+    const team = await TeamModel.findOne({
+      _id: project.teamId,
+      eventId,
+      "members.userId": userId,
+    });
+
+    if (!team) {
+      return NextResponse.json(
+        { success: false, error: "You must be a team member to modify this project" },
+        { status: 403 }
+      );
+    }
+
+    if (action === "submit") {
+      // Submit the project
+      if (project.status === "submitted") {
+        return NextResponse.json(
+          { success: false, error: "Project is already submitted" },
+          { status: 400 }
+        );
+      }
+
+      project.status = "submitted";
+      project.submittedAt = new Date();
+      await project.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "Project submitted successfully! 🎉",
+        project,
+      });
+    } else if (action === "unsubmit") {
+      // Unsubmit the project
+      if (project.status !== "submitted") {
+        return NextResponse.json(
+          { success: false, error: "Project is not submitted" },
+          { status: 400 }
+        );
+      }
+
+      project.status = "draft";
+      project.submittedAt = undefined;
+      await project.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "Project unsubmitted. You can now make changes.",
+        project,
+      });
+    } else {
+      return NextResponse.json(
+        { success: false, error: "Invalid action. Use 'submit' or 'unsubmit'" },
+        { status: 400 }
+      );
+    }
+  } catch (error) {
+    console.error("POST /api/events/[eventId]/projects/[projectId] error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to modify project status" },
+      { status: 500 }
+    );
+  }
+}

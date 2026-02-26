@@ -147,6 +147,56 @@ export default function YourProjectSection({
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitProject = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/events/${eventId}/projects/${project._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'submit' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit project');
+      }
+
+      showSuccess(data.message || 'Project submitted successfully! 🎉');
+      router.refresh();
+    } catch (err: any) {
+      showError(err.message || 'Failed to submit project. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUnsubmitProject = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/events/${eventId}/projects/${project._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unsubmit' }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to unsubmit project');
+      }
+
+      showSuccess(data.message || 'Project unsubmitted. You can now make changes.');
+      router.refresh();
+    } catch (err: any) {
+      showError(err.message || 'Failed to unsubmit project. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Card elevation={2} id="your-project">
       <CardContent sx={{ p: 3 }}>
@@ -297,8 +347,20 @@ export default function YourProjectSection({
               variant="contained"
               color="success"
               startIcon={<SubmitIcon />}
+              onClick={handleSubmitProject}
+              disabled={isSubmitting}
             >
-              Submit for Judging
+              {isSubmitting ? 'Submitting...' : 'Submit for Judging'}
+            </Button>
+          )}
+          {project.status === 'submitted' && (
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={handleUnsubmitProject}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Unsubmitting...' : 'Unsubmit Project'}
             </Button>
           )}
           
