@@ -5,6 +5,7 @@ import { EventModel } from "@/lib/db/models/Event";
 import { UserModel } from "@/lib/db/models/User";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { JudgeAssignmentModel } from "@/lib/db/models/JudgeAssignment";
+import { TeamModel } from "@/lib/db/models/Team";
 import { serializeDoc, serializeDocs } from "@/lib/utils/serialize";
 import JudgingAssignmentClient from "./JudgingAssignmentClient";
 import { Container, Alert } from "@mui/material";
