@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { PartnerModel } from "@/lib/db/models/Partner";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { errorResponse, successResponse } from "@/lib/utils";
 

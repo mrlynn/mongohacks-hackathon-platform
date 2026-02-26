@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { PartnerModel } from "@/lib/db/models/Partner";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { TemplateConfigModel } from "@/lib/db/models/TemplateConfig";
 import { serializeDoc } from "@/lib/utils/serialize";
