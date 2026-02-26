@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Container } from "@mui/material";
+import { ToastProvider } from "@/contexts/ToastContext";
 import HeroSection from "./sections/HeroSection";
 import NextStepsSection from "./sections/NextStepsSection";
 import YourTeamSection from "./sections/YourTeamSection";
@@ -27,56 +28,58 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
   } = data;
 
   return (
-    <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
-      {/* Hero Banner */}
-      <HeroSection
-        event={event}
-        currentPhase={currentPhase}
-        participantStatus={participantStatus}
-      />
+    <ToastProvider>
+      <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
+        {/* Hero Banner */}
+        <HeroSection
+          event={event}
+          currentPhase={currentPhase}
+          participantStatus={participantStatus}
+        />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {/* Next Steps */}
-          <NextStepsSection
-            nextMilestone={nextMilestone}
-            eventId={eventId}
-            participantStatus={participantStatus}
-          />
-
-          {/* Your Team (if joined) */}
-          {team && (
-            <YourTeamSection
-              team={team}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {/* Next Steps */}
+            <NextStepsSection
+              nextMilestone={nextMilestone}
               eventId={eventId}
-              participant={participant}
+              participantStatus={participantStatus}
             />
-          )}
 
-          {/* Your Project (if created) */}
-          {project && (
-            <YourProjectSection
-              project={project}
-              team={team}
-              eventId={eventId}
+            {/* Your Team (if joined) */}
+            {team && (
+              <YourTeamSection
+                team={team}
+                eventId={eventId}
+                participant={participant}
+              />
+            )}
+
+            {/* Your Project (if created) */}
+            {project && (
+              <YourProjectSection
+                project={project}
+                team={team}
+                eventId={eventId}
+              />
+            )}
+
+            {/* Event Resources */}
+            <EventResourcesSection
+              event={event}
+              upcomingSchedule={upcomingSchedule}
             />
-          )}
 
-          {/* Event Resources */}
-          <EventResourcesSection
-            event={event}
-            upcomingSchedule={upcomingSchedule}
-          />
-
-          {/* Browse Teams (if not joined) */}
-          {!team && recommendedTeams && recommendedTeams.length > 0 && (
-            <BrowseTeamsSection
-              recommendedTeams={recommendedTeams}
-              eventId={eventId}
-            />
-          )}
-        </Box>
-      </Container>
-    </Box>
+            {/* Browse Teams (if not joined) */}
+            {!team && recommendedTeams && recommendedTeams.length > 0 && (
+              <BrowseTeamsSection
+                recommendedTeams={recommendedTeams}
+                eventId={eventId}
+              />
+            )}
+          </Box>
+        </Container>
+      </Box>
+    </ToastProvider>
   );
 }

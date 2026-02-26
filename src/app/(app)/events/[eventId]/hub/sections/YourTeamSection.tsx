@@ -1,14 +1,17 @@
 "use client";
 
-import { Card, CardContent, Box, Typography, Avatar, Chip, Button, Alert } from "@mui/material";
+import { Card, CardContent, Box, Typography, Avatar, Chip, Button, Alert, IconButton, Tooltip } from "@mui/material";
 import {
   People as PeopleIcon,
   Star as LeaderIcon,
   ExitToApp as LeaveIcon,
   PersonAdd as InviteIcon,
   Message as MessageIcon,
+  ContentCopy as CopyIcon,
+  Share as ShareIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { useToast } from "@/contexts/ToastContext";
 
 interface YourTeamSectionProps {
   team: any;
@@ -21,7 +24,39 @@ export default function YourTeamSection({
   eventId,
   participant,
 }: YourTeamSectionProps) {
+  const { showSuccess, showError } = useToast();
   const isLeader = participant.userId === team.leaderId?._id;
+
+  const copyTeamLink = async () => {
+    const teamLink = `${window.location.origin}/events/${eventId}/teams/${team._id}`;
+    try {
+      await navigator.clipboard.writeText(teamLink);
+      showSuccess('Team link copied to clipboard! 📋');
+    } catch (err) {
+      showError('Failed to copy team link');
+    }
+  };
+
+  const shareTeam = async () => {
+    const teamLink = `${window.location.origin}/events/${eventId}/teams/${team._id}`;
+    const shareText = `Join my team "${team.name}" for the hackathon!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: team.name,
+          text: shareText,
+          url: teamLink,
+        });
+        showSuccess('Team shared successfully! 🎉');
+      } catch (err) {
+        // User cancelled share
+      }
+    } else {
+      // Fallback to copy
+      copyTeamLink();
+    }
+  };
 
   return (
     <Card elevation={2} id="your-team">
@@ -213,7 +248,7 @@ export default function YourTeamSection({
         )}
 
         {/* Actions */}
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
           <Button
             variant="outlined"
             component={Link}
@@ -222,6 +257,23 @@ export default function YourTeamSection({
           >
             View Full Team Page
           </Button>
+          
+          {/* Quick Actions */}
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            <Tooltip title="Copy team link">
+              <IconButton size="small" onClick={copyTeamLink} color="primary">
+                <CopyIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Share team">
+              <IconButton size="small" onClick={shareTeam} color="primary">
+                <ShareIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          
+          <Box sx={{ flexGrow: 1 }} />
+          
           {isLeader && (
             <Button
               variant="outlined"

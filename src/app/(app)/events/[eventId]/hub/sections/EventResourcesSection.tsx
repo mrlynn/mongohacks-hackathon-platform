@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -13,6 +13,7 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Button,
 } from '@mui/material';
 import {
   Info as InfoIcon,
@@ -22,8 +23,10 @@ import {
   People as PeopleIcon,
   EmojiEvents as TrophyIcon,
   OpenInNew as ExternalIcon,
+  ContentCopy as CopyIcon,
 } from '@mui/icons-material';
 import { format, parseISO, isBefore, isAfter } from 'date-fns';
+import { useToast } from '@/contexts/ToastContext';
 
 interface ScheduleItem {
   _id: string;
@@ -77,6 +80,17 @@ export default function EventResourcesSection({
   event,
   upcomingSchedule,
 }: EventResourcesSectionProps) {
+  const { showSuccess } = useToast();
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess(`${label} copied to clipboard! 📋`);
+    } catch (err) {
+      showSuccess(`Failed to copy ${label}`);
+    }
+  };
+
   const formatScheduleTime = (startTime: string, endTime?: string) => {
     const start = parseISO(startTime);
     const startFormatted = format(start, 'MMM d, h:mm a');
@@ -204,15 +218,25 @@ export default function EventResourcesSection({
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Discord Community
                       </Typography>
-                      <Link
-                        href={event.resources.discordLink}
-                        target="_blank"
-                        rel="noopener"
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
-                        Join Discord Server
-                        <ExternalIcon fontSize="small" />
-                      </Link>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link
+                          href={event.resources.discordLink}
+                          target="_blank"
+                          rel="noopener"
+                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                          Join Discord Server
+                          <ExternalIcon fontSize="small" />
+                        </Link>
+                        <Tooltip title="Copy Discord link">
+                          <IconButton
+                            size="small"
+                            onClick={() => copyToClipboard(event.resources!.discordLink!, 'Discord link')}
+                          >
+                            <CopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </Box>
                   )}
 
@@ -221,15 +245,25 @@ export default function EventResourcesSection({
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Slack Workspace
                       </Typography>
-                      <Link
-                        href={event.resources.slackLink}
-                        target="_blank"
-                        rel="noopener"
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
-                        Join Slack Workspace
-                        <ExternalIcon fontSize="small" />
-                      </Link>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link
+                          href={event.resources.slackLink}
+                          target="_blank"
+                          rel="noopener"
+                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                          Join Slack Workspace
+                          <ExternalIcon fontSize="small" />
+                        </Link>
+                        <Tooltip title="Copy Slack link">
+                          <IconButton
+                            size="small"
+                            onClick={() => copyToClipboard(event.resources!.slackLink!, 'Slack link')}
+                          >
+                            <CopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </Box>
                   )}
 

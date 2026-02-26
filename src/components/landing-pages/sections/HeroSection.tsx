@@ -18,6 +18,38 @@ export default function HeroSection({ config, sectionConfig, event }: SectionRen
   const textColor = isLight ? colors.text : colors.heroText;
 
   const getBgStyles = () => {
+    // When a background image is provided, always render it with a style-appropriate overlay
+    if (bgImage) {
+      switch (hero.style) {
+        case "gradient":
+          return {
+            background: `linear-gradient(${hero.gradientDirection}, ${colors.heroBg}d9, ${colors.heroBgEnd}e6), url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          };
+        case "solid":
+          return {
+            background: `linear-gradient(${colors.heroBg}d9, ${colors.heroBg}d9), url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          };
+        case "image-overlay":
+          return {
+            background: `linear-gradient(${hero.gradientDirection}, rgba(0,0,0,${hero.overlayOpacity}), rgba(0,0,0,${hero.overlayOpacity})), url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          };
+        case "light":
+        default:
+          return {
+            background: `linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.92)), url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          };
+      }
+    }
+
+    // No background image — use colors/gradients only
     switch (hero.style) {
       case "gradient":
         return {
@@ -26,10 +58,9 @@ export default function HeroSection({ config, sectionConfig, event }: SectionRen
       case "solid":
         return { bgcolor: colors.heroBg };
       case "image-overlay":
+        // No image provided, fall back to gradient
         return {
-          background: bgImage
-            ? `linear-gradient(${hero.gradientDirection}, rgba(0,0,0,${hero.overlayOpacity}), rgba(0,0,0,${hero.overlayOpacity})), url(${bgImage}) center/cover`
-            : `linear-gradient(${hero.gradientDirection}, ${colors.heroBg} 0%, ${colors.heroBgEnd} 100%)`,
+          background: `linear-gradient(${hero.gradientDirection}, ${colors.heroBg} 0%, ${colors.heroBgEnd} 100%)`,
         };
       case "light":
       default:

@@ -22,6 +22,8 @@ import {
   IconButton,
   Chip,
   ListSubheader,
+  Paper,
+  Tooltip,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -33,7 +35,20 @@ import {
   ContentCopy as CopyIcon,
   Link as LinkIcon,
   Handshake as HandshakeIcon,
+  CheckCircle as CheckIcon,
+  HideImage as NoneIcon,
 } from "@mui/icons-material";
+import Image from "next/image";
+
+const BACKGROUNDS = [
+  { file: "collaboration.jpg", label: "Collaboration" },
+  { file: "corporate.jpg",     label: "Corporate" },
+  { file: "fishbowl.jpg",      label: "Fishbowl" },
+  { file: "hackathon.jpg",     label: "Hackathon" },
+  { file: "illustrated.jpg",   label: "Illustrated" },
+  { file: "startup-office.jpg",label: "Startup Office" },
+  { file: "teamwork.jpg",      label: "Teamwork" },
+];
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -604,24 +619,142 @@ export default function LandingPageBuilder({
                     }
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                    Hero Background Image
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+                    Choose a pre-loaded background or enter a custom URL below.
+                    The image will be displayed behind the hero content with a color overlay from your template.
+                  </Typography>
+                  <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                    {/* None option */}
+                    <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                      <Tooltip title="No background image — use template gradient/color">
+                        <Paper
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              customContent: {
+                                ...prev.customContent,
+                                hero: { ...prev.customContent.hero, backgroundImage: "" },
+                              },
+                            }))
+                          }
+                          elevation={!(formData.customContent.hero.backgroundImage ?? "") ? 4 : 1}
+                          sx={{
+                            cursor: "pointer",
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            border: 2,
+                            borderColor: !(formData.customContent.hero.backgroundImage ?? "")
+                              ? "primary.main"
+                              : "divider",
+                            transition: "all 0.15s",
+                            "&:hover": { borderColor: "primary.main", transform: "translateY(-2px)" },
+                            position: "relative",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              height: 72,
+                              bgcolor: "background.default",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <NoneIcon sx={{ fontSize: 28, color: "text.disabled" }} />
+                          </Box>
+                          <Box sx={{ p: 0.75, textAlign: "center" }}>
+                            <Typography variant="caption" fontWeight={600}>None</Typography>
+                          </Box>
+                          {!(formData.customContent.hero.backgroundImage ?? "") && (
+                            <CheckIcon
+                              sx={{
+                                position: "absolute", top: 5, right: 5,
+                                color: "primary.main", fontSize: 18,
+                                bgcolor: "background.paper", borderRadius: "50%",
+                              }}
+                            />
+                          )}
+                        </Paper>
+                      </Tooltip>
+                    </Grid>
+
+                    {BACKGROUNDS.map(({ file, label }) => {
+                      const val = `/backgrounds/${file}`;
+                      const isSelected = (formData.customContent.hero.backgroundImage ?? "") === val;
+                      return (
+                        <Grid key={file} size={{ xs: 6, sm: 3, md: 2 }}>
+                          <Paper
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                customContent: {
+                                  ...prev.customContent,
+                                  hero: { ...prev.customContent.hero, backgroundImage: val },
+                                },
+                              }))
+                            }
+                            elevation={isSelected ? 4 : 1}
+                            sx={{
+                              cursor: "pointer",
+                              borderRadius: 2,
+                              overflow: "hidden",
+                              border: 2,
+                              borderColor: isSelected ? "primary.main" : "divider",
+                              transition: "all 0.15s",
+                              "&:hover": { borderColor: "primary.main", transform: "translateY(-2px)" },
+                              position: "relative",
+                            }}
+                          >
+                            <Box sx={{ height: 72, position: "relative" }}>
+                              <Image
+                                src={val}
+                                alt={label}
+                                fill
+                                style={{ objectFit: "cover" }}
+                                sizes="160px"
+                              />
+                            </Box>
+                            <Box sx={{ p: 0.75, textAlign: "center" }}>
+                              <Typography variant="caption" fontWeight={600}>{label}</Typography>
+                            </Box>
+                            {isSelected && (
+                              <CheckIcon
+                                sx={{
+                                  position: "absolute", top: 5, right: 5,
+                                  color: "primary.main", fontSize: 18,
+                                  bgcolor: "background.paper", borderRadius: "50%",
+                                }}
+                              />
+                            )}
+                          </Paper>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+
                   <TextField
                     fullWidth
-                    label="Background Image URL"
-                    value={formData.customContent.hero.backgroundImage}
+                    size="small"
+                    label="Or enter a custom image URL"
+                    value={
+                      (formData.customContent.hero.backgroundImage ?? "").startsWith("/backgrounds/")
+                        ? ""
+                        : (formData.customContent.hero.backgroundImage ?? "")
+                    }
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
                         customContent: {
                           ...prev.customContent,
-                          hero: {
-                            ...prev.customContent.hero,
-                            backgroundImage: e.target.value,
-                          },
+                          hero: { ...prev.customContent.hero, backgroundImage: e.target.value },
                         },
                       }))
                     }
-                    placeholder="https://..."
+                    placeholder="https://example.com/image.jpg"
                   />
                 </Grid>
               </Grid>

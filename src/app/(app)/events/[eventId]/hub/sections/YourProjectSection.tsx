@@ -1,6 +1,23 @@
 "use client";
 
-import { Card, CardContent, Box, Typography, Chip, Button, Link as MuiLink } from "@mui/material";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  Chip,
+  Button,
+  Link as MuiLink,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import {
   Rocket as RocketIcon,
   GitHub as GitHubIcon,
@@ -8,8 +25,12 @@ import {
   Description as DocsIcon,
   Edit as EditIcon,
   Send as SubmitIcon,
+  ContentCopy as CopyIcon,
+  Share as ShareIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/contexts/ToastContext";
 
 interface YourProjectSectionProps {
   project: any;
@@ -48,9 +69,83 @@ export default function YourProjectSection({
   team,
   eventId,
 }: YourProjectSectionProps) {
+  const router = useRouter();
+  const { showSuccess, showError } = useToast();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: project.name || "",
+    description: project.description || "",
+    githubUrl: project.githubUrl || "",
+    demoUrl: project.demoUrl || "",
+  });
+
   const statusColor = getStatusColor(project.status);
   const statusLabel = getStatusLabel(project.status);
   const isDraft = project.status === "draft";
+
+  const copyProjectLink = async () => {
+    const projectLink = `${window.location.origin}/events/${eventId}/projects/${project._id}`;
+    try {
+      await navigator.clipboard.writeText(projectLink);
+      showSuccess('Project link copied to clipboard! 📋');
+    } catch (err) {
+      showError('Failed to copy project link');
+    }
+  };
+
+  const shareProject = async () => {
+    const projectLink = `${window.location.origin}/events/${eventId}/projects/${project._id}`;
+    const shareText = `Check out our hackathon project "${project.name}"!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: project.name,
+          text: shareText,
+          url: projectLink,
+        });
+        showSuccess('Project shared successfully! 🎉');
+      } catch (err) {
+        // User cancelled share
+      }
+    } else {
+      copyProjectLink();
+    }
+  };
+
+  const handleQuickEdit = () => {
+    setEditForm({
+      name: project.name || "",
+      description: project.description || "",
+      githubUrl: project.githubUrl || "",
+      demoUrl: project.demoUrl || "",
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveQuickEdit = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/events/${eventId}/projects/${project._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update project');
+      }
+
+      showSuccess('Project updated successfully! ✅');
+      setEditDialogOpen(false);
+      router.refresh();
+    } catch (err) {
+      showError('Failed to update project. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Card elevation={2} id="your-project">
@@ -189,14 +284,13 @@ export default function YourProjectSection({
         </Box>
 
         {/* Actions */}
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
-            component={Link}
-            href={`/events/${eventId}/projects/${project._id}/edit`}
+            onClick={handleQuickEdit}
           >
-            Edit Project
+            Quick Edit
           </Button>
           {isDraft && (
             <Button
@@ -207,6 +301,23 @@ export default function YourProjectSection({
               Submit for Judging
             </Button>
           )}
+          
+          {/* Quick Actions */}
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            <Tooltip title="Copy project link">
+              <IconButton size="small" onClick={copyProjectLink} color="primary">
+                <CopyIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Share project">
+              <IconButton size="small" onClick={shareProject} color="primary">
+                <ShareIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          
+          <Box sx={{ flexGrow: 1 }} />
+          
           <Button
             variant="outlined"
             component={Link}
@@ -216,6 +327,57 @@ export default function YourProjectSection({
           </Button>
         </Box>
       </CardContent>
+
+      {/* Quick Edit Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Quick Edit Project</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Project Name"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Description"
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+            />
+            <TextField
+              label="GitHub URL"
+              value={editForm.githubUrl}
+              onChange={(e) => setEditForm({ ...editForm, githubUrl: e.target.value })}
+              fullWidth
+              placeholder="https://github.com/..."
+            />
+            <TextField
+              label="Demo URL"
+              value={editForm.demoUrl}
+              onChange={(e) => setEditForm({ ...editForm, demoUrl: e.target.value })}
+              fullWidth
+              placeholder="https://..."
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveQuickEdit}
+            disabled={isSaving || !editForm.name.trim()}
+            startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

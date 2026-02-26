@@ -31,6 +31,7 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/contexts/ToastContext';
 
 interface TeamMember {
   userId: {
@@ -66,6 +67,7 @@ export default function BrowseTeamsSection({
   eventId,
 }: BrowseTeamsSectionProps) {
   const router = useRouter();
+  const { showSuccess, showError } = useToast();
   const [selectedTeam, setSelectedTeam] = useState<RecommendedTeam | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,11 +99,18 @@ export default function BrowseTeamsSection({
         throw new Error(data.error || 'Failed to join team');
       }
 
-      // Success - refresh the page to update hub data
-      router.refresh();
+      // Success - show toast and refresh
+      showSuccess(`Successfully joined ${selectedTeam.name}! 🎉`);
       handleCloseDialog();
+      
+      // Small delay before refresh so user sees the toast
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
     } catch (err: any) {
-      setError(err.message || 'An error occurred while joining the team');
+      const errorMsg = err.message || 'An error occurred while joining the team';
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setIsJoining(false);
     }
