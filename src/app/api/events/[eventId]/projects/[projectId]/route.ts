@@ -35,10 +35,21 @@ export async function PATCH(
     const team = await TeamModel.findOne({
       _id: project.teamId,
       eventId,
-      "members.userId": userId,
     });
 
     if (!team) {
+      return NextResponse.json(
+        { success: false, error: "Team not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is a team member
+    const isMember = team.members.some(
+      (memberId) => memberId.toString() === userId
+    );
+
+    if (!isMember) {
       return NextResponse.json(
         { success: false, error: "You must be a team member to edit this project" },
         { status: 403 }
@@ -104,10 +115,21 @@ export async function POST(
     const team = await TeamModel.findOne({
       _id: project.teamId,
       eventId,
-      "members.userId": userId,
     });
 
     if (!team) {
+      return NextResponse.json(
+        { success: false, error: "Team not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is a team member
+    const isMember = team.members.some(
+      (memberId) => memberId.toString() === userId
+    );
+
+    if (!isMember) {
       return NextResponse.json(
         { success: false, error: "You must be a team member to modify this project" },
         { status: 403 }

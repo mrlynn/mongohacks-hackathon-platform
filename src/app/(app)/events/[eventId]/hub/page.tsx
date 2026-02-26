@@ -128,7 +128,7 @@ async function getHubData(eventId: string, userId: string) {
   let team = null;
   if (participant.teamId) {
     team = await TeamModel.findById(participant.teamId)
-      .populate("members.userId", "name email")
+      .populate("members", "name email")
       .populate("leaderId", "name email")
       .lean();
   }
@@ -149,7 +149,7 @@ async function getHubData(eventId: string, userId: string) {
       eventId,
       lookingForMembers: true,
     })
-      .populate("members.userId", "name email")
+      .populate("members", "name email")
       .populate("leaderId", "name email")
       .limit(5)
       .lean();

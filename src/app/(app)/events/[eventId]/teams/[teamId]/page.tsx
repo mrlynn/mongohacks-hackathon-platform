@@ -12,7 +12,7 @@ async function getTeamData(eventId: string, teamId: string, userId: string) {
   await connectToDatabase();
 
   const team = await TeamModel.findById(teamId)
-    .populate("members.userId", "name email")
+    .populate("members", "name email")
     .populate("leaderId", "name email")
     .lean();
 
@@ -31,8 +31,9 @@ async function getTeamData(eventId: string, teamId: string, userId: string) {
   }).lean();
 
   const isLeader = team.leaderId?._id?.toString() === userId;
+  // Check membership - members is an array of User objects after populate
   const isMember = team.members?.some(
-    (m: any) => m.userId?._id?.toString() === userId
+    (member: any) => member._id?.toString() === userId
   );
 
   return {

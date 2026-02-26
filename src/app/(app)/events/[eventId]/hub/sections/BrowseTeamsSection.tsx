@@ -247,11 +247,11 @@ export default function BrowseTeamsSection({
                     <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 32, height: 32 } }}>
                       {team.members.map((member) => (
                         <Avatar
-                          key={member.userId._id}
-                          alt={member.userId.name}
-                          src={member.userId.avatar}
+                          key={member._id}
+                          alt={member.name}
+                          src={member.avatar}
                         >
-                          {member.userId.name.charAt(0)}
+                          {member.name.charAt(0)}
                         </Avatar>
                       ))}
                     </AvatarGroup>
@@ -341,18 +341,18 @@ export default function BrowseTeamsSection({
               <Stack spacing={1}>
                 {selectedTeam.members.map((member) => (
                   <Box
-                    key={member.userId._id}
+                    key={member._id}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
                     <Avatar
-                      alt={member.userId.name}
-                      src={member.userId.avatar}
+                      alt={member.name}
+                      src={member.avatar}
                       sx={{ width: 32, height: 32 }}
                     >
-                      {member.userId.name.charAt(0)}
+                      {member.name.charAt(0)}
                     </Avatar>
                     <Typography variant="body2">
-                      {member.userId.name}
+                      {member.name}
                     </Typography>
                     {member.role === 'leader' && (
                       <Chip label="Leader" size="small" color="primary" />

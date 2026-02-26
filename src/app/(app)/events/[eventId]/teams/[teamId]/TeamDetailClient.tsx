@@ -165,7 +165,7 @@ export default function TeamDetailClient({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {team.members?.map((member: any, index: number) => (
               <Box
-                key={member.userId?._id || member._id || `member-${index}`}
+                key={member._id || `member-${index}`}
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -178,14 +178,14 @@ export default function TeamDetailClient({
                 }}
               >
                 <Avatar sx={{ bgcolor: "primary.main", width: 48, height: 48 }}>
-                  {member.userId?.name?.charAt(0).toUpperCase() || "U"}
+                  {member.name?.charAt(0).toUpperCase() || "U"}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {member.userId?.name || "Unknown"}
+                      {member.name || "Unknown"}
                     </Typography>
-                    {member.userId?._id === team.leaderId?._id && (
+                    {member._id === team.leaderId?._id && (
                       <Chip
                         label="Leader"
                         size="small"
@@ -194,9 +194,9 @@ export default function TeamDetailClient({
                       />
                     )}
                   </Box>
-                  {member.userId?.email && (
+                  {member.email && (
                     <Typography variant="caption" color="text.secondary">
-                      {member.userId.email}
+                      {member.email}
                     </Typography>
                   )}
                 </Box>

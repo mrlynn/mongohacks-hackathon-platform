@@ -17,7 +17,7 @@ async function getProjectData(eventId: string, projectId: string, userId: string
   }
 
   const team = await TeamModel.findById(project.teamId)
-    .populate("members.userId", "name email")
+    .populate("members", "name email")
     .populate("leaderId", "name email")
     .lean();
 
@@ -26,8 +26,9 @@ async function getProjectData(eventId: string, projectId: string, userId: string
     return { error: "Event not found" };
   }
 
+  // Check membership - members is an array of User objects after populate
   const isTeamMember = team?.members?.some(
-    (m: any) => m.userId?._id?.toString() === userId
+    (member: any) => member._id?.toString() === userId
   );
   const isTeamLeader = team?.leaderId?._id?.toString() === userId;
 
