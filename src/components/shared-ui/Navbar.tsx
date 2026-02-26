@@ -403,7 +403,7 @@ export default function Navbar() {
                           sx={{
                             bgcolor: "rgba(255, 255, 255, 0.2)",
                             color: "inherit",
-                            fontWeight: 600,
+                            fontWeight: 500,
                             textTransform: "uppercase",
                           }}
                         />

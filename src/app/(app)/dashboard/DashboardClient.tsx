@@ -285,6 +285,15 @@ export default function DashboardClient() {
                 </CardContent>
 
                 <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    component={Link}
+                    href={`/events/${event._id}/hub`}
+                  >
+                    Go to Event Hub
+                  </Button>
+
                   {!event.team && (
                     <>
                       <Button
@@ -334,7 +343,7 @@ export default function DashboardClient() {
                     component={Link}
                     href={`/events/${event._id}`}
                   >
-                    View Event
+                    View Event Details
                   </Button>
                 </CardActions>
               </Card>

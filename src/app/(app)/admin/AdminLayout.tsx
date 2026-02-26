@@ -24,7 +24,6 @@ import {
   Analytics as AnalyticsIcon,
 } from "@mui/icons-material";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 const drawerWidth = 240;
 
@@ -37,6 +36,7 @@ const baseNavItems = [
   { label: "Judges", href: "/admin/judges", icon: <GavelIcon /> },
   { label: "Projects", href: "/admin/projects", icon: <FolderIcon /> },
   { label: "Partners", href: "/admin/partners", icon: <BusinessIcon /> },
+  { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon /> },
   { label: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
 ];
 
@@ -46,16 +46,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const userRole = (session?.user as { role?: string } | undefined)?.role;
-
-  const navItems = userRole === "super_admin"
-    ? [
-        ...baseNavItems.slice(0, -1),
-        { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon /> },
-        ...baseNavItems.slice(-1),
-      ]
-    : baseNavItems;
+  const navItems = baseNavItems;
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";

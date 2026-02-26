@@ -156,7 +156,7 @@ export const hackathonTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Euclid Circular A', 'Lexend Deca', Arial, sans-serif",
+    fontFamily: "'Lexend Deca', Arial, sans-serif",
     h1: {
       fontFamily: "'Source Serif Pro', Georgia, serif",
       fontWeight: 700,
@@ -186,7 +186,7 @@ export const hackathonTheme = createTheme({
       fontSize: "clamp(1rem, 1.5vw, 1.25rem)",
     },
     button: {
-      fontWeight: 600,
+      fontWeight: 500,
       letterSpacing: "0.02em",
       textTransform: "none",
     },
@@ -256,7 +256,7 @@ export const hackathonTheme = createTheme({
         root: {
           borderRadius: 8,
           textTransform: "none" as const,
-          fontWeight: 600,
+          fontWeight: 500,
           padding: "10px 20px",
           transition: "all 0.2s ease-in-out",
         },
