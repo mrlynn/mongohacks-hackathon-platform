@@ -114,8 +114,14 @@ export async function GET() {
       })
     );
 
-    // Calculate completion time (mock for now - would need to track start time)
-    const avgCompletionTime = 5; // TODO: Track actual completion time
+    // Calculate average completion time from responses that have it tracked
+    const responsesWithTime = responses.filter(r => r.completionTimeMinutes && r.completionTimeMinutes > 0);
+    const avgCompletionTime = responsesWithTime.length > 0
+      ? Math.round(
+          responsesWithTime.reduce((sum, r) => sum + (r.completionTimeMinutes || 0), 0) /
+          responsesWithTime.length
+        )
+      : 5; // Default to 5 minutes if no tracking data
 
     // Response breakdown by type
     const participantResponses = responses.filter(r => r.respondentType === 'participant').length;
