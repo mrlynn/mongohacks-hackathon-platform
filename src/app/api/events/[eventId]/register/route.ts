@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { UserModel } from "@/lib/db/models/User";
@@ -8,10 +9,8 @@ import { z } from "zod";
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  bio: z.string().optional().default(""),
-  skills: z.array(z.string()).optional().default([]),
-  interests: z.array(z.string()).optional().default([]),
-  experience_level: z.enum(["beginner", "intermediate", "advanced"]).optional().default("beginner"),
+  password: z.string().min(8, "Password must be at least 8 characters").optional(),
+  skills: z.array(z.string()).min(1, "Select at least one skill").max(10).default([]),
 });
 
 export async function POST(
@@ -75,25 +74,52 @@ export async function POST(
     }
 
     // Check if user already exists
-    let user = await UserModel.findOne({ email: data.email });
-    
-    if (!user) {
-      // Create new user
+    let user = await UserModel.findOne({ email: data.email.toLowerCase() });
+    let isNewUser = false;
+
+    if (user) {
+      // Existing user with password — they should log in first, then register for the event
+      if (user.passwordHash && !data.password) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "An account with this email already exists. Please log in first.",
+            code: "EXISTING_USER",
+            loginUrl: `/login?redirect=/events/${eventId}/register`,
+          },
+          { status: 409 }
+        );
+      }
+    } else {
+      // New user — password is required
+      if (!data.password) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Password is required for new accounts",
+          },
+          { status: 400 }
+        );
+      }
+
+      const passwordHash = await bcrypt.hash(data.password, 12);
       user = await UserModel.create({
-        email: data.email,
+        email: data.email.toLowerCase(),
         name: data.name,
+        passwordHash,
         role: "participant",
-        needsPasswordSetup: true, // They'll need to set password on first login
+        needsPasswordSetup: false,
       });
+      isNewUser = true;
     }
 
     // Check if participant already exists
-    let participant = await ParticipantModel.findOne({ email: data.email });
+    let participant = await ParticipantModel.findOne({ email: data.email.toLowerCase() });
 
     if (participant) {
       // Check if already registered for this event
       const alreadyRegistered = participant.registeredEvents.some(
-        (reg) => reg.eventId.toString() === eventId
+        (reg: any) => reg.eventId.toString() === eventId
       );
 
       if (alreadyRegistered) {
@@ -101,7 +127,6 @@ export async function POST(
           {
             success: false,
             error: "You are already registered for this event",
-            suggestion: "Try logging in instead: /login",
           },
           { status: 400 }
         );
@@ -114,16 +139,9 @@ export async function POST(
         status: "registered",
       });
 
-      // Update profile info if provided
-      if (data.bio) participant.bio = data.bio;
+      // Merge new skills
       if (data.skills && data.skills.length > 0) {
         participant.skills = [...new Set([...participant.skills, ...data.skills])];
-      }
-      if (data.interests && data.interests.length > 0) {
-        participant.interests = [...new Set([...participant.interests, ...data.interests])];
-      }
-      if (data.experience_level) {
-        participant.experience_level = data.experience_level;
       }
 
       await participant.save();
@@ -131,12 +149,9 @@ export async function POST(
       // Create new participant
       participant = await ParticipantModel.create({
         userId: user._id,
-        email: data.email,
+        email: data.email.toLowerCase(),
         name: data.name,
-        bio: data.bio,
         skills: data.skills,
-        interests: data.interests,
-        experience_level: data.experience_level,
         registeredEvents: [
           {
             eventId: eventId,
@@ -149,12 +164,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: "Successfully registered for the event! 🎉",
+      message: "Successfully registered for the event!",
       data: {
         userId: user._id,
         participantId: participant._id,
         eventId,
-        needsPasswordSetup: user.needsPasswordSetup,
+        isNewUser,
       },
     });
   } catch (error) {

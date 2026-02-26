@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         ).lean();
         if (participant?.registeredEvents) {
           registeredEventIds = new Set(
-            participant.registeredEvents.map((re: { eventId: unknown }) =>
+            participant.registeredEvents.map((re: any) =>
               re.eventId.toString()
             )
           );

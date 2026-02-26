@@ -115,7 +115,7 @@ export default function TeamDetailClient({
 
           {/* Team Stats */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" color="text.secondary" display="block">
                 Team Size
               </Typography>
@@ -132,7 +132,7 @@ export default function TeamDetailClient({
               )}
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" color="text.secondary" display="block">
                 Status
               </Typography>
@@ -142,7 +142,7 @@ export default function TeamDetailClient({
             </Grid>
 
             {team.requiredSkills && team.requiredSkills.length > 0 && (
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <Typography variant="caption" color="text.secondary" display="block">
                   Required Skills
                 </Typography>

@@ -59,7 +59,7 @@ export default async function RegisterPage({
 
   const data = await getEventData(eventId, userId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>
@@ -90,8 +90,8 @@ export default async function RegisterPage({
       registeredCount={data.registeredCount}
       spotsRemaining={data.spotsRemaining}
       isLoggedIn={!!session?.user}
-      userEmail={session?.user?.email}
-      userName={session?.user?.name}
+      userEmail={session?.user?.email ?? undefined}
+      userName={session?.user?.name ?? undefined}
     />
   );
 }

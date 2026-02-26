@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
+import { ParticipantModel } from "@/lib/db/models/Participant";
 
 export async function POST(
   request: NextRequest,
@@ -43,6 +44,12 @@ export async function POST(
     });
 
     await team.save();
+
+    // Update participant's teamId
+    await ParticipantModel.findOneAndUpdate(
+      { userId: session.user.id, "registeredEvents.eventId": eventId },
+      { $set: { teamId: team._id } }
+    );
 
     return NextResponse.json({
       success: true,

@@ -14,21 +14,21 @@ import {
   Alert,
   LinearProgress,
   Autocomplete,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  FormControlLabel,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import {
   Event as EventIcon,
   Person as PersonIcon,
   Email as EmailIcon,
   Code as CodeIcon,
-  Lightbulb as LightbulbIcon,
+  Lock as LockIcon,
+  Visibility,
+  VisibilityOff,
   CheckCircle as SuccessIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 interface RegistrationClientProps {
   event: any;
@@ -50,13 +50,6 @@ const skillOptions = [
   "UI/UX Design", "Product Management", "DevOps",
 ];
 
-const interestOptions = [
-  "Web Development", "Mobile Apps", "AI/ML", "Blockchain",
-  "IoT", "Gaming", "FinTech", "HealthTech", "EdTech",
-  "Social Impact", "Sustainability", "Open Source",
-  "Data Visualization", "AR/VR", "Cybersecurity",
-];
-
 export default function RegistrationClient({
   event,
   eventId,
@@ -70,11 +63,10 @@ export default function RegistrationClient({
   const [formData, setFormData] = useState({
     name: userName || "",
     email: userEmail || "",
-    bio: "",
+    password: "",
     skills: [] as string[],
-    interests: [] as string[],
-    experience_level: "beginner" as "beginner" | "intermediate" | "advanced",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -84,33 +76,72 @@ export default function RegistrationClient({
     setIsSubmitting(true);
     setError("");
 
+    // Client-side validation
+    if (!isLoggedIn && formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (formData.skills.length === 0) {
+      setError("Please select at least one skill");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      const payload: Record<string, unknown> = {
+        name: formData.name,
+        email: formData.email,
+        skills: formData.skills,
+      };
+
+      // Only send password for new users (not logged in)
+      if (!isLoggedIn) {
+        payload.password = formData.password;
+      }
+
       const response = await fetch(`/api/events/${eventId}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle existing user — redirect to login
+        if (data.code === "EXISTING_USER" && data.loginUrl) {
+          setError("");
+          router.push(data.loginUrl);
+          return;
+        }
         throw new Error(data.error || "Failed to register");
       }
 
       setSuccess(true);
-      
-      // Redirect to event hub after 2 seconds
-      setTimeout(() => {
-        if (data.data.needsPasswordSetup) {
-          // New user - redirect to password setup
-          router.push(`/setup-password?email=${encodeURIComponent(formData.email)}`);
-        } else {
-          // Existing user - go to hub
+
+      // Auto-login for new users, then redirect to hub
+      if (!isLoggedIn && data.data.isNewUser) {
+        const signInResult = await signIn("credentials", {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
+
+        if (signInResult?.ok) {
           router.push(`/events/${eventId}/hub`);
+        } else {
+          // Sign-in failed but registration succeeded — send to login
+          router.push(`/login?redirect=/events/${eventId}/hub`);
         }
-      }, 2000);
+      } else {
+        // Already logged in — go straight to hub
+        router.push(`/events/${eventId}/hub`);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to register. Please try again.");
+      setSuccess(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -122,13 +153,13 @@ export default function RegistrationClient({
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
           <SuccessIcon sx={{ fontSize: 80, color: "success.main" }} />
           <Typography variant="h4" sx={{ fontWeight: 600 }}>
-            Registration Successful! 🎉
+            You're In!
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            You're all set for {event.name}
+            Welcome to {event.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Redirecting to your Event Hub...
+            Taking you to your Event Hub...
           </Typography>
           <LinearProgress sx={{ width: "100%", maxWidth: 400 }} />
         </Box>
@@ -136,12 +167,12 @@ export default function RegistrationClient({
     );
   }
 
-  const percentFull = spotsRemaining !== null 
+  const percentFull = spotsRemaining !== null
     ? Math.round((registeredCount / event.capacity) * 100)
     : null;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="sm" sx={{ py: 4 }}>
       {/* Event Header */}
       <Card elevation={2} sx={{ mb: 3, bgcolor: "primary.main", color: "white" }}>
         <CardContent sx={{ p: 3 }}>
@@ -188,8 +219,11 @@ export default function RegistrationClient({
       {/* Registration Form */}
       <Card elevation={2}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-            Tell us about yourself
+          <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+            Quick Registration
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Just the essentials — you can complete your profile later.
           </Typography>
 
           {error && (
@@ -199,9 +233,9 @@ export default function RegistrationClient({
           )}
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={2.5}>
               {/* Name */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   required
@@ -210,13 +244,17 @@ export default function RegistrationClient({
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   disabled={isLoggedIn && !!userName}
                   InputProps={{
-                    startAdornment: <PersonIcon sx={{ mr: 1, color: "action.active" }} />,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon sx={{ color: "action.active" }} />
+                      </InputAdornment>
+                    ),
                   }}
                 />
               </Grid>
 
               {/* Email */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   required
@@ -226,31 +264,50 @@ export default function RegistrationClient({
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   disabled={isLoggedIn && !!userEmail}
                   InputProps={{
-                    startAdornment: <EmailIcon sx={{ mr: 1, color: "action.active" }} />,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon sx={{ color: "action.active" }} />
+                      </InputAdornment>
+                    ),
                   }}
-                  helperText={
-                    !isLoggedIn
-                      ? "We'll send you event updates and team invitations"
-                      : null
-                  }
                 />
               </Grid>
 
-              {/* Bio */}
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Bio (Optional)"
-                  placeholder="Tell us about yourself, your experience, and what you're excited to build..."
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                />
-              </Grid>
+              {/* Password (only for new users) */}
+              {!isLoggedIn && (
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    required
+                    type={showPassword ? "text" : "password"}
+                    label="Create Password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    helperText="At least 8 characters"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LockIcon sx={{ color: "action.active" }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              )}
 
               {/* Skills */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Autocomplete
                   multiple
                   options={skillOptions}
@@ -264,104 +321,35 @@ export default function RegistrationClient({
                         {...getTagProps({ index })}
                         key={option}
                         color="primary"
+                        size="small"
                       />
                     ))
                   }
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Skills"
-                      placeholder="Select or type your skills..."
+                      label="Your Skills"
+                      placeholder={formData.skills.length === 0 ? "Pick 2-3 skills..." : ""}
+                      required={formData.skills.length === 0}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
                           <>
-                            <CodeIcon sx={{ mr: 1, color: "action.active" }} />
+                            <InputAdornment position="start">
+                              <CodeIcon sx={{ color: "action.active" }} />
+                            </InputAdornment>
                             {params.InputProps.startAdornment}
                           </>
                         ),
                       }}
-                      helperText="Select from suggestions or type your own"
+                      helperText="Helps us match you with the right team"
                     />
                   )}
                 />
-              </Grid>
-
-              {/* Interests */}
-              <Grid item xs={12}>
-                <Autocomplete
-                  multiple
-                  options={interestOptions}
-                  value={formData.interests}
-                  onChange={(_, newValue) => setFormData({ ...formData, interests: newValue })}
-                  freeSolo
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        label={option}
-                        {...getTagProps({ index })}
-                        key={option}
-                        color="secondary"
-                      />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Interests"
-                      placeholder="What are you interested in building?"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <>
-                            <LightbulbIcon sx={{ mr: 1, color: "action.active" }} />
-                            {params.InputProps.startAdornment}
-                          </>
-                        ),
-                      }}
-                      helperText="This helps us match you with the right team"
-                    />
-                  )}
-                />
-              </Grid>
-
-              {/* Experience Level */}
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend" sx={{ mb: 1 }}>
-                    Experience Level
-                  </FormLabel>
-                  <RadioGroup
-                    row
-                    value={formData.experience_level}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        experience_level: e.target.value as any,
-                      })
-                    }
-                  >
-                    <FormControlLabel
-                      value="beginner"
-                      control={<Radio />}
-                      label="Beginner"
-                    />
-                    <FormControlLabel
-                      value="intermediate"
-                      control={<Radio />}
-                      label="Intermediate"
-                    />
-                    <FormControlLabel
-                      value="advanced"
-                      control={<Radio />}
-                      label="Advanced"
-                    />
-                  </RadioGroup>
-                </FormControl>
               </Grid>
 
               {/* Submit Button */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -370,19 +358,19 @@ export default function RegistrationClient({
                   disabled={isSubmitting}
                   sx={{ py: 1.5 }}
                 >
-                  {isSubmitting ? "Registering..." : "Complete Registration"}
+                  {isSubmitting ? "Registering..." : "Register & Get Started"}
                 </Button>
               </Grid>
 
               {!isLoggedIn && (
-                <Grid item xs={12}>
-                  <Alert severity="info">
+                <Grid size={{ xs: 12 }}>
+                  <Alert severity="info" variant="outlined">
                     Already have an account?{" "}
                     <Button
                       size="small"
-                      onClick={() => router.push(`/login?redirect=/events/${eventId}/hub`)}
+                      onClick={() => router.push(`/login?redirect=/events/${eventId}/register`)}
                     >
-                      Log in instead
+                      Log in first
                     </Button>
                   </Alert>
                 </Grid>

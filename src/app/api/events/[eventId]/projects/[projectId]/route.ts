@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
+import { EventModel } from "@/lib/db/models/Event";
 
 export async function PATCH(
   request: NextRequest,
@@ -31,6 +32,18 @@ export async function PATCH(
       );
     }
 
+    // Check deadline
+    const event = await EventModel.findById(eventId);
+    if (event) {
+      const deadline = event.submissionDeadline || event.endDate;
+      if (deadline && new Date() > new Date(deadline)) {
+        return NextResponse.json(
+          { success: false, error: "Submission deadline has passed" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Verify user is on the team
     const team = await TeamModel.findOne({
       _id: project.teamId,
@@ -46,7 +59,7 @@ export async function PATCH(
 
     // Check if user is a team member
     const isMember = team.members.some(
-      (memberId) => memberId.toString() === userId
+      (memberId: any) => memberId.toString() === userId
     );
 
     if (!isMember) {
@@ -56,17 +69,40 @@ export async function PATCH(
       );
     }
 
+    // Cannot edit submitted projects (must unsubmit first)
+    if (project.status === "submitted" && !body._allowSubmittedEdit) {
+      return NextResponse.json(
+        { success: false, error: "Unsubmit the project before making changes" },
+        { status: 400 }
+      );
+    }
+
     // Allow updates to these fields
-    const allowedUpdates = ['name', 'description', 'githubUrl', 'demoUrl', 'videoUrl', 'category', 'technologies'];
-    const updates: any = {};
-    
+    const allowedUpdates = [
+      'name', 'description', 'repoUrl', 'demoUrl', 'documentationUrl',
+      'category', 'technologies', 'innovations',
+    ];
+    const updates: Record<string, unknown> = {};
+
     for (const field of allowedUpdates) {
       if (body[field] !== undefined) {
         updates[field] = body[field];
       }
     }
 
+    // Validate repo URL if provided
+    if (updates.repoUrl) {
+      const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+/;
+      if (!githubUrlRegex.test(updates.repoUrl as string)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid GitHub repository URL" },
+          { status: 422 }
+        );
+      }
+    }
+
     // Apply updates
+    updates.lastModified = new Date();
     Object.assign(project, updates);
     await project.save();
 
@@ -126,7 +162,7 @@ export async function POST(
 
     // Check if user is a team member
     const isMember = team.members.some(
-      (memberId) => memberId.toString() === userId
+      (memberId: any) => memberId.toString() === userId
     );
 
     if (!isMember) {
@@ -134,6 +170,20 @@ export async function POST(
         { success: false, error: "You must be a team member to modify this project" },
         { status: 403 }
       );
+    }
+
+    // Check deadline for submit action
+    if (action === "submit") {
+      const event = await EventModel.findById(eventId);
+      if (event) {
+        const deadline = event.submissionDeadline || event.endDate;
+        if (deadline && new Date() > new Date(deadline)) {
+          return NextResponse.json(
+            { success: false, error: "Submission deadline has passed" },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     if (action === "submit") {

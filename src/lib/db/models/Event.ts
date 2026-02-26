@@ -23,6 +23,8 @@ export interface IEvent extends Document {
   organizers: Types.ObjectId[];
   partners: Types.ObjectId[]; // Partner references
   status: "draft" | "open" | "in_progress" | "concluded";
+  resultsPublished: boolean;
+  resultsPublishedAt?: Date;
   descriptionEmbedding?: number[];
   landingPage?: {
     template: string;
@@ -82,6 +84,8 @@ const EventSchema = new Schema<IEvent>(
       enum: ["draft", "open", "in_progress", "concluded"],
       default: "draft",
     },
+    resultsPublished: { type: Boolean, default: false },
+    resultsPublishedAt: { type: Date },
     descriptionEmbedding: { type: [Number], select: false },
     landingPage: {
       template: {

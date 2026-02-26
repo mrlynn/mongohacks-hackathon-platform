@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -10,6 +10,7 @@ import {
   Alert,
   MenuItem,
   InputAdornment,
+  Chip,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -24,6 +25,7 @@ import {
   LightbulbOutlined,
   LinkOutlined,
   CloudUploadOutlined,
+  CloudDone as SavedIcon,
   BuildOutlined,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
@@ -60,6 +62,9 @@ export default function NewProjectPage({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -81,8 +86,52 @@ export default function NewProjectPage({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent, isDraft: boolean) => {
-    e.preventDefault();
+  // Auto-save: debounced PATCH to server when project exists as draft
+  const autoSave = useCallback(async () => {
+    if (!projectId || !formData.name) return;
+
+    setSaveStatus("saving");
+    try {
+      const response = await fetch(
+        `/api/events/${params.eventId}/projects/${projectId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (response.ok) {
+        setSaveStatus("saved");
+      } else {
+        setSaveStatus("error");
+      }
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [projectId, formData, params.eventId]);
+
+  // Trigger auto-save on form changes (debounced 3 seconds)
+  useEffect(() => {
+    if (!projectId) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 3000);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, projectId, autoSave]);
+
+  // Create draft project initially
+  const createDraft = async () => {
     setLoading(true);
     setError("");
 
@@ -94,8 +143,7 @@ export default function NewProjectPage({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...formData,
-            status: isDraft ? "draft" : "submitted",
-            submissionDate: isDraft ? undefined : new Date(),
+            status: "draft",
           }),
         }
       );
@@ -103,10 +151,91 @@ export default function NewProjectPage({
       const data = await response.json();
 
       if (data.success) {
-        router.push(`/events/${params.eventId}/projects`);
+        setProjectId(data.project._id);
+        setSaveStatus("saved");
+        return data.project._id;
       } else {
-        setError(data.error || "Failed to submit project");
+        setError(data.error || data.message || "Failed to save draft");
+        return null;
       }
+    } catch (err) {
+      setError("An error occurred while saving the draft");
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name) {
+      setError("Please enter a project name before saving");
+      return;
+    }
+
+    if (projectId) {
+      await autoSave();
+    } else {
+      await createDraft();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      let id = projectId;
+
+      // If no draft yet, create project directly as submitted
+      if (!id) {
+        const response = await fetch(
+          `/api/events/${params.eventId}/projects`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...formData,
+              status: "submitted",
+              submissionDate: new Date(),
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+          setError(data.error || data.message || "Failed to submit project");
+          return;
+        }
+
+        id = data.project._id;
+      } else {
+        // Save latest changes first
+        await autoSave();
+
+        // Then submit
+        const response = await fetch(
+          `/api/events/${params.eventId}/projects/${id}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "submit" }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+          setError(data.error || "Failed to submit project");
+          return;
+        }
+      }
+
+      router.push(`/events/${params.eventId}/hub`);
     } catch (err) {
       setError("An error occurred while submitting the project");
       console.error(err);
@@ -117,11 +246,28 @@ export default function NewProjectPage({
 
   return (
     <Box sx={{ p: 3 }}>
-      <PageHeader
-        icon={<RocketLaunchOutlined />}
-        title="Submit Your Project"
-        subtitle="Share your hackathon project with the judges"
-      />
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <PageHeader
+          icon={<RocketLaunchOutlined />}
+          title="Submit Your Project"
+          subtitle="Share your hackathon project with the judges"
+        />
+        {/* Auto-save indicator */}
+        {projectId && (
+          <Chip
+            icon={saveStatus === "saved" ? <SavedIcon /> : undefined}
+            label={
+              saveStatus === "saving" ? "Saving..." :
+              saveStatus === "saved" ? "Saved" :
+              saveStatus === "error" ? "Save failed" : ""
+            }
+            size="small"
+            color={saveStatus === "error" ? "error" : "default"}
+            variant="outlined"
+            sx={{ mt: 1 }}
+          />
+        )}
+      </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -172,6 +318,7 @@ export default function NewProjectPage({
                 onChange={handleChange}
                 required
                 placeholder="Describe your project, what problem it solves, and how it works..."
+                helperText={`${formData.description.length}/5000 characters (minimum 20)`}
               />
             </Grid>
 
@@ -269,6 +416,7 @@ export default function NewProjectPage({
                 onChange={handleChange}
                 required
                 placeholder="https://github.com/username/project"
+                helperText="Must be a valid GitHub URL"
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -341,7 +489,7 @@ export default function NewProjectPage({
           <Button
             variant="text"
             startIcon={<CloudUploadOutlined />}
-            onClick={(e) => handleSubmit(e, true)}
+            onClick={handleSaveDraft}
             disabled={loading}
           >
             Save as Draft
@@ -350,7 +498,7 @@ export default function NewProjectPage({
             variant="contained"
             color="primary"
             startIcon={<SaveIcon />}
-            onClick={(e) => handleSubmit(e, false)}
+            onClick={handleSubmit}
             disabled={loading}
           >
             {loading ? "Submitting..." : "Submit Project"}

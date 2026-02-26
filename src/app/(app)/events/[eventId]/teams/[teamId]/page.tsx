@@ -59,7 +59,7 @@ export default async function TeamDetailPage({
   const userId = (session.user as { id: string }).id;
   const data = await getTeamData(eventId, teamId, userId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

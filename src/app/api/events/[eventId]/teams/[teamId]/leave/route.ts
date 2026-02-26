@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
+import { ParticipantModel } from "@/lib/db/models/Participant";
 
 export async function POST(
   request: NextRequest,
@@ -18,6 +19,7 @@ export async function POST(
 
     await connectToDatabase();
     const { teamId } = await params;
+    const userId = (session.user as { id: string }).id;
 
     const team = await TeamModel.findById(teamId);
 
@@ -30,7 +32,7 @@ export async function POST(
 
     // Cannot leave if you're the leader and there are other members
     if (
-      team.leaderId.toString() === session.user.id &&
+      team.leaderId.toString() === userId &&
       team.members.length > 1
     ) {
       return NextResponse.json(
@@ -44,7 +46,13 @@ export async function POST(
 
     // Remove user from team
     team.members = team.members.filter(
-      (memberId: any) => memberId.toString() !== (session.user as any).id
+      (memberId: any) => memberId.toString() !== userId
+    );
+
+    // Clear participant's teamId
+    await ParticipantModel.findOneAndUpdate(
+      { userId },
+      { $set: { teamId: null } }
     );
 
     // If team is empty, delete it

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
+import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
@@ -37,6 +38,21 @@ export async function POST(
         },
         { status: 403 }
       );
+    }
+
+    // Validation: Check submission deadline
+    const event = await EventModel.findById(eventId);
+    if (event) {
+      const deadline = event.submissionDeadline || event.endDate;
+      if (deadline && new Date() > new Date(deadline) && body.status !== "draft") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Submission deadline has passed",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Validation 2: Check if user is in a team

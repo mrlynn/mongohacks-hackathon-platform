@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, Box, Typography, Avatar, Chip, Button, Alert, IconButton, Tooltip } from "@mui/material";
+import { useState } from "react";
+import { Card, CardContent, Box, Typography, Avatar, Chip, Button, Alert, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from "@mui/material";
 import {
   People as PeopleIcon,
   Star as LeaderIcon,
@@ -11,6 +12,7 @@ import {
   Share as ShareIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
 
 interface YourTeamSectionProps {
@@ -24,8 +26,11 @@ export default function YourTeamSection({
   eventId,
   participant,
 }: YourTeamSectionProps) {
+  const router = useRouter();
   const { showSuccess, showError } = useToast();
   const isLeader = participant.userId === team.leaderId?._id;
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const copyTeamLink = async () => {
     const teamLink = `${window.location.origin}/events/${eventId}/teams/${team._id}`;
@@ -40,7 +45,7 @@ export default function YourTeamSection({
   const shareTeam = async () => {
     const teamLink = `${window.location.origin}/events/${eventId}/teams/${team._id}`;
     const shareText = `Join my team "${team.name}" for the hackathon!`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -48,13 +53,37 @@ export default function YourTeamSection({
           text: shareText,
           url: teamLink,
         });
-        showSuccess('Team shared successfully! 🎉');
+        showSuccess('Team shared successfully!');
       } catch (err) {
         // User cancelled share
       }
     } else {
       // Fallback to copy
       copyTeamLink();
+    }
+  };
+
+  const handleLeaveTeam = async () => {
+    setIsLeaving(true);
+    try {
+      const response = await fetch(`/api/events/${eventId}/teams/${team._id}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to leave team');
+      }
+
+      showSuccess('You have left the team');
+      setLeaveDialogOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      showError(err.message || 'Failed to leave team');
+    } finally {
+      setIsLeaving(false);
     }
   };
 
@@ -290,12 +319,37 @@ export default function YourTeamSection({
               color="error"
               startIcon={<LeaveIcon />}
               fullWidth={false}
+              onClick={() => setLeaveDialogOpen(true)}
             >
               Leave Team
             </Button>
           )}
         </Box>
       </CardContent>
+
+      {/* Leave Team Confirmation Dialog */}
+      <Dialog open={leaveDialogOpen} onClose={() => setLeaveDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Leave {team.name}?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Are you sure you want to leave this team? You can join another team or rejoin later if there's space.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLeaveDialogOpen(false)} disabled={isLeaving}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleLeaveTeam}
+            disabled={isLeaving}
+            startIcon={isLeaving ? <CircularProgress size={16} /> : <LeaveIcon />}
+          >
+            {isLeaving ? 'Leaving...' : 'Leave Team'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

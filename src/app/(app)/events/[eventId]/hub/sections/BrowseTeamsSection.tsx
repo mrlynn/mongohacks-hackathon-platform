@@ -34,14 +34,10 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
 
 interface TeamMember {
-  userId: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  role: 'leader' | 'member';
-  joinedAt: string;
+  _id: string;
+  name: string;
+  email?: string;
+  avatar?: string;
 }
 
 interface RecommendedTeam {
@@ -49,8 +45,10 @@ interface RecommendedTeam {
   name: string;
   description?: string;
   members: TeamMember[];
+  leaderId?: TeamMember;
   maxMembers: number;
   lookingForMembers: boolean;
+  desiredSkills?: string[];
   requiredSkills?: string[];
   preferredSkills?: string[];
   matchScore?: number;
@@ -117,7 +115,7 @@ export default function BrowseTeamsSection({
   };
 
   const getTeamLeader = (team: RecommendedTeam) => {
-    return team.members.find((m) => m.role === 'leader')?.userId;
+    return team.leaderId || null;
   };
 
   const getMatchScoreColor = (score?: number) => {
@@ -130,17 +128,24 @@ export default function BrowseTeamsSection({
 
   if (!recommendedTeams || recommendedTeams.length === 0) {
     return (
-      <Box>
+      <Box id="browse-teams">
         <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <PeopleIcon color="primary" />
-          Browse Teams
+          Find a Team
         </Typography>
 
         <Card>
-          <CardContent>
-            <Alert severity="info">
-              No teams are currently looking for members. Check back later or create your own team!
-            </Alert>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+              No teams are currently looking for members.
+            </Typography>
+            <Button
+              variant="contained"
+              href={`/events/${eventId}/teams/new`}
+              startIcon={<JoinIcon />}
+            >
+              Create Your Own Team
+            </Button>
           </CardContent>
         </Card>
       </Box>
@@ -148,11 +153,20 @@ export default function BrowseTeamsSection({
   }
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <PeopleIcon color="primary" />
-        Browse Teams
-      </Typography>
+    <Box id="browse-teams">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PeopleIcon color="primary" />
+          Find a Team
+        </Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          href={`/events/${eventId}/teams/new`}
+        >
+          Create Team
+        </Button>
+      </Box>
       
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Join a team looking for members. We've recommended teams based on your skills and interests.
@@ -165,7 +179,7 @@ export default function BrowseTeamsSection({
           const matchColor = getMatchScoreColor(team.matchScore);
 
           return (
-            <Grid item xs={12} md={6} key={team._id}>
+            <Grid size={{ xs: 12, md: 6 }} key={team._id}>
               <Card
                 sx={{
                   height: '100%',
@@ -218,9 +232,18 @@ export default function BrowseTeamsSection({
                   )}
 
                   {/* Skills */}
-                  {(team.requiredSkills || team.preferredSkills) && (
+                  {(team.desiredSkills || team.requiredSkills || team.preferredSkills) && (
                     <Box sx={{ mb: 2 }}>
                       <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ gap: 0.5 }}>
+                        {team.desiredSkills?.map((skill) => (
+                          <Chip
+                            key={skill}
+                            label={skill}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
                         {team.requiredSkills?.map((skill) => (
                           <Chip
                             key={skill}
@@ -296,7 +319,7 @@ export default function BrowseTeamsSection({
                       onClick={() => handleOpenTeamDialog(team)}
                       disabled={spotsLeft === 0}
                     >
-                      {spotsLeft === 0 ? 'Team Full' : 'Request to Join'}
+                      {spotsLeft === 0 ? 'Team Full' : 'Join Team'}
                     </Button>
                   </Box>
                 </CardContent>
@@ -319,7 +342,7 @@ export default function BrowseTeamsSection({
           )}
 
           <Typography variant="body2" color="text.secondary" paragraph>
-            You're about to request to join this team. The team leader will be notified and can accept your request.
+            You're about to join this team. This is instant — no approval needed.
           </Typography>
 
           {selectedTeam?.description && (
@@ -354,7 +377,7 @@ export default function BrowseTeamsSection({
                     <Typography variant="body2">
                       {member.name}
                     </Typography>
-                    {member.role === 'leader' && (
+                    {selectedTeam?.leaderId?._id === member._id && (
                       <Chip label="Leader" size="small" color="primary" />
                     )}
                   </Box>

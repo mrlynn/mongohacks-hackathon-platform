@@ -176,7 +176,7 @@ export default function ProjectDetailClient({
           {/* Details Grid */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             {project.category && (
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="caption" color="text.secondary" display="block">
                   Category
                 </Typography>
@@ -185,7 +185,7 @@ export default function ProjectDetailClient({
             )}
 
             {project.track && (
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="caption" color="text.secondary" display="block">
                   Track
                 </Typography>
@@ -194,7 +194,7 @@ export default function ProjectDetailClient({
             )}
 
             {project.technologies && project.technologies.length > 0 && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
                   Technologies Used
                 </Typography>

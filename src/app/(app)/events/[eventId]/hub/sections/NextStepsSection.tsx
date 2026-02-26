@@ -61,7 +61,7 @@ function getPriorityColor(priority: string) {
 function getActionUrl(action: string, eventId: string) {
   switch (action) {
     case "browse-teams":
-      return `/events/${eventId}/teams`;
+      return `#browse-teams`;
     case "create-project":
       return `/events/${eventId}/projects/new`;
     case "submit-project":

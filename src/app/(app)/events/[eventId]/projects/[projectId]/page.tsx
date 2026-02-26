@@ -8,7 +8,7 @@ import { serializeDoc } from "@/lib/utils/serialize";
 import ProjectDetailClient from "./ProjectDetailClient";
 import { Container, Alert } from "@mui/material";
 
-async function getProjectData(eventId: string, projectId: string, userId: string) {
+async function getProjectData(eventId: string, projectId: string, userId: string): Promise<{ error: string } | { project: any; team: any; event: any; isTeamMember: boolean; isTeamLeader: boolean }> {
   await connectToDatabase();
 
   const project = await ProjectModel.findById(projectId).lean();
@@ -27,7 +27,7 @@ async function getProjectData(eventId: string, projectId: string, userId: string
   }
 
   // Check membership - members is an array of User objects after populate
-  const isTeamMember = team?.members?.some(
+  const isTeamMember = !!team?.members?.some(
     (member: any) => member._id?.toString() === userId
   );
   const isTeamLeader = team?.leaderId?._id?.toString() === userId;
@@ -37,7 +37,7 @@ async function getProjectData(eventId: string, projectId: string, userId: string
     team: team ? serializeDoc(team) : null,
     event: serializeDoc(event),
     isTeamMember,
-    isTeamLeader,
+    isTeamLeader: !!isTeamLeader,
   };
 }
 
@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({
   const userId = (session.user as { id: string }).id;
   const data = await getProjectData(eventId, projectId, userId);
 
-  if (data.error) {
+  if ("error" in data) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

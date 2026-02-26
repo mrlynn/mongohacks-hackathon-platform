@@ -73,7 +73,7 @@ export default function NewTeamPage() {
       const data = await response.json();
 
       if (data.success) {
-        router.push(`/events/${eventId}/teams`);
+        router.push(`/events/${eventId}/hub`);
       } else {
         setError(data.error || "Failed to create team");
       }
