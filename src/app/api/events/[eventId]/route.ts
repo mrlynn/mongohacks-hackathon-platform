@@ -1,88 +1,42 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
-import { RegistrationFormConfigModel } from "@/lib/db/models/RegistrationFormConfig";
-import { updateEventSchema } from "@/lib/db/schemas";
-import { auth } from "@/lib/auth";
-import { errorResponse, successResponse } from "@/lib/utils";
+import { ParticipantModel } from "@/lib/db/models/Participant";
+import { successResponse, errorResponse } from "@/lib/utils";
 
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ eventId: string }> }
-) {
-  try {
-    const { eventId } = await params;
-    await connectToDatabase();
-
-    const event = await EventModel.findById(eventId).lean();
-    if (!event) {
-      return errorResponse("Event not found", 404);
-    }
-
-    // Populate registration form config if linked
-    let registrationFormConfig = null;
-    if (event.landingPage?.registrationFormConfig) {
-      // Ensure the model is registered
-      RegistrationFormConfigModel;
-      registrationFormConfig = await RegistrationFormConfigModel.findById(
-        event.landingPage.registrationFormConfig
-      ).lean();
-    }
-
-    // Serialize dates properly
-    const serializedEvent = {
-      ...event,
-      _id: event._id.toString(),
-      startDate: event.startDate?.toISOString() || new Date().toISOString(),
-      endDate: event.endDate?.toISOString() || new Date().toISOString(),
-      registrationDeadline: event.registrationDeadline?.toISOString() || new Date().toISOString(),
-      createdAt: event.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: event.updatedAt?.toISOString() || new Date().toISOString(),
-      registrationFormConfig: registrationFormConfig
-        ? JSON.parse(JSON.stringify(registrationFormConfig))
-        : null,
-    };
-
-    return successResponse({ event: serializedEvent });
-  } catch (error) {
-    console.error("GET /api/events/[eventId] error:", error);
-    return errorResponse("Failed to fetch event", 500);
-  }
-}
-
-export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return errorResponse("Unauthorized", 401);
-    }
-
-    const { eventId } = await params;
-    const body = await request.json();
-    const parsed = updateEventSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return errorResponse(parsed.error.issues[0].message, 422);
-    }
-
     await connectToDatabase();
+    const { eventId } = await params;
 
-    const event = await EventModel.findByIdAndUpdate(
-      eventId,
-      { $set: parsed.data },
-      { new: true, runValidators: true }
-    ).lean();
+    const event = await EventModel.findById(eventId).lean();
 
     if (!event) {
       return errorResponse("Event not found", 404);
     }
 
-    return successResponse(event);
+    // Count registered participants
+    const registeredCount = await ParticipantModel.countDocuments({
+      "registeredEvents.eventId": eventId,
+    });
+
+    // Calculate spots remaining
+    const spotsRemaining = Math.max(0, event.capacity - registeredCount);
+
+    return successResponse({
+      event,
+      stats: {
+        registered: registeredCount,
+        capacity: event.capacity,
+        spotsRemaining,
+        percentFull: event.capacity > 0 ? Math.round((registeredCount / event.capacity) * 100) : 0,
+      },
+    });
   } catch (error) {
-    console.error("PATCH /api/events/[eventId] error:", error);
-    return errorResponse("Failed to update event", 500);
+    console.error("GET /api/events/[eventId] error:", error);
+    return errorResponse("Failed to fetch event", 500);
   }
 }

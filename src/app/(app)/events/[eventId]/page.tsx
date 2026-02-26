@@ -37,9 +37,17 @@ interface Event {
   };
 }
 
+interface EventStats {
+  registered: number;
+  capacity: number;
+  spotsRemaining: number;
+  percentFull: number;
+}
+
 export default function EventDetailPage() {
   const { eventId } = useParams();
   const [event, setEvent] = useState<Event | null>(null);
+  const [stats, setStats] = useState<EventStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +57,7 @@ export default function EventDetailPage() {
         if (res.ok) {
           const data = await res.json();
           setEvent(data.event || data);
+          setStats(data.stats || null);
         }
       } catch (error) {
         console.error("Failed to fetch event:", error);
@@ -109,13 +118,46 @@ export default function EventDetailPage() {
             <LocationOnIcon fontSize="small" color="action" />
             <Typography color="text.secondary">{event.location}</Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <PeopleIcon fontSize="small" color="action" />
-            <Typography color="text.secondary">
-              Capacity: {event.capacity}
-            </Typography>
-          </Box>
         </Box>
+
+        {/* Registration Stats */}
+        {stats && (
+          <Paper 
+            sx={{ 
+              p: 2, 
+              mb: 3, 
+              bgcolor: stats.spotsRemaining === 0 ? 'error.50' : stats.percentFull >= 80 ? 'warning.50' : 'success.50',
+              border: 1,
+              borderColor: stats.spotsRemaining === 0 ? 'error.200' : stats.percentFull >= 80 ? 'warning.200' : 'success.200',
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <PeopleIcon color={stats.spotsRemaining === 0 ? 'error' : stats.percentFull >= 80 ? 'warning' : 'success'} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {stats.spotsRemaining === 0 ? 'Event Full' : `${stats.spotsRemaining} Spot${stats.spotsRemaining !== 1 ? 's' : ''} Remaining`}
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {stats.registered} of {stats.capacity} participants registered ({stats.percentFull}% full)
+            </Typography>
+            <Box sx={{ 
+              width: '100%', 
+              height: 8, 
+              bgcolor: 'background.paper', 
+              borderRadius: 1,
+              overflow: 'hidden',
+            }}>
+              <Box sx={{ 
+                width: `${stats.percentFull}%`, 
+                height: '100%',
+                bgcolor: stats.spotsRemaining === 0 ? 'error.main' : stats.percentFull >= 80 ? 'warning.main' : 'success.main',
+                transition: 'width 0.3s ease',
+              }} />
+            </Box>
+          </Paper>
+        )}
+
+        <Box
 
         <Box
           sx={{
@@ -146,11 +188,12 @@ export default function EventDetailPage() {
               variant="outlined"
               size="large"
               href={`/events/${eventId}/register`}
+              disabled={stats?.spotsRemaining === 0}
               sx={{
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              Register Now
+              {stats?.spotsRemaining === 0 ? 'Event Full' : 'Register Now'}
             </Button>
           )}
         </Box>
