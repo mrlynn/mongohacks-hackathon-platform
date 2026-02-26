@@ -147,6 +147,31 @@ interface AnalyticsData {
     } | null;
     distribution: Array<{ range: string; count: number }>;
   };
+  feedback: {
+    overview: {
+      totalSent: number;
+      totalCompleted: number;
+      responseRate: number;
+      avgCompletionTime: number;
+      participantResponses: number;
+      partnerResponses: number;
+    };
+    nps: {
+      promoters: number;
+      passives: number;
+      detractors: number;
+      score: number;
+      totalScores: number;
+    };
+    avgRatings: Array<{ question: string; avgScore: number }>;
+    byEvent: Array<{
+      eventName: string;
+      sent: number;
+      completed: number;
+      responseRate: number;
+    }>;
+    byMonth: MonthCount[];
+  };
 }
 
 function StatCard({
@@ -309,10 +334,33 @@ export default function AnalyticsView() {
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const res = await fetch("/api/admin/analytics");
-        if (!res.ok) throw new Error("Failed to fetch analytics");
-        const json = await res.json();
-        setData(json);
+        const [analyticsRes, feedbackRes] = await Promise.all([
+          fetch("/api/admin/analytics"),
+          fetch("/api/admin/analytics/feedback")
+        ]);
+        
+        if (!analyticsRes.ok) throw new Error("Failed to fetch analytics");
+        
+        const analyticsData = await analyticsRes.json();
+        const feedbackData = feedbackRes.ok ? await feedbackRes.json() : null;
+        
+        setData({
+          ...analyticsData,
+          feedback: feedbackData?.success ? feedbackData.data : {
+            overview: {
+              totalSent: 0,
+              totalCompleted: 0,
+              responseRate: 0,
+              avgCompletionTime: 0,
+              participantResponses: 0,
+              partnerResponses: 0
+            },
+            nps: { promoters: 0, passives: 0, detractors: 0, score: 0, totalScores: 0 },
+            avgRatings: [],
+            byEvent: [],
+            byMonth: []
+          }
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -736,6 +784,185 @@ export default function AnalyticsView() {
               data={data.prizes.byCategory}
               color={CHART_COLORS[3]}
             />
+          </ChartCard>
+        </Grid>
+      </Grid>
+
+      <Divider sx={{ mb: 4 }} />
+
+      {/* === FEEDBACK ANALYTICS SECTION === */}
+      <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+        <AssessmentIcon /> Feedback Analytics
+      </Typography>
+      
+      <Grid container spacing={3} sx={{ mb: 5 }}>
+        {/* Overview Cards */}
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="Response Rate"
+            value={`${data.feedback.overview.responseRate}%`}
+            icon={<TrendingUpIcon sx={{ fontSize: 28 }} />}
+            color={data.feedback.overview.responseRate > 50 ? "#00684A" : "#FFC010"}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="NPS Score"
+            value={data.feedback.nps.score}
+            subtitle={data.feedback.nps.totalScores > 0 ? `${data.feedback.nps.totalScores} scores` : undefined}
+            icon={<TrendingUpIcon sx={{ fontSize: 28 }} />}
+            color={data.feedback.nps.score > 50 ? "#00684A" : data.feedback.nps.score > 0 ? "#FFC010" : "#CF4520"}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="Responses"
+            value={`${data.feedback.overview.totalCompleted} / ${data.feedback.overview.totalSent}`}
+            icon={<AssignmentIcon sx={{ fontSize: 28 }} />}
+            color="#006EFF"
+          />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="Avg Completion"
+            value={`${data.feedback.overview.avgCompletionTime} min`}
+            icon={<AssessmentIcon sx={{ fontSize: 28 }} />}
+            color="#B45AF2"
+          />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="Participants"
+            value={data.feedback.overview.participantResponses}
+            icon={<PeopleIcon sx={{ fontSize: 28 }} />}
+            color="#00684A"
+          />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+          <StatCard
+            label="Partners"
+            value={data.feedback.overview.partnerResponses}
+            icon={<BusinessIcon sx={{ fontSize: 28 }} />}
+            color="#006EFF"
+          />
+        </Grid>
+
+        {/* NPS Breakdown */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ChartCard title="NPS Distribution" subtitle="Net Promoter Score breakdown">
+            {data.feedback.nps.totalScores > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={[
+                    { name: 'Detractors (0-6)', value: data.feedback.nps.detractors, fill: '#CF4520' },
+                    { name: 'Passives (7-8)', value: data.feedback.nps.passives, fill: '#FFC010' },
+                    { name: 'Promoters (9-10)', value: data.feedback.nps.promoters, fill: '#00684A' }
+                  ]}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoData />
+            )}
+          </ChartCard>
+        </Grid>
+
+        {/* Responses Over Time */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ChartCard title="Feedback Responses Over Time" subtitle="Monthly submission trends">
+            {data.feedback.byMonth.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={data.feedback.byMonth}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke={CHART_COLORS[0]}
+                    strokeWidth={2}
+                    dot={{ fill: CHART_COLORS[0], r: 4 }}
+                    name="Responses"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoData />
+            )}
+          </ChartCard>
+        </Grid>
+
+        {/* Top Rated Questions */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ChartCard title="Average Ratings by Question" subtitle="Top 10 highest-rated questions">
+            {data.feedback.avgRatings.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <RadarChart data={data.feedback.avgRatings.slice(0, 6)}>
+                  <PolarGrid stroke="#e0e0e0" />
+                  <PolarAngleAxis dataKey="question" tick={{ fontSize: 10 }} />
+                  <PolarRadiusAxis domain={[0, 10]} />
+                  <Radar
+                    name="Score"
+                    dataKey="avgScore"
+                    stroke="#00684A"
+                    fill="#00684A"
+                    fillOpacity={0.6}
+                  />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            ) : (
+              <NoData />
+            )}
+          </ChartCard>
+        </Grid>
+
+        {/* Response Rate by Event */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ChartCard title="Response Rate by Event" subtitle="Feedback completion rates">
+            {data.feedback.byEvent.length > 0 ? (
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Event</strong></TableCell>
+                      <TableCell align="right"><strong>Sent</strong></TableCell>
+                      <TableCell align="right"><strong>Completed</strong></TableCell>
+                      <TableCell align="right"><strong>Rate</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.feedback.byEvent.map((event, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>{event.eventName}</TableCell>
+                        <TableCell align="right">{event.sent}</TableCell>
+                        <TableCell align="right">{event.completed}</TableCell>
+                        <TableCell align="right">
+                          <Chip
+                            label={`${event.responseRate}%`}
+                            size="small"
+                            sx={{
+                              bgcolor: event.responseRate > 50 ? "#00684A" : "#FFC010",
+                              color: "#fff",
+                              fontWeight: 600
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <NoData />
+            )}
           </ChartCard>
         </Grid>
       </Grid>

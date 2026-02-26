@@ -15,6 +15,9 @@ import {
   InputAdornment,
   Autocomplete,
   Chip,
+  IconButton,
+  Typography,
+  Divider,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -31,6 +34,9 @@ import {
   PeopleOutlined,
   Assignment as AssignmentIcon,
   Business as BusinessIcon,
+  Gavel as GavelIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
@@ -63,6 +69,16 @@ export default function EditEventPage({
   >([]);
   const [selectedPartnerIds, setSelectedPartnerIds] = useState<string[]>([]);
 
+  const [judgingRubric, setJudgingRubric] = useState<
+    { name: string; description: string; weight: number; maxScore: number }[]
+  >([]);
+
+  const [feedbackForms, setFeedbackForms] = useState<
+    { _id: string; name: string; slug: string; targetAudience: string }[]
+  >([]);
+  const [selectedParticipantFeedback, setSelectedParticipantFeedback] = useState("");
+  const [selectedPartnerFeedback, setSelectedPartnerFeedback] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -83,8 +99,10 @@ export default function EditEventPage({
     params.then((p) => {
       setEventId(p.eventId);
       fetchEvent(p.eventId);
+      fetchEventFeedbackForms(p.eventId);
     });
     fetchRegistrationForms();
+    fetchFeedbackForms();
     fetchPartners();
   }, []);
 
@@ -103,6 +121,41 @@ export default function EditEventPage({
       const res = await fetch("/api/partners?status=active&limit=200");
       const data = await res.json();
       if (res.ok) setAllPartners(data.partners || data);
+    } catch {
+      // Non-critical
+    }
+  };
+
+  const fetchFeedbackForms = async () => {
+    try {
+      const res = await fetch("/api/admin/feedback-forms");
+      const data = await res.json();
+      if (data.success) setFeedbackForms(data.forms || []);
+    } catch {
+      // Non-critical, selector will just be empty
+    }
+  };
+
+  const fetchEventFeedbackForms = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/events/${id}/feedback-forms`);
+      const data = await res.json();
+      if (data.success && data.feedbackForms) {
+        if (data.feedbackForms.participant) {
+          setSelectedParticipantFeedback(
+            typeof data.feedbackForms.participant === 'object'
+              ? data.feedbackForms.participant._id
+              : String(data.feedbackForms.participant)
+          );
+        }
+        if (data.feedbackForms.partner) {
+          setSelectedPartnerFeedback(
+            typeof data.feedbackForms.partner === 'object'
+              ? data.feedbackForms.partner._id
+              : String(data.feedbackForms.partner)
+          );
+        }
+      }
     } catch {
       // Non-critical
     }
@@ -138,6 +191,16 @@ export default function EditEventPage({
             event.partners.map((p: { _id?: string } | string) =>
               typeof p === "object" && p._id ? String(p._id) : String(p)
             )
+          );
+        }
+        if (event.judgingRubric && event.judgingRubric.length > 0) {
+          setJudgingRubric(
+            event.judgingRubric.map((c: any) => ({
+              name: c.name || "",
+              description: c.description || "",
+              weight: c.weight ?? 1,
+              maxScore: c.maxScore ?? 10,
+            }))
           );
         }
         if (event.landingPage?.registrationFormConfig) {
@@ -179,6 +242,7 @@ export default function EditEventPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          judgingRubric,
           partners: selectedPartnerIds,
           startDate: new Date(formData.startDate).toISOString(),
           endDate: new Date(formData.endDate).toISOString(),
@@ -194,12 +258,22 @@ export default function EditEventPage({
       const data = await res.json();
 
       if (res.ok) {
+        // Save feedback forms separately
+        await fetch(`/api/admin/events/${eventId}/feedback-forms`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            participant: selectedParticipantFeedback || null,
+            partner: selectedPartnerFeedback || null,
+          }),
+        });
+
         setSuccess("Event updated successfully!");
         setTimeout(() => {
           router.push("/admin/events");
         }, 1500);
       } else {
-        setError(data.message || "Failed to update event");
+        setError(data.error || data.message || "Failed to update event");
       }
     } catch (err) {
       setError("Failed to update event");
@@ -217,13 +291,7 @@ export default function EditEventPage({
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <PageHeader
-        icon={<EditOutlined />}
-        title="Edit Event"
-        subtitle="Update hackathon event details"
-      />
-
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 } }}>
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
           {error}
@@ -518,6 +586,123 @@ export default function EditEventPage({
         </FormCard>
 
         <FormCard
+          accentColor="#8B5CF6"
+          accentColorEnd="#6D28D9"
+        >
+          <FormSectionHeader
+            icon={<GavelIcon />}
+            title="Judging Rubric"
+            subtitle="Define custom scoring criteria for judges"
+          />
+
+          {judgingRubric.length === 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              No custom rubric defined. Judges will use the default criteria (Innovation, Technical, Impact, Presentation — each scored 1-10).
+            </Alert>
+          )}
+
+          {judgingRubric.map((criterion, index) => (
+            <Box
+              key={index}
+              sx={{
+                p: 2,
+                mb: 2,
+                border: 1,
+                borderColor: "divider",
+                borderRadius: 1,
+                bgcolor: "background.paper",
+              }}
+            >
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Criterion {index + 1}
+                </Typography>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() =>
+                    setJudgingRubric((prev) => prev.filter((_, i) => i !== index))
+                  }
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Name"
+                    value={criterion.name}
+                    onChange={(e) => {
+                      const updated = [...judgingRubric];
+                      updated[index] = { ...updated[index], name: e.target.value };
+                      setJudgingRubric(updated);
+                    }}
+                    helperText="e.g. innovation, technical_complexity"
+                  />
+                </Grid>
+                <Grid size={{ xs: 6, sm: 3 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Max Score"
+                    type="number"
+                    value={criterion.maxScore}
+                    onChange={(e) => {
+                      const updated = [...judgingRubric];
+                      updated[index] = { ...updated[index], maxScore: Number(e.target.value) || 10 };
+                      setJudgingRubric(updated);
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 6, sm: 3 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Weight"
+                    type="number"
+                    value={criterion.weight}
+                    onChange={(e) => {
+                      const updated = [...judgingRubric];
+                      updated[index] = { ...updated[index], weight: Number(e.target.value) || 1 };
+                      setJudgingRubric(updated);
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Description"
+                    value={criterion.description}
+                    onChange={(e) => {
+                      const updated = [...judgingRubric];
+                      updated[index] = { ...updated[index], description: e.target.value };
+                      setJudgingRubric(updated);
+                    }}
+                    helperText="Guidance for judges on how to evaluate this criterion"
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
+
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() =>
+              setJudgingRubric((prev) => [
+                ...prev,
+                { name: "", description: "", weight: 1, maxScore: 10 },
+              ])
+            }
+          >
+            Add Criterion
+          </Button>
+        </FormCard>
+
+        <FormCard
           accentColor={mongoColors.slate.light}
           accentColorEnd={mongoColors.gray[600]}
         >
@@ -596,6 +781,100 @@ export default function EditEventPage({
                 ))}
               </TextField>
             </Grid>
+          </Grid>
+        </FormCard>
+
+        <FormCard
+          accentColor={mongoColors.purple.main}
+          accentColorEnd={mongoColors.purple.dark}
+        >
+          <FormSectionHeader
+            icon={<AssignmentIcon />}
+            title="Feedback Forms"
+            subtitle="Collect post-event feedback from participants and partners"
+          />
+          <Grid container spacing={2.5}>
+            <Grid size={{ xs: 12 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Assign feedback forms to collect responses after the event concludes. 
+                You can send feedback requests from the Feedback tab once the event is complete.
+              </Alert>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label="Participant Feedback Form"
+                value={selectedParticipantFeedback}
+                onChange={(e) => setSelectedParticipantFeedback(e.target.value)}
+                helperText="Form sent to event participants"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PeopleOutlined
+                          sx={{ color: "text.secondary", fontSize: 20 }}
+                        />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {feedbackForms
+                  .filter(f => f.targetAudience === 'participant' || f.targetAudience === 'both')
+                  .map((form) => (
+                    <MenuItem key={form._id} value={form._id}>
+                      {form.name} ({form.slug})
+                    </MenuItem>
+                  ))}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                select
+                label="Partner Feedback Form"
+                value={selectedPartnerFeedback}
+                onChange={(e) => setSelectedPartnerFeedback(e.target.value)}
+                helperText="Form sent to event partners/sponsors"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <BusinessIcon
+                          sx={{ color: "text.secondary", fontSize: 20 }}
+                        />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {feedbackForms
+                  .filter(f => f.targetAudience === 'partner' || f.targetAudience === 'both')
+                  .map((form) => (
+                    <MenuItem key={form._id} value={form._id}>
+                      {form.name} ({form.slug})
+                    </MenuItem>
+                  ))}
+              </TextField>
+            </Grid>
+
+            {feedbackForms.length === 0 && (
+              <Grid size={{ xs: 12 }}>
+                <Alert severity="warning">
+                  No feedback forms available. Create forms in{" "}
+                  <strong>Settings → Feedback Forms</strong>.
+                </Alert>
+              </Grid>
+            )}
           </Grid>
         </FormCard>
 
