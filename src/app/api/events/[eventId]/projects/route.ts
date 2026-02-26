@@ -71,14 +71,42 @@ export async function POST(
       );
     }
 
-    // Validation 4: Validate GitHub repository URL
-    const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?$/;
-    if (body.repoUrl && !githubUrlRegex.test(body.repoUrl)) {
+    // Validation 4: Validate URLs (if provided)
+    const urlRegex = /^https?:\/\/.+/;
+    
+    if (body.repoUrl) {
+      const githubUrlRegex = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+/;
+      if (!githubUrlRegex.test(body.repoUrl)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invalid GitHub repository URL",
+            message:
+              "GitHub URL must be in format: https://github.com/username/repo",
+            suggestion: "Example: https://github.com/mongodb/mongo",
+          },
+          { status: 422 }
+        );
+      }
+    }
+
+    if (body.demoUrl && !urlRegex.test(body.demoUrl)) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Invalid GitHub repository URL. Format: https://github.com/username/repo",
+          error: "Invalid demo URL",
+          message: "Demo URL must start with http:// or https://",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (body.videoUrl && !urlRegex.test(body.videoUrl)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid video URL",
+          message: "Video URL must start with http:// or https://",
         },
         { status: 422 }
       );

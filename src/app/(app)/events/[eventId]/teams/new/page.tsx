@@ -23,7 +23,7 @@ import {
   BuildOutlined,
   Message as MessageIcon,
 } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   PageHeader,
   FormCard,
@@ -32,12 +32,9 @@ import {
   FormActions,
 } from "@/components/shared-ui/FormElements";
 
-export default function NewTeamPage({
-  params,
-}: {
-  params: { eventId: string };
-}) {
+export default function NewTeamPage() {
   const router = useRouter();
+  const { eventId } = useParams<{ eventId: string }>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -67,7 +64,7 @@ export default function NewTeamPage({
     setError("");
 
     try {
-      const response = await fetch(`/api/events/${params.eventId}/teams`, {
+      const response = await fetch(`/api/events/${eventId}/teams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -76,7 +73,7 @@ export default function NewTeamPage({
       const data = await response.json();
 
       if (data.success) {
-        router.push(`/events/${params.eventId}/teams`);
+        router.push(`/events/${eventId}/teams`);
       } else {
         setError(data.error || "Failed to create team");
       }
