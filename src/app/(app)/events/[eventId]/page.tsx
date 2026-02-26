@@ -158,8 +158,6 @@ export default function EventDetailPage() {
         )}
 
         <Box
-
-        <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },

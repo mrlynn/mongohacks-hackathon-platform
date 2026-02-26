@@ -114,7 +114,7 @@ const PartnerSchema = new Schema<IPartner>(
 );
 
 // Indexes
-PartnerSchema.index({ name: 1 });
+// Index removed - already created by unique: true on name field
 PartnerSchema.index({ tier: 1, status: 1 });
 PartnerSchema.index({ industry: 1 });
 PartnerSchema.index({ status: 1 });

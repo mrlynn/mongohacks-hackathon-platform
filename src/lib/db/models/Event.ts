@@ -141,7 +141,7 @@ EventSchema.index({ startDate: 1 });
 EventSchema.index({ tags: 1 });
 EventSchema.index({ coordinates: "2dsphere" }); // Geospatial index for map queries
 EventSchema.index({ country: 1, city: 1 });
-EventSchema.index({ "landingPage.slug": 1 }); // Landing page slug lookup
+// Index removed - already created by unique: true on landingPage.slug field
 EventSchema.index({ "landingPage.published": 1 });
 
 export const EventModel =
