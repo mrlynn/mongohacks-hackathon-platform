@@ -38,12 +38,30 @@ export default async function ProfilePage() {
     redirect("/auth/signin");
   }
 
-  const userId = (session.user as any).id;
+  // Get user ID from session - try multiple possible locations
+  const userId = (session.user as any).id || (session.user as any).sub;
+  
+  if (!userId) {
+    console.error('[Profile] No user ID in session:', session.user);
+    return (
+      <div style={{ padding: '2rem' }}>
+        <h2>Session Error</h2>
+        <p>User ID not found in session. Please try logging out and back in.</p>
+        <pre>{JSON.stringify(session.user, null, 2)}</pre>
+      </div>
+    );
+  }
+
   const profile = await getUserProfile(userId);
 
   if (!profile) {
+    console.error('[Profile] User not found in database:', userId);
     return (
-      <div>User not found</div>
+      <div style={{ padding: '2rem' }}>
+        <h2>User Not Found</h2>
+        <p>User ID: {userId}</p>
+        <p>This user does not exist in the database. Please try logging out and registering again.</p>
+      </div>
     );
   }
 

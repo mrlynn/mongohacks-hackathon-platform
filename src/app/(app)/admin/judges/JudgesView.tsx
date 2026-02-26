@@ -18,10 +18,13 @@ import {
   Button,
   CardActions,
   Alert,
+  Divider,
 } from "@mui/material";
 import {
   Gavel as GavelIcon,
   Email as EmailIcon,
+  Event as EventIcon,
+  ArrowForward as ArrowForwardIcon,
 } from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
@@ -33,7 +36,23 @@ interface Judge {
   createdAt: string;
 }
 
-export default function JudgesView({ judges }: { judges: Judge[] }) {
+interface EventItem {
+  _id: string;
+  name: string;
+  status: string;
+}
+
+interface JudgesViewProps {
+  judges: Judge[];
+  events: EventItem[];
+  assignmentCountMap: Record<string, number>;
+}
+
+export default function JudgesView({
+  judges,
+  events,
+  assignmentCountMap,
+}: JudgesViewProps) {
   const [view, setView] = useState<"table" | "card">("table");
 
   // CSV export columns
@@ -52,21 +71,59 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
   if (judges.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: "center" }}>
-        <Typography color="text.secondary">
-          No judges assigned yet. Promote users to judge role from the Users Management page.
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          No judges assigned yet. Promote users to the judge role from the Users
+          Management page.
         </Typography>
+        <Button variant="contained" href="/admin/users">
+          Go to User Management
+        </Button>
       </Paper>
     );
   }
 
   return (
     <Box>
-      {/* Instructions */}
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <Typography variant="body2">
-          <strong>To assign judges to projects:</strong> Go to Events → Select an event → Judging tab → Assign judges to projects
-        </Typography>
-      </Alert>
+      {/* Quick Actions: Direct links to assign judges for each event */}
+      {events.length > 0 && (
+        <Card sx={{ mb: 3 }} variant="outlined">
+          <CardContent>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+              <GavelIcon
+                sx={{ fontSize: 20, verticalAlign: "middle", mr: 1 }}
+              />
+              Assign Judges to Projects
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Select an event below to assign judges to its submitted projects.
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              {events.map((event) => (
+                <Button
+                  key={event._id}
+                  variant="outlined"
+                  size="small"
+                  href={`/admin/events/${event._id}/judging`}
+                  startIcon={<EventIcon />}
+                  endIcon={<ArrowForwardIcon />}
+                >
+                  {event.name}
+                </Button>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {events.length === 0 && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            No active events found. Create an event first, then you can assign
+            judges to its projects from the event&apos;s judging page.
+          </Typography>
+        </Alert>
+      )}
+
       {/* Toolbar */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <ViewToggle view={view} onChange={setView} />
@@ -82,9 +139,8 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
                 <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Joined</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Assigned Projects</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="right">
-                  Actions
+                <TableCell sx={{ fontWeight: 600 }}>
+                  Assigned Projects
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -93,18 +149,20 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
                 <TableRow key={judge._id} hover>
                   <TableCell sx={{ fontWeight: 500 }}>{judge.name}</TableCell>
                   <TableCell>{judge.email}</TableCell>
-                  <TableCell>{new Date(judge.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <Chip label="0 projects" size="small" variant="outlined" />
+                    {new Date(judge.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell align="right">
-                    <Button 
-                      size="small" 
-                      variant="outlined"
-                      href="/admin/events"
-                    >
-                      View Events
-                    </Button>
+                  <TableCell>
+                    <Chip
+                      label={`${assignmentCountMap[judge._id] || 0} projects`}
+                      size="small"
+                      color={
+                        assignmentCountMap[judge._id] ? "primary" : "default"
+                      }
+                      variant={
+                        assignmentCountMap[judge._id] ? "filled" : "outlined"
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -121,16 +179,25 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
               <Card elevation={2}>
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <GavelIcon sx={{ fontSize: 40, color: "info.main", mr: 2 }} />
+                    <GavelIcon
+                      sx={{ fontSize: 40, color: "info.main", mr: 2 }}
+                    />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>
                         {judge.name}
                       </Typography>
-                      <Chip label="Judge" size="small" color="info" sx={{ mt: 0.5 }} />
+                      <Chip
+                        label="Judge"
+                        size="small"
+                        color="info"
+                        sx={{ mt: 0.5 }}
+                      />
                     </Box>
                   </Box>
 
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+                  >
                     <EmailIcon fontSize="small" color="action" />
                     <Typography variant="body2" color="text.secondary">
                       {judge.email}
@@ -138,23 +205,22 @@ export default function JudgesView({ judges }: { judges: Judge[] }) {
                   </Box>
 
                   <Box sx={{ mb: 2 }}>
-                    <Chip label="0 projects assigned" size="small" variant="outlined" />
+                    <Chip
+                      label={`${assignmentCountMap[judge._id] || 0} projects assigned`}
+                      size="small"
+                      color={
+                        assignmentCountMap[judge._id] ? "primary" : "default"
+                      }
+                      variant={
+                        assignmentCountMap[judge._id] ? "filled" : "outlined"
+                      }
+                    />
                   </Box>
 
                   <Typography variant="caption" color="text.secondary">
                     Joined: {new Date(judge.createdAt).toLocaleDateString()}
                   </Typography>
                 </CardContent>
-                <CardActions>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
-                    fullWidth
-                    href="/admin/events"
-                  >
-                    View Events to Assign
-                  </Button>
-                </CardActions>
               </Card>
             </Grid>
           ))}

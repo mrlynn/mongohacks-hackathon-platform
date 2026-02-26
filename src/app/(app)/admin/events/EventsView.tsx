@@ -29,6 +29,7 @@ import {
   OpenInNew as OpenInNewIcon,
   Business as BusinessIcon,
   CardGiftcard as PrizesIcon,
+  Gavel as GavelIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -216,6 +217,15 @@ export default function EventsView({ events }: { events: Event[] }) {
                         <PrizesIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+                    <Tooltip title="Judging">
+                      <IconButton
+                        size="small"
+                        href={`/admin/events/${event._id}/judging`}
+                        sx={{ color: "secondary.dark" }}
+                      >
+                        <GavelIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Results">
                       <IconButton
                         size="small"
@@ -229,7 +239,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="Registrations">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/registrations`}
                         color="info"
                       >
@@ -239,7 +249,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="Landing Page">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/landing-page`}
                         color="success"
                       >
@@ -249,7 +259,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="View Details">
                       <IconButton
                         size="small"
-                       
+
                         href={`/events/${event._id}`}
                       >
                         <ViewIcon fontSize="small" />
@@ -258,7 +268,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="Edit">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/edit`}
                         color="primary"
                       >
@@ -351,6 +361,15 @@ export default function EventsView({ events }: { events: Event[] }) {
                         <PrizesIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+                    <Tooltip title="Judging">
+                      <IconButton
+                        size="small"
+                        href={`/admin/events/${event._id}/judging`}
+                        sx={{ color: "secondary.dark" }}
+                      >
+                        <GavelIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Results">
                       <IconButton
                         size="small"
@@ -364,7 +383,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="Registrations">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/registrations`}
                         color="info"
                       >
@@ -374,7 +393,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="Landing Page">
                       <IconButton
                         size="small"
-                       
+
                         href={`/admin/events/${event._id}/landing-page`}
                         color="success"
                       >
@@ -384,7 +403,7 @@ export default function EventsView({ events }: { events: Event[] }) {
                     <Tooltip title="View">
                       <IconButton
                         size="small"
-                       
+
                         href={`/events/${event._id}`}
                       >
                         <ViewIcon fontSize="small" />

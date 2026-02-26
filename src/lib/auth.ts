@@ -126,6 +126,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as { role: string }).role;
         token.id = user.id;
+        // NextAuth v5 uses 'sub' as the standard user ID field
+        token.sub = user.id;
       }
       return token;
     },
@@ -134,7 +136,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Store the real admin identity
         (session.user as unknown as { role: string }).role =
           token.role as string;
-        (session.user as unknown as { id: string }).id = token.id as string;
+        (session.user as unknown as { id: string }).id = (token.id || token.sub) as string;
 
         // Check for impersonation cookie
         try {
