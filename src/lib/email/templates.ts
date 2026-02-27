@@ -69,6 +69,32 @@ export function twoFactorCodeEmail(
   };
 }
 
+export function feedbackRequestEmail(
+  recipientName: string,
+  eventName: string,
+  formUrl: string
+): { subject: string; html: string; text: string } {
+  return {
+    subject: `We'd love your feedback on ${eventName}`,
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Hi ${recipientName || "there"},</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+        Thank you for participating in <strong>${eventName}</strong>! We'd love to hear about your experience.
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Your feedback helps us improve future events and deliver a better experience for everyone.
+      </p>
+      <a href="${formUrl}" style="display:inline-block;background:${brandColor};color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;">
+        Share Your Feedback
+      </a>
+      <p style="color:#999;font-size:13px;margin:24px 0 0;">
+        This survey should only take a few minutes to complete.
+      </p>
+    `),
+    text: `Hi ${recipientName || "there"},\n\nThank you for participating in ${eventName}! We'd love to hear about your experience.\n\nShare your feedback: ${formUrl}\n\nThis survey should only take a few minutes to complete.`,
+  };
+}
+
 export function notificationEmail(
   name: string,
   title: string,

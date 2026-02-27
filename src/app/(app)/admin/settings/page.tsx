@@ -7,6 +7,7 @@ import {
   Palette as PaletteIcon,
   Settings as SettingsIcon,
   Assignment as AssignmentIcon,
+  RateReview as RateReviewIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
@@ -93,6 +94,40 @@ export default function AdminSettingsPage() {
                   <Typography variant="body2" color="text.secondary">
                     Create and customize multi-step registration forms for hackathon events.
                     Configure tiers, custom questions, and profile fields.
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Card elevation={2} sx={{ height: "100%" }}>
+              <CardActionArea
+                onClick={() => router.push("/admin/settings/feedback-forms")}
+                sx={{ height: "100%", p: 0 }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        bgcolor: "success.main",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <RateReviewIcon sx={{ color: "#fff", fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Feedback Forms
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Create and customize feedback forms for event participants and partners.
+                    Manage NPS scores, ratings, and open-ended questions.
                   </Typography>
                 </CardContent>
               </CardActionArea>

@@ -90,23 +90,11 @@ export default function EventRegistrationsPage({
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ mb: 4 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.push("/admin/events")}
-          sx={{ mb: 2 }}
-        >
-          Back to Events
-        </Button>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            Event Registrations
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {eventName}
-          </Typography>
-        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+          Event Registrations
+        </Typography>
       </Box>
 
       {error && (

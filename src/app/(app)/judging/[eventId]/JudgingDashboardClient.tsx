@@ -40,11 +40,22 @@ interface Assignment {
   };
   status: string;
   hasScore: boolean;
-  score: any;
+  score: { totalScore: number; [key: string]: unknown } | null;
+}
+
+interface RubricCriterion {
+  name: string;
+  description: string;
+  weight: number;
+  maxScore: number;
 }
 
 interface JudgingDashboardClientProps {
-  event: any;
+  event: {
+    name: string;
+    judgingRubric?: RubricCriterion[];
+    [key: string]: unknown;
+  };
   assignments: Assignment[];
   eventId: string;
 }
@@ -59,6 +70,20 @@ export default function JudgingDashboardClient({
   const scoredCount = assignments.filter((a) => a.hasScore).length;
   const totalCount = assignments.length;
   const progress = totalCount > 0 ? Math.round((scoredCount / totalCount) * 100) : 0;
+
+  // Calculate max possible score from rubric (or default)
+  const rubric = event.judgingRubric && event.judgingRubric.length > 0
+    ? event.judgingRubric
+    : [
+        { name: "innovation", maxScore: 10, weight: 1 },
+        { name: "technical", maxScore: 10, weight: 1 },
+        { name: "impact", maxScore: 10, weight: 1 },
+        { name: "presentation", maxScore: 10, weight: 1 },
+      ];
+  const maxPossibleScore = rubric.reduce(
+    (sum: number, c: { maxScore: number; weight: number }) => sum + c.maxScore * c.weight,
+    0
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
@@ -268,7 +293,7 @@ export default function JudgingDashboardClient({
                   {isScored && assignment.score && (
                     <Alert severity="success" sx={{ mb: 2 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        Your Score: {assignment.score.totalScore}/40
+                        Your Score: {assignment.score.totalScore}/{maxPossibleScore}
                       </Typography>
                     </Alert>
                   )}

@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { NotificationModel, NotificationType } from "@/lib/db/models/Notification";
 import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
-import { notificationEmail } from "@/lib/email/templates";
+import { notificationEmail, feedbackRequestEmail } from "@/lib/email/templates";
 
 // Maps notification types to preference keys
 const typeToPreference: Record<NotificationType, string | null> = {
@@ -17,6 +17,7 @@ const typeToPreference: Record<NotificationType, string | null> = {
   judging_started: "eventReminders",
   judge_assigned: "eventReminders",
   score_received: "projectUpdates",
+  feedback_requested: "eventReminders",
   general: null, // always send
 };
 
@@ -216,6 +217,44 @@ export function notifyScoreReceived(
       })
     );
   }
+}
+
+export function notifyFeedbackRequested(
+  userId: string,
+  userName: string,
+  userEmail: string,
+  eventName: string,
+  eventId: string,
+  formUrl: string
+): void {
+  fireAndForget(async () => {
+    try {
+      await connectToDatabase();
+
+      // Create in-app notification
+      await NotificationModel.create({
+        userId,
+        type: "feedback_requested",
+        title: "Share Your Feedback",
+        message: `We'd love to hear about your experience at ${eventName}.`,
+        relatedEvent: eventId,
+        actionUrl: formUrl,
+      });
+
+      // Send the dedicated feedback email template (not generic notification)
+      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const fullFormUrl = `${baseUrl}${formUrl}`;
+      const template = feedbackRequestEmail(userName, eventName, fullFormUrl);
+      await sendEmail({
+        to: userEmail,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+    } catch (error) {
+      console.error("Feedback notification error:", error);
+    }
+  });
 }
 
 export function notifyTeamNotePosted(

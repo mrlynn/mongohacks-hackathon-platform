@@ -39,6 +39,7 @@ import {
   Close as CloseIcon,
   Gavel as GavelIcon,
   MenuBook as MenuBookIcon,
+  Collections as GalleryIcon,
 } from "@mui/icons-material";
 import { useColorScheme } from "@mui/material/styles";
 import Image from "next/image";
@@ -197,6 +198,18 @@ export default function Navbar() {
               <MapIcon />
             </ListItemIcon>
             <ListItemText primary="Map" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => handleNavigate("/gallery")}
+            selected={isActive("/gallery")}
+          >
+            <ListItemIcon>
+              <GalleryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Gallery" />
           </ListItemButton>
         </ListItem>
 
@@ -398,6 +411,14 @@ export default function Navbar() {
                   sx={{ textTransform: "none" }}
                 >
                   Map
+                </Button>
+                <Button
+                  color="inherit"
+                  href="/gallery"
+                  startIcon={<GalleryIcon />}
+                  sx={{ textTransform: "none" }}
+                >
+                  Gallery
                 </Button>
 
                 <Button

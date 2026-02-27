@@ -7,6 +7,44 @@ import { EventModel } from "@/lib/db/models/Event";
 import { generateProjectSummary } from "@/lib/ai/summary-service";
 import { notifyProjectSubmitted } from "@/lib/notifications/notification-service";
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string; projectId: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const { eventId, projectId } = await params;
+
+    const project = await ProjectModel.findOne({
+      _id: projectId,
+      eventId,
+    }).populate("teamId", "name members leaderId");
+
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, project });
+  } catch (error) {
+    console.error("GET /api/events/[eventId]/projects/[projectId] error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch project" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ eventId: string; projectId: string }> }

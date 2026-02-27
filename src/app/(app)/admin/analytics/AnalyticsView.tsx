@@ -29,6 +29,7 @@ import {
   EmojiEvents as PrizeIcon,
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
+  Assignment as AssignmentIcon,
   Code as CodeIcon,
   AttachMoney as MoneyIcon,
 } from "@mui/icons-material";
@@ -842,7 +843,7 @@ export default function AnalyticsView() {
           <StatCard
             label="Partners"
             value={data.feedback.overview.partnerResponses}
-            icon={<BusinessIcon sx={{ fontSize: 28 }} />}
+            icon={<PartnersIcon sx={{ fontSize: 28 }} />}
             color="#006EFF"
           />
         </Grid>

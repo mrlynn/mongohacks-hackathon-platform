@@ -12,6 +12,11 @@ import {
   Grid,
   Divider,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -49,6 +54,8 @@ export default function TeamDetailClient({
 }: TeamDetailClientProps) {
   const router = useRouter();
   const [isJoining, setIsJoining] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [error, setError] = useState("");
 
   const handleJoinTeam = async () => {
@@ -70,6 +77,29 @@ export default function TeamDetailClient({
       setError("An error occurred");
     } finally {
       setIsJoining(false);
+    }
+  };
+
+  const handleLeaveTeam = async () => {
+    setIsLeaving(true);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/events/${eventId}/teams/${teamId}/leave`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        router.push(`/events/${eventId}/hub`);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to leave team");
+      }
+    } catch (err) {
+      setError("An error occurred");
+    } finally {
+      setIsLeaving(false);
+      setShowLeaveConfirm(false);
     }
   };
 
@@ -259,13 +289,31 @@ export default function TeamDetailClient({
                 variant="outlined"
                 color="error"
                 startIcon={<LeaveIcon />}
+                onClick={() => setShowLeaveConfirm(true)}
+                disabled={isLeaving}
               >
-                Leave Team
+                {isLeaving ? "Leaving..." : "Leave Team"}
               </Button>
             )}
           </Box>
         </CardContent>
       </Card>
+
+      {/* Leave Team Confirmation Dialog */}
+      <Dialog open={showLeaveConfirm} onClose={() => setShowLeaveConfirm(false)}>
+        <DialogTitle>Leave Team?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to leave <strong>{team.name}</strong>? You can rejoin later if spots are available.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowLeaveConfirm(false)}>Cancel</Button>
+          <Button onClick={handleLeaveTeam} color="error" disabled={isLeaving}>
+            {isLeaving ? "Leaving..." : "Leave Team"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

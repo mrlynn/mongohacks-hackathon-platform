@@ -23,6 +23,7 @@ import {
   Link as MuiLink,
   Divider,
   Stack,
+  Alert,
 } from "@mui/material";
 import {
   EmojiEvents as TrophyIcon,
@@ -31,9 +32,16 @@ import {
   Language as DemoIcon,
   VideoLibrary as VideoIcon,
   ArrowBack as ArrowBackIcon,
+  AutoAwesome as AiIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+interface RubricCriterion {
+  name: string;
+  weight: number;
+  maxScore: number;
+}
 
 interface ProjectResult {
   projectId: string;
@@ -46,27 +54,20 @@ interface ProjectResult {
     demoUrl?: string;
     videoUrl?: string;
     technologies?: string[];
+    aiSummary?: string;
+    aiFeedback?: string;
   };
   team: {
     _id: string;
     name: string;
   } | null;
-  averageScores: {
-    innovation: number;
-    technical: number;
-    impact: number;
-    presentation: number;
-  };
+  averageScores: Record<string, number>;
   totalScore: number;
+  maxPossible: number;
   judgeCount: number;
   scores: Array<{
-    judgeId: any;
-    scores: {
-      innovation: number;
-      technical: number;
-      impact: number;
-      presentation: number;
-    };
+    judgeId: unknown;
+    scores: Record<string, number>;
     totalScore: number;
     comments?: string;
     submittedAt: Date;
@@ -75,6 +76,7 @@ interface ProjectResult {
 
 interface ResultsClientProps {
   results: ProjectResult[];
+  rubric?: RubricCriterion[];
   event: {
     _id: string;
     name: string;
@@ -88,14 +90,31 @@ interface ResultsClientProps {
   isAdmin: boolean;
 }
 
+function toLabel(name: string): string {
+  return name
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const DEFAULT_RUBRIC: RubricCriterion[] = [
+  { name: "innovation", weight: 1, maxScore: 10 },
+  { name: "technical", weight: 1, maxScore: 10 },
+  { name: "impact", weight: 1, maxScore: 10 },
+  { name: "presentation", weight: 1, maxScore: 10 },
+];
+
 export default function ResultsClient({
   results,
+  rubric,
   event,
   eventId,
   isAdmin,
 }: ResultsClientProps) {
   const router = useRouter();
   const [expandedProject, setExpandedProject] = useState<string | false>(false);
+
+  const criteria = rubric && rubric.length > 0 ? rubric : DEFAULT_RUBRIC;
+  const maxPossible = criteria.reduce((s, c) => s + c.maxScore * c.weight, 0);
 
   const getPodiumColor = (rank: number) => {
     switch (rank) {
@@ -124,7 +143,7 @@ export default function ResultsClient({
   };
 
   const handleAccordionChange = (projectId: string) => (
-    event: React.SyntheticEvent,
+    _event: React.SyntheticEvent,
     isExpanded: boolean
   ) => {
     setExpandedProject(isExpanded ? projectId : false);
@@ -226,7 +245,7 @@ export default function ResultsClient({
                           {result.totalScore.toFixed(1)}
                         </Typography>
                         <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                          out of 40 points
+                          out of {result.maxPossible ?? maxPossible} points
                         </Typography>
                         <Typography variant="caption" sx={{ opacity: 0.8, display: "block", mt: 1 }}>
                           {result.judgeCount} judge{result.judgeCount !== 1 ? "s" : ""}
@@ -251,18 +270,16 @@ export default function ResultsClient({
                     <TableCell sx={{ fontWeight: 700 }}>Rank</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Team</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">
-                      Innovation
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">
-                      Technical
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">
-                      Impact
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">
-                      Presentation
-                    </TableCell>
+                    {criteria.map((c) => (
+                      <TableCell key={c.name} sx={{ fontWeight: 700 }} align="center">
+                        {toLabel(c.name)}
+                        {c.weight !== 1 && (
+                          <Typography variant="caption" display="block" color="text.secondary">
+                            {c.weight}x
+                          </Typography>
+                        )}
+                      </TableCell>
+                    ))}
                     <TableCell sx={{ fontWeight: 700 }} align="center">
                       Total Score
                     </TableCell>
@@ -325,37 +342,18 @@ export default function ResultsClient({
                           <Typography color="text.secondary">Individual</Typography>
                         )}
                       </TableCell>
+                      {criteria.map((c) => (
+                        <TableCell key={c.name} align="center">
+                          <Chip
+                            label={(result.averageScores[c.name] ?? 0).toFixed(1)}
+                            size="small"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                      ))}
                       <TableCell align="center">
                         <Chip
-                          label={result.averageScores.innovation.toFixed(1)}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={result.averageScores.technical.toFixed(1)}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={result.averageScores.impact.toFixed(1)}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={result.averageScores.presentation.toFixed(1)}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={`${result.totalScore.toFixed(1)} / 40`}
+                          label={`${result.totalScore.toFixed(1)} / ${result.maxPossible ?? maxPossible}`}
                           color="primary"
                           sx={{ fontWeight: 700 }}
                         />
@@ -392,7 +390,7 @@ export default function ResultsClient({
                       {result.project.name}
                     </Typography>
                     <Chip
-                      label={`${result.totalScore.toFixed(1)} / 40`}
+                      label={`${result.totalScore.toFixed(1)} / ${result.maxPossible ?? maxPossible}`}
                       color="primary"
                       size="small"
                     />
@@ -450,66 +448,73 @@ export default function ResultsClient({
                       </Stack>
                     </Box>
 
+                    {/* AI Summary */}
+                    {result.project.aiSummary && (
+                      <>
+                        <Divider />
+                        <Alert
+                          icon={<AiIcon />}
+                          severity="info"
+                          sx={{
+                            bgcolor: "rgba(0, 237, 100, 0.08)",
+                            borderLeft: 4,
+                            borderColor: "#00ED64",
+                          }}
+                        >
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+                            AI-Generated Summary
+                          </Typography>
+                          <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
+                            {result.project.aiSummary}
+                          </Typography>
+                        </Alert>
+                      </>
+                    )}
+
+                    {/* AI Feedback */}
+                    {result.project.aiFeedback && (
+                      <Alert
+                        icon={<AiIcon />}
+                        severity="success"
+                        sx={{
+                          bgcolor: "rgba(0, 104, 74, 0.08)",
+                          borderLeft: 4,
+                          borderColor: "#00684A",
+                        }}
+                      >
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+                          AI Feedback
+                        </Typography>
+                        <Typography variant="body2" sx={{ lineHeight: 1.7, whiteSpace: "pre-line" }}>
+                          {result.project.aiFeedback}
+                        </Typography>
+                      </Alert>
+                    )}
+
                     <Divider />
 
-                    {/* Score Breakdown */}
+                    {/* Score Breakdown — dynamic */}
                     <Box>
                       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                         Score Breakdown
                       </Typography>
                       <Grid container spacing={2}>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Paper sx={{ p: 2, textAlign: "center" }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Innovation
-                            </Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                              {result.averageScores.innovation.toFixed(1)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              / 10
-                            </Typography>
-                          </Paper>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Paper sx={{ p: 2, textAlign: "center" }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Technical
-                            </Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                              {result.averageScores.technical.toFixed(1)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              / 10
-                            </Typography>
-                          </Paper>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Paper sx={{ p: 2, textAlign: "center" }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Impact
-                            </Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                              {result.averageScores.impact.toFixed(1)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              / 10
-                            </Typography>
-                          </Paper>
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 3 }}>
-                          <Paper sx={{ p: 2, textAlign: "center" }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Presentation
-                            </Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                              {result.averageScores.presentation.toFixed(1)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              / 10
-                            </Typography>
-                          </Paper>
-                        </Grid>
+                        {criteria.map((c) => (
+                          <Grid key={c.name} size={{ xs: 6, sm: Math.max(2, Math.floor(12 / criteria.length)) }}>
+                            <Paper sx={{ p: 2, textAlign: "center" }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {toLabel(c.name)}
+                              </Typography>
+                              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                {(result.averageScores[c.name] ?? 0).toFixed(1)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                / {c.maxScore}
+                                {c.weight !== 1 && ` (${c.weight}x)`}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
                       </Grid>
                       <Typography
                         variant="caption"

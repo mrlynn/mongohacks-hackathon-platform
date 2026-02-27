@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Container,
   Typography,
@@ -16,21 +16,19 @@ import {
   MenuItem,
   Chip,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   IconButton,
   Tooltip,
+  LinearProgress,
+  Divider,
 } from "@mui/material";
 import {
   Gavel as GavelIcon,
   Delete as DeleteIcon,
   CheckCircle as CheckIcon,
   RadioButtonUnchecked as UncheckedIcon,
+  Warning as WarningIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
@@ -67,7 +65,7 @@ interface Assignment {
 }
 
 interface JudgingAssignmentClientProps {
-  event: any;
+  event: { _id: string; name: string; [key: string]: unknown };
   judges: Judge[];
   projects: Project[];
   assignments: Assignment[];
@@ -98,6 +96,44 @@ export default function JudgingAssignmentClient({
     return assignments.filter((a) => a.projectId._id === projectId);
   };
 
+  // Coverage stats
+  const coverageStats = useMemo(() => {
+    const withJudges = projects.filter(
+      (p) => getProjectAssignments(p._id).length > 0
+    );
+    const withoutJudges = projects.filter(
+      (p) => getProjectAssignments(p._id).length === 0
+    );
+    const percentage =
+      projects.length > 0
+        ? Math.round((withJudges.length / projects.length) * 100)
+        : 0;
+    return {
+      assigned: withJudges.length,
+      unassigned: withoutJudges.length,
+      total: projects.length,
+      percentage,
+    };
+  }, [projects, assignments]);
+
+  // Assignments grouped by judge for display
+  const assignmentsByJudge = useMemo(() => {
+    const grouped: Record<
+      string,
+      { judge: { _id: string; name: string; email: string }; items: Assignment[] }
+    > = {};
+    for (const a of assignments) {
+      const jid = a.judgeId._id;
+      if (!grouped[jid]) {
+        grouped[jid] = { judge: a.judgeId, items: [] };
+      }
+      grouped[jid].items.push(a);
+    }
+    return Object.values(grouped).sort((a, b) =>
+      a.judge.name.localeCompare(b.judge.name)
+    );
+  }, [assignments]);
+
   const handleToggleProject = (projectId: string) => {
     setSelectedProjects((prev) =>
       prev.includes(projectId)
@@ -125,14 +161,17 @@ export default function JudgingAssignmentClient({
     setSuccess("");
 
     try {
-      const response = await fetch(`/api/admin/events/${eventId}/assignments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          judgeId: selectedJudge,
-          projectIds: selectedProjects,
-        }),
-      });
+      const response = await fetch(
+        `/api/admin/events/${eventId}/assignments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            judgeId: selectedJudge,
+            projectIds: selectedProjects,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -148,12 +187,12 @@ export default function JudgingAssignmentClient({
       setSelectedProjects([]);
       setSelectedJudge("");
 
-      // Refresh page to show new assignments
       setTimeout(() => {
         router.refresh();
       }, 1500);
-    } catch (err: any) {
-      setError(err.message || "Failed to assign projects");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to assign projects";
+      setError(message);
     } finally {
       setIsAssigning(false);
     }
@@ -174,8 +213,9 @@ export default function JudgingAssignmentClient({
       }
 
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to delete assignment");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete assignment";
+      setError(message);
     }
   };
 
@@ -183,7 +223,8 @@ export default function JudgingAssignmentClient({
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="info">
-          No submitted projects yet. Projects must be submitted before they can be assigned to judges.
+          No submitted projects yet. Projects must be submitted before they can
+          be assigned to judges.
         </Alert>
       </Container>
     );
@@ -193,7 +234,8 @@ export default function JudgingAssignmentClient({
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="warning">
-          No judges available. Please assign the "judge" role to users in the User Management page.
+          No judges available. Please assign the &quot;judge&quot; role to users
+          in the User Management page.
         </Alert>
       </Container>
     );
@@ -201,16 +243,6 @@ export default function JudgingAssignmentClient({
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 } }}>
-      {/* Header */}
-      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "1.25rem", sm: "2rem" } }}>
-          Judging Assignments
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {event.name}
-        </Typography>
-      </Box>
-
       {/* Alerts */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
@@ -223,45 +255,67 @@ export default function JudgingAssignmentClient({
         </Alert>
       )}
 
-      {/* Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                {projects.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Submitted Projects
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                {judges.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Available Judges
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                {assignments.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Assignments
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Coverage Summary */}
+      <Card sx={{ mb: 3 }} variant="outlined">
+        <CardContent sx={{ pb: "16px !important" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 1.5,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Assignment Coverage
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {coverageStats.assigned} of {coverageStats.total} projects have
+              judges
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={coverageStats.percentage}
+            sx={{
+              height: 8,
+              borderRadius: 4,
+              mb: 1.5,
+              bgcolor: "grey.200",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 4,
+                bgcolor:
+                  coverageStats.percentage === 100
+                    ? "success.main"
+                    : coverageStats.percentage > 50
+                    ? "primary.main"
+                    : "warning.main",
+              },
+            }}
+          />
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            {coverageStats.unassigned > 0 && (
+              <Chip
+                icon={<WarningIcon />}
+                label={`${coverageStats.unassigned} projects need judges`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+            <Chip
+              label={`${judges.length} judges available`}
+              size="small"
+              variant="outlined"
+            />
+            <Chip
+              label={`${assignments.length} total assignments`}
+              size="small"
+              variant="outlined"
+            />
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Assignment Interface */}
       <Grid container spacing={3}>
@@ -281,37 +335,68 @@ export default function JudgingAssignmentClient({
                   onChange={(e) => setSelectedJudge(e.target.value)}
                   label="Select Judge"
                 >
-                  {judges.map((judge) => (
-                    <MenuItem key={judge._id} value={judge._id}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                        <span>{judge.name}</span>
-                        <Chip
-                          label={`${getJudgeAssignments(judge._id).length} assigned`}
-                          size="small"
-                          sx={{ ml: 2 }}
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))}
+                  {judges.map((judge) => {
+                    const count = getJudgeAssignments(judge._id).length;
+                    return (
+                      <MenuItem key={judge._id} value={judge._id}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
+                          <span>{judge.name}</span>
+                          <Chip
+                            label={`${count} assigned`}
+                            size="small"
+                            color={count > 0 ? "primary" : "default"}
+                            variant={count > 0 ? "filled" : "outlined"}
+                            sx={{ ml: 2 }}
+                          />
+                        </Box>
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
 
               {/* Project List */}
-              <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  mb: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="subtitle2" color="text.secondary">
                   Select Projects ({selectedProjects.length} selected)
                 </Typography>
                 <Button size="small" onClick={handleSelectAll}>
-                  {selectedProjects.length === projects.length ? "Deselect All" : "Select All"}
+                  {selectedProjects.length === projects.length
+                    ? "Deselect All"
+                    : "Select All"}
                 </Button>
               </Box>
 
-              <Box sx={{ maxHeight: 400, overflowY: "auto", border: 1, borderColor: "divider", borderRadius: 1 }}>
+              <Box
+                sx={{
+                  maxHeight: 400,
+                  overflowY: "auto",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 1,
+                }}
+              >
                 {projects.map((project) => {
                   const projectAssignments = getProjectAssignments(project._id);
                   const alreadyAssigned = selectedJudge
-                    ? projectAssignments.some((a) => a.judgeId._id === selectedJudge)
+                    ? projectAssignments.some(
+                        (a) => a.judgeId._id === selectedJudge
+                      )
                     : false;
+                  const hasNoJudges = projectAssignments.length === 0;
 
                   return (
                     <Box
@@ -323,6 +408,8 @@ export default function JudgingAssignmentClient({
                         "&:last-child": { borderBottom: 0 },
                         bgcolor: selectedProjects.includes(project._id)
                           ? "primary.light"
+                          : hasNoJudges
+                          ? "warning.50"
                           : "background.paper",
                         cursor: alreadyAssigned ? "not-allowed" : "pointer",
                         opacity: alreadyAssigned ? 0.5 : 1,
@@ -334,9 +421,13 @@ export default function JudgingAssignmentClient({
                             : "action.hover",
                         },
                       }}
-                      onClick={() => !alreadyAssigned && handleToggleProject(project._id)}
+                      onClick={() =>
+                        !alreadyAssigned && handleToggleProject(project._id)
+                      }
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Checkbox
                           checked={selectedProjects.includes(project._id)}
                           disabled={alreadyAssigned}
@@ -352,13 +443,28 @@ export default function JudgingAssignmentClient({
                           </Typography>
                         </Box>
                         <Chip
-                          label={`${projectAssignments.length} judges`}
+                          label={
+                            hasNoJudges
+                              ? "No judges!"
+                              : `${projectAssignments.length} judge${projectAssignments.length !== 1 ? "s" : ""}`
+                          }
                           size="small"
-                          color={projectAssignments.length === 0 ? "default" : "primary"}
+                          color={
+                            hasNoJudges
+                              ? "error"
+                              : projectAssignments.length >= 2
+                              ? "success"
+                              : "primary"
+                          }
+                          variant={hasNoJudges ? "filled" : "outlined"}
                         />
                       </Box>
                       {alreadyAssigned && (
-                        <Typography variant="caption" color="warning.main" sx={{ ml: 5 }}>
+                        <Typography
+                          variant="caption"
+                          color="warning.main"
+                          sx={{ ml: 5 }}
+                        >
                           Already assigned to this judge
                         </Typography>
                       )}
@@ -372,17 +478,23 @@ export default function JudgingAssignmentClient({
                 fullWidth
                 size="large"
                 onClick={handleAssign}
-                disabled={isAssigning || !selectedJudge || selectedProjects.length === 0}
+                disabled={
+                  isAssigning ||
+                  !selectedJudge ||
+                  selectedProjects.length === 0
+                }
                 sx={{ mt: 3 }}
                 startIcon={<GavelIcon />}
               >
-                {isAssigning ? "Assigning..." : `Assign ${selectedProjects.length} Project(s)`}
+                {isAssigning
+                  ? "Assigning..."
+                  : `Assign ${selectedProjects.length} Project(s)`}
               </Button>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Right: Current Assignments */}
+        {/* Right: Current Assignments grouped by judge */}
         <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
@@ -392,35 +504,65 @@ export default function JudgingAssignmentClient({
 
               {assignments.length === 0 ? (
                 <Alert severity="info">
-                  No assignments yet. Use the form on the left to assign projects to judges.
+                  No assignments yet. Use the form on the left to assign
+                  projects to judges.
                 </Alert>
               ) : (
-                <TableContainer sx={{ maxHeight: 600, overflowX: "auto" }}>
-                  <Table stickyHeader size="small" sx={{ minWidth: 400 }}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Judge</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Actions
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {assignments.map((assignment) => (
-                        <TableRow key={assignment._id} hover>
-                          <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {assignment.judgeId.name}
+                <Box sx={{ maxHeight: 600, overflowY: "auto" }}>
+                  {assignmentsByJudge.map((group, idx) => (
+                    <Box key={group.judge._id}>
+                      {idx > 0 && <Divider sx={{ my: 2 }} />}
+                      {/* Judge header */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1.5,
+                        }}
+                      >
+                        <PersonIcon
+                          fontSize="small"
+                          sx={{ color: "primary.main" }}
+                        />
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 600, flex: 1 }}
+                        >
+                          {group.judge.name}
+                        </Typography>
+                        <Chip
+                          label={`${group.items.length} project${group.items.length !== 1 ? "s" : ""}`}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Box>
+                      {/* Project list for this judge */}
+                      <Box sx={{ pl: 1 }}>
+                        {group.items.map((assignment) => (
+                          <Box
+                            key={assignment._id}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              py: 0.75,
+                              px: 1.5,
+                              mb: 0.5,
+                              borderRadius: 1,
+                              bgcolor: "grey.50",
+                              "&:hover": { bgcolor: "grey.100" },
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{ flex: 1, fontWeight: 500 }}
+                            >
+                              {assignment.projectId.name}
                             </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">{assignment.projectId.name}</Typography>
-                          </TableCell>
-                          <TableCell>
                             <Chip
-                              label={assignment.status}
+                              label={assignment.status.replace("_", " ")}
                               size="small"
                               color={
                                 assignment.status === "completed"
@@ -431,23 +573,23 @@ export default function JudgingAssignmentClient({
                               }
                               sx={{ textTransform: "capitalize" }}
                             />
-                          </TableCell>
-                          <TableCell align="right">
                             <Tooltip title="Remove Assignment">
                               <IconButton
                                 size="small"
                                 color="error"
-                                onClick={() => handleDeleteAssignment(assignment._id)}
+                                onClick={() =>
+                                  handleDeleteAssignment(assignment._id)
+                                }
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
               )}
             </CardContent>
           </Card>

@@ -367,16 +367,11 @@ export default function LandingPageBuilder({
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            Landing Page Builder
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {eventName}
-          </Typography>
-        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+          Landing Page Builder
+        </Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
           {formData.published && (
             <Button

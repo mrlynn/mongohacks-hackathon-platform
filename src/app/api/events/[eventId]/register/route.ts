@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
@@ -55,6 +56,20 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: "Event not found" },
         { status: 404 }
+      );
+    }
+
+    // Check event status is open for registration
+    if (event.status !== "open") {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            event.status === "draft"
+              ? "This event is not yet open for registration"
+              : "This event is no longer accepting registrations",
+        },
+        { status: 400 }
       );
     }
 
@@ -129,18 +144,91 @@ export async function POST(
         );
       }
 
-      const passwordHash = await bcrypt.hash(data.password, 12);
-      user = await UserModel.create({
-        email: data.email.toLowerCase(),
-        name: data.name,
-        passwordHash,
-        role: "participant",
-        needsPasswordSetup: false,
-      });
-      isNewUser = true;
+      // Use a transaction to atomically create User + Participant
+      // so we don't end up with orphaned User records on failure
+      const dbSession = await mongoose.startSession();
+      try {
+        let newParticipant: any;
+        await dbSession.withTransaction(async () => {
+          const passwordHash = await bcrypt.hash(data.password!, 12);
+          const [createdUser] = await UserModel.create(
+            [
+              {
+                email: data.email.toLowerCase(),
+                name: data.name,
+                passwordHash,
+                role: "participant",
+                needsPasswordSetup: false,
+              },
+            ],
+            { session: dbSession }
+          );
+          user = createdUser;
+
+          const eventCustomData: Record<string, unknown> = {
+            ...(data.github && { github: data.github }),
+            ...(data.customAnswers || {}),
+          };
+
+          const [createdParticipant] = await ParticipantModel.create(
+            [
+              {
+                userId: createdUser._id,
+                email: data.email.toLowerCase(),
+                name: data.name,
+                skills: data.skills,
+                ...(data.experienceLevel && { experience_level: data.experienceLevel }),
+                ...(data.bio && { bio: data.bio }),
+                ...(Object.keys(eventCustomData).length > 0
+                  ? { customResponses: { [eventId]: eventCustomData } }
+                  : {}),
+                registeredEvents: [
+                  {
+                    eventId: eventId,
+                    registrationDate: new Date(),
+                    status: "registered",
+                  },
+                ],
+              },
+            ],
+            { session: dbSession }
+          );
+          newParticipant = createdParticipant;
+        });
+
+        isNewUser = true;
+
+        // Fire-and-forget: generate skills embedding for vector team matching
+        if (data.skills?.length) {
+          const skillText = data.skills.join(" ");
+          generateEmbedding(skillText)
+            .then((embedding) =>
+              ParticipantModel.findByIdAndUpdate(newParticipant._id, {
+                skillsEmbedding: embedding,
+              }).catch(() => {})
+            )
+            .catch(() => {});
+        }
+
+        // Fire-and-forget: send registration confirmation notification
+        notifyRegistrationConfirmed(user!._id.toString(), event.name, eventId);
+
+        return NextResponse.json({
+          success: true,
+          message: "Successfully registered for the event!",
+          data: {
+            userId: user!._id,
+            participantId: newParticipant._id,
+            eventId,
+            isNewUser: true,
+          },
+        });
+      } finally {
+        await dbSession.endSession();
+      }
     }
 
-    // Check if participant already exists
+    // Existing user path — check/create participant record
     let participant = await ParticipantModel.findOne({ email: data.email.toLowerCase() });
 
     if (participant) {
@@ -193,9 +281,9 @@ export async function POST(
 
       await participant.save();
     } else {
-      // Create new participant
+      // Existing user but no participant record yet
       participant = await ParticipantModel.create({
-        userId: user._id,
+        userId: user!._id,
         email: data.email.toLowerCase(),
         name: data.name,
         skills: data.skills,

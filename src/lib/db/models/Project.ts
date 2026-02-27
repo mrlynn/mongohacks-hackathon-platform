@@ -12,8 +12,12 @@ export interface IProject extends Document {
   technologies: string[];
   repoUrl: string;
   demoUrl?: string;
+  videoUrl?: string;
   documentationUrl?: string;
+  thumbnailUrl?: string;
+  featured: boolean;
   submissionDate: Date;
+  submittedAt?: Date;
   lastModified: Date;
   status: "draft" | "submitted" | "under_review" | "judged";
   innovations: string;
@@ -35,8 +39,12 @@ const ProjectSchema = new Schema<IProject>(
     technologies: [{ type: String }],
     repoUrl: { type: String, required: true },
     demoUrl: { type: String },
+    videoUrl: { type: String },
     documentationUrl: { type: String },
+    thumbnailUrl: { type: String },
+    featured: { type: Boolean, default: false },
     submissionDate: { type: Date },
+    submittedAt: { type: Date },
     lastModified: { type: Date, default: Date.now },
     status: {
       type: String,
@@ -53,6 +61,7 @@ const ProjectSchema = new Schema<IProject>(
 ProjectSchema.index({ eventId: 1, status: 1 });
 ProjectSchema.index({ teamId: 1, eventId: 1 }, { unique: true }); // Critical: one project per team per event
 ProjectSchema.index({ teamId: 1 });
+ProjectSchema.index({ featured: 1, status: 1 });
 
 export const ProjectModel =
   mongoose.models.Project ||

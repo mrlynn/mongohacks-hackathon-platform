@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackResponseModel } from "@/lib/db/models/FeedbackResponse";
+import "@/lib/db/models/FeedbackFormConfig";
 import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 
@@ -44,10 +45,8 @@ export async function GET() {
     
     responses.forEach(r => {
       if (r.answers) {
-        const answersMap = r.answers as Map<string, unknown>;
-        const values = Array.from(answersMap.values());
-        
-        values.forEach(answer => {
+        const answers = r.answers as Record<string, unknown>;
+        Object.values(answers).forEach(answer => {
           if (typeof answer === 'number' && answer >= 0 && answer <= 10) {
             npsScores.push(answer);
           }
@@ -68,9 +67,8 @@ export async function GET() {
     
     responses.forEach(r => {
       if (r.answers) {
-        const answersMap = r.answers as Map<string, unknown>;
-        
-        answersMap.forEach((answer, qId) => {
+        const answers = r.answers as Record<string, unknown>;
+        Object.entries(answers).forEach(([qId, answer]) => {
           if (typeof answer === 'number') {
             if (!ratingsByQuestion.has(qId)) {
               ratingsByQuestion.set(qId, []);

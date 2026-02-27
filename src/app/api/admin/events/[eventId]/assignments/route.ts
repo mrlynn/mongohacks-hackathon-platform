@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { JudgeAssignmentModel } from "@/lib/db/models/JudgeAssignment";
+import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { UserModel } from "@/lib/db/models/User";
+import { notifyJudgeAssigned } from "@/lib/notifications/notification-service";
 
 // GET - Fetch all assignments for an event
 export async function GET(
@@ -154,6 +156,13 @@ export async function POST(
     });
 
     const created = Array.isArray(result) ? result.length : 0;
+
+    // Notify the judge about their new assignment (fire-and-forget)
+    if (created > 0) {
+      const event = await EventModel.findById(eventId).select("name").lean();
+      const eventName = (event as any)?.name || "a hackathon event";
+      notifyJudgeAssigned(judgeId, eventName, eventId);
+    }
 
     return NextResponse.json({
       success: true,

@@ -12,6 +12,7 @@ export const NOTIFICATION_TYPES = [
   "judging_started",
   "judge_assigned",
   "score_received",
+  "feedback_requested",
   "general",
 ] as const;
 

@@ -261,28 +261,12 @@ export default function PrizesPage() {
   })).filter((g) => g.prizes.length > 0);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Box>
-          <Button
-            component={Link}
-            href={`/admin/events/${eventId}/edit`}
-            startIcon={<BackIcon />}
-            size="small"
-            sx={{ mb: 1 }}
-          >
-            Back to Event
-          </Button>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Prizes
-          </Typography>
-          {eventName && (
-            <Typography variant="body1" color="text.secondary">
-              {eventName}
-            </Typography>
-          )}
-        </Box>
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+          Prize Management
+        </Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           Add Prize
         </Button>

@@ -1,6 +1,7 @@
 import SessionProvider from "@/components/providers/SessionProvider";
 import Navbar from "@/components/shared-ui/Navbar";
 import ImpersonationBanner from "@/components/shared-ui/ImpersonationBanner";
+import ChatWidget from "@/components/chat/ChatWidget";
 
 export default function AppLayout({
   children,
@@ -12,6 +13,7 @@ export default function AppLayout({
       <Navbar />
       <ImpersonationBanner />
       {children}
+      <ChatWidget />
     </SessionProvider>
   );
 }

@@ -7,6 +7,7 @@ export interface IEvent extends Document {
   startDate: Date;
   endDate: Date;
   registrationDeadline: Date;
+  submissionDeadline?: Date;
   location: string;
   city?: string;
   country?: string;
@@ -20,11 +21,21 @@ export interface IEvent extends Document {
   tags: string[];
   rules: string;
   judging_criteria: string[];
+  judgingRubric?: {
+    name: string;
+    description: string;
+    weight: number;
+    maxScore: number;
+  }[];
   organizers: Types.ObjectId[];
   partners: Types.ObjectId[]; // Partner references
   status: "draft" | "open" | "in_progress" | "concluded";
   resultsPublished: boolean;
   resultsPublishedAt?: Date;
+  feedbackForms?: {
+    participant?: Types.ObjectId;
+    partner?: Types.ObjectId;
+  };
   descriptionEmbedding?: number[];
   landingPage?: {
     template: string;
@@ -57,6 +68,7 @@ const EventSchema = new Schema<IEvent>(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     registrationDeadline: { type: Date, required: true },
+    submissionDeadline: { type: Date },
     location: { type: String, required: true },
     city: { type: String },
     country: { type: String },
@@ -77,6 +89,14 @@ const EventSchema = new Schema<IEvent>(
     tags: [{ type: String }],
     rules: { type: String, default: "" },
     judging_criteria: [{ type: String }],
+    judgingRubric: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, default: "" },
+        weight: { type: Number, default: 1 },
+        maxScore: { type: Number, default: 10 },
+      },
+    ],
     organizers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     partners: [{ type: Schema.Types.ObjectId, ref: "Partner" }],
     status: {
@@ -86,6 +106,16 @@ const EventSchema = new Schema<IEvent>(
     },
     resultsPublished: { type: Boolean, default: false },
     resultsPublishedAt: { type: Date },
+    feedbackForms: {
+      participant: {
+        type: Schema.Types.ObjectId,
+        ref: "FeedbackFormConfig",
+      },
+      partner: {
+        type: Schema.Types.ObjectId,
+        ref: "FeedbackFormConfig",
+      },
+    },
     descriptionEmbedding: { type: [Number], select: false },
     landingPage: {
       template: {

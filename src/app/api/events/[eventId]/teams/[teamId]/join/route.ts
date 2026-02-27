@@ -64,8 +64,11 @@ export async function POST(
       );
     }
 
-    // Add user to team and update participant's teamId
+    // Add user to team and auto-close recruitment if full
     team.members.push(userId as any);
+    if (team.members.length >= team.maxMembers) {
+      team.lookingForMembers = false;
+    }
     await team.save();
 
     participant.teamId = team._id;

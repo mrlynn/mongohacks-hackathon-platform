@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { serializeDocs } from "@/lib/utils/serialize";

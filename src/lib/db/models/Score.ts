@@ -4,12 +4,7 @@ export interface IScore extends Document {
   projectId: Types.ObjectId;
   eventId: Types.ObjectId;
   judgeId: Types.ObjectId;
-  scores: {
-    innovation: number; // 1-10
-    technical: number; // 1-10
-    impact: number; // 1-10
-    presentation: number; // 1-10
-  };
+  scores: Record<string, number>;
   totalScore: number; // Auto-calculated
   comments: string;
   submittedAt: Date;
@@ -22,12 +17,7 @@ const ScoreSchema = new Schema<IScore>(
     projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     judgeId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    scores: {
-      innovation: { type: Number, min: 1, max: 10, required: true },
-      technical: { type: Number, min: 1, max: 10, required: true },
-      impact: { type: Number, min: 1, max: 10, required: true },
-      presentation: { type: Number, min: 1, max: 10, required: true },
-    },
+    scores: { type: Schema.Types.Mixed, required: true },
     totalScore: { type: Number },
     comments: { type: String, default: "" },
     submittedAt: { type: Date, default: Date.now },
@@ -40,14 +30,14 @@ ScoreSchema.index({ projectId: 1, judgeId: 1 }, { unique: true }); // One score 
 ScoreSchema.index({ eventId: 1 });
 ScoreSchema.index({ judgeId: 1 });
 
-// Pre-save hook to calculate total score
+// Pre-save hook to calculate total score from all criteria
 ScoreSchema.pre<IScore>("save", function () {
-  if (this.scores) {
-    this.totalScore =
-      this.scores.innovation +
-      this.scores.technical +
-      this.scores.impact +
-      this.scores.presentation;
+  if (this.scores && typeof this.scores === "object") {
+    this.totalScore = Object.values(this.scores).reduce(
+      (sum: number, val: unknown) =>
+        sum + (typeof val === "number" ? val : 0),
+      0
+    );
   }
 });
 

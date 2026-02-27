@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { PartnerModel } from "@/lib/db/models/Partner";
+import { sendFeedbackRequests } from "@/lib/feedback/feedback-distribution";
 
 export async function GET(
   request: NextRequest,
@@ -139,6 +140,11 @@ export async function PATCH(
       body.resultsPublishedAt = null;
     }
 
+    // Capture previous status before update for transition detection
+    const previousEvent = body.status
+      ? await EventModel.findById(eventId).select("status").lean()
+      : null;
+
     const updatedEvent = await EventModel.findByIdAndUpdate(
       eventId,
       { $set: body },
@@ -149,6 +155,17 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, error: "Event not found" },
         { status: 404 }
+      );
+    }
+
+    // Auto-send feedback requests when event transitions to "concluded"
+    if (
+      body.status === "concluded" &&
+      previousEvent &&
+      (previousEvent as { status?: string }).status !== "concluded"
+    ) {
+      sendFeedbackRequests(eventId, "both").catch((err) =>
+        console.error("Auto-send feedback on conclude failed:", err)
       );
     }
 

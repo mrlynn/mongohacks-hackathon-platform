@@ -3,23 +3,13 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
-import { TeamModel } from "@/lib/db/models/Team";
 
-interface AggregateResult {
-  projectId: string;
-  rank: number;
-  project: any;
-  team: any;
-  averageScores: {
-    innovation: number;
-    technical: number;
-    impact: number;
-    presentation: number;
-  };
-  totalScore: number;
-  judgeCount: number;
-  scores: any[];
-}
+const DEFAULT_CRITERIA = [
+  { name: "innovation", description: "How novel and creative is the solution?", weight: 1, maxScore: 10 },
+  { name: "technical", description: "How sophisticated is the implementation?", weight: 1, maxScore: 10 },
+  { name: "impact", description: "How valuable is the solution to users?", weight: 1, maxScore: 10 },
+  { name: "presentation", description: "How well is the project documented and demoed?", weight: 1, maxScore: 10 },
+];
 
 export async function GET(
   request: NextRequest,
@@ -38,6 +28,11 @@ export async function GET(
       );
     }
 
+    const rubric =
+      event.judgingRubric && event.judgingRubric.length > 0
+        ? event.judgingRubric
+        : DEFAULT_CRITERIA;
+
     // Get all submitted/judged projects for this event
     const projects = await ProjectModel.find({
       eventId,
@@ -50,6 +45,7 @@ export async function GET(
       return NextResponse.json({
         success: true,
         results: [],
+        rubric: rubric.map((c: { name: string; weight: number; maxScore: number }) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
         event: {
           _id: event._id.toString(),
           name: event.name,
@@ -67,90 +63,61 @@ export async function GET(
       .populate("judgeId", "name email")
       .lean();
 
-    // Group scores by project and calculate averages
-    const results: AggregateResult[] = [];
+    // Max possible weighted score
+    const maxPossible = rubric.reduce(
+      (sum: number, c: { maxScore: number; weight: number }) => sum + c.maxScore * c.weight,
+      0
+    );
+
+    // Group scores by project and calculate averages dynamically
+    const results = [];
 
     for (const project of projects) {
       const projectScores = scores.filter(
         (s) => s.projectId.toString() === project._id.toString()
       );
 
+      const averageScores: Record<string, number> = {};
+      let totalScore = 0;
+
       if (projectScores.length === 0) {
-        // Project has no scores yet
-        results.push({
-          projectId: project._id.toString(),
-          rank: 0, // Will be assigned after sorting
-          project: {
-            _id: project._id.toString(),
-            name: project.name,
-            description: project.description,
-            repoUrl: project.repoUrl,
-            demoUrl: project.demoUrl,
-            videoUrl: project.videoUrl,
-            technologies: project.technologies,
-          },
-          team: project.teamId,
-          averageScores: {
-            innovation: 0,
-            technical: 0,
-            impact: 0,
-            presentation: 0,
-          },
-          totalScore: 0,
-          judgeCount: 0,
-          scores: [],
-        });
-        continue;
+        for (const c of rubric) {
+          averageScores[c.name] = 0;
+        }
+      } else {
+        const judgeCount = projectScores.length;
+
+        for (const c of rubric) {
+          const sum = projectScores.reduce(
+            (acc, s) => acc + ((s.scores as Record<string, number>)?.[c.name] || 0),
+            0
+          );
+          const avg = parseFloat((sum / judgeCount).toFixed(2));
+          averageScores[c.name] = avg;
+          totalScore += avg * c.weight;
+        }
+        totalScore = parseFloat(totalScore.toFixed(2));
       }
-
-      // Calculate average for each criterion
-      const sumScores = {
-        innovation: 0,
-        technical: 0,
-        impact: 0,
-        presentation: 0,
-      };
-
-      projectScores.forEach((score) => {
-        sumScores.innovation += score.scores.innovation;
-        sumScores.technical += score.scores.technical;
-        sumScores.impact += score.scores.impact;
-        sumScores.presentation += score.scores.presentation;
-      });
-
-      const judgeCount = projectScores.length;
-      const averageScores = {
-        innovation: parseFloat((sumScores.innovation / judgeCount).toFixed(2)),
-        technical: parseFloat((sumScores.technical / judgeCount).toFixed(2)),
-        impact: parseFloat((sumScores.impact / judgeCount).toFixed(2)),
-        presentation: parseFloat((sumScores.presentation / judgeCount).toFixed(2)),
-      };
-
-      const totalScore = parseFloat(
-        (
-          averageScores.innovation +
-          averageScores.technical +
-          averageScores.impact +
-          averageScores.presentation
-        ).toFixed(2)
-      );
 
       results.push({
         projectId: project._id.toString(),
-        rank: 0, // Will be assigned after sorting
+        rank: 0,
         project: {
           _id: project._id.toString(),
           name: project.name,
           description: project.description,
           repoUrl: project.repoUrl,
-          demoUrl: project.demoUrl,
-          videoUrl: project.videoUrl,
+          demoUrl: (project as any).demoUrl,
+          videoUrl: (project as any).videoUrl,
           technologies: project.technologies,
+          aiSummary: (project as any).aiSummary || null,
+          aiFeedback: (project as any).aiFeedback || null,
         },
         team: project.teamId,
         averageScores,
         totalScore,
-        judgeCount,
+        maxPossible,
+        judgeCount: projectScores.length,
         scores: projectScores.map((s) => ({
           judgeId: s.judgeId,
           scores: s.scores,
@@ -168,7 +135,6 @@ export async function GET(
     let currentRank = 1;
     for (let i = 0; i < results.length; i++) {
       if (i > 0 && results[i].totalScore === results[i - 1].totalScore) {
-        // Tie - same rank as previous
         results[i].rank = results[i - 1].rank;
       } else {
         results[i].rank = currentRank;
@@ -179,6 +145,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       results,
+      rubric: rubric.map((c: { name: string; weight: number; maxScore: number }) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
       event: {
         _id: event._id.toString(),
         name: event.name,

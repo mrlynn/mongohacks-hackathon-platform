@@ -161,9 +161,9 @@ export default function EventsView({ events }: { events: Event[] }) {
                   <TableCell>
                     {event.partners && event.partners.length > 0 ? (
                       <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                        {event.partners.slice(0, 3).map((p) => (
+                        {event.partners.slice(0, 3).map((p, idx) => (
                           <Chip
-                            key={p._id}
+                            key={p._id || idx}
                             label={p.name}
                             size="small"
                             variant="outlined"

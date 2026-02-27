@@ -18,12 +18,16 @@ import {
   Link as MuiLink,
   CardActions,
   Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   Code as CodeIcon,
   Launch as LaunchIcon,
   GitHub as GitHubIcon,
   Description as DocsIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
 } from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
@@ -38,6 +42,7 @@ interface Project {
   repoUrl: string;
   demoUrl?: string;
   documentationUrl?: string;
+  featured?: boolean;
   createdAt: string;
   eventId?: string;
   teamId?: string;
@@ -52,6 +57,32 @@ const statusColors: Record<string, "default" | "success" | "info" | "warning" | 
 
 export default function ProjectsView({ projects }: { projects: Project[] }) {
   const [view, setView] = useState<"table" | "card">("table");
+  const [featuredMap, setFeaturedMap] = useState<Record<string, boolean>>(
+    () => {
+      const map: Record<string, boolean> = {};
+      projects.forEach((p) => {
+        map[p._id] = !!p.featured;
+      });
+      return map;
+    }
+  );
+
+  const toggleFeatured = async (projectId: string) => {
+    const newVal = !featuredMap[projectId];
+    setFeaturedMap((prev) => ({ ...prev, [projectId]: newVal }));
+    try {
+      const res = await fetch(`/api/admin/projects/${projectId}/featured`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featured: newVal }),
+      });
+      if (!res.ok) {
+        setFeaturedMap((prev) => ({ ...prev, [projectId]: !newVal }));
+      }
+    } catch {
+      setFeaturedMap((prev) => ({ ...prev, [projectId]: !newVal }));
+    }
+  };
 
   // CSV export columns
   const csvColumns = [
@@ -96,6 +127,7 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell sx={{ fontWeight: 600 }}>Featured</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Project Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -107,6 +139,19 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
             <TableBody>
               {projects.map((project) => (
                 <TableRow key={project._id} hover>
+                  <TableCell>
+                    <Tooltip title={featuredMap[project._id] ? "Remove from gallery" : "Feature in gallery"}>
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleFeatured(project._id)}
+                        sx={{
+                          color: featuredMap[project._id] ? "#FFC010" : "text.disabled",
+                        }}
+                      >
+                        {featuredMap[project._id] ? <StarIcon /> : <StarBorderIcon />}
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 500 }}>{project.name}</TableCell>
                   <TableCell>{project.category || "Uncategorized"}</TableCell>
                   <TableCell>
@@ -201,6 +246,17 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
                   </Typography>
                 </CardContent>
                 <CardActions>
+                  <Tooltip title={featuredMap[project._id] ? "Remove from gallery" : "Feature in gallery"}>
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleFeatured(project._id)}
+                      sx={{
+                        color: featuredMap[project._id] ? "#FFC010" : "text.disabled",
+                      }}
+                    >
+                      {featuredMap[project._id] ? <StarIcon /> : <StarBorderIcon />}
+                    </IconButton>
+                  </Tooltip>
                   <Button
                     size="small"
                     startIcon={<GitHubIcon />}

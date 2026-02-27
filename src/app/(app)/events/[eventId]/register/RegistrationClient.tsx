@@ -124,8 +124,10 @@ export default function RegistrationClient({
 
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [waitlisted, setWaitlisted] = useState(false);
 
   const setCustomAnswer = (questionId: string, value: unknown) => {
     setCustomAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -246,6 +248,35 @@ export default function RegistrationClient({
     }
   };
 
+  const handleJoinWaitlist = async () => {
+    setIsJoiningWaitlist(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name || userName || "",
+          email: formData.email || userEmail || "",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to join waitlist");
+      }
+
+      setWaitlisted(true);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to join waitlist";
+      setError(message);
+    } finally {
+      setIsJoiningWaitlist(false);
+    }
+  };
+
   // Render a custom question field
   const renderCustomQuestion = (question: CustomQuestion) => {
     const value = customAnswers[question.id];
@@ -331,6 +362,28 @@ export default function RegistrationClient({
     }
   };
 
+  if (waitlisted) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8, textAlign: "center" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+          <EventIcon sx={{ fontSize: 80, color: "warning.main" }} />
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            You're on the Waitlist!
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {event.name} is at full capacity. We'll notify you if a spot opens up.
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => router.push("/events")}
+          >
+            Browse Other Events
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   if (success) {
     return (
       <Container maxWidth="md" sx={{ py: 8, textAlign: "center" }}>
@@ -408,7 +461,64 @@ export default function RegistrationClient({
         </CardContent>
       </Card>
 
-      {/* Registration Form */}
+      {/* Waitlist Card — shown when at capacity */}
+      {spotsRemaining !== null && spotsRemaining <= 0 && (
+        <Card elevation={2} sx={{ mb: 3 }}>
+          <CardContent sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Event is at Full Capacity
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              All {event.capacity} spots have been filled. Join the waitlist to be notified if a spot opens up.
+            </Typography>
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {!isLoggedIn && (
+              <Grid container spacing={2} sx={{ mb: 2, textAlign: "left" }}>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Full Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    required
+                    type="email"
+                    label="Email Address"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            <Button
+              variant="contained"
+              color="warning"
+              size="large"
+              fullWidth
+              onClick={handleJoinWaitlist}
+              disabled={isJoiningWaitlist || (!isLoggedIn && (!formData.name || !formData.email))}
+              sx={{ py: 1.5 }}
+            >
+              {isJoiningWaitlist ? "Joining Waitlist..." : "Join Waitlist"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Registration Form — hidden when at capacity */}
+      {(spotsRemaining === null || spotsRemaining > 0) && (
       <Card elevation={2}>
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
@@ -671,6 +781,7 @@ export default function RegistrationClient({
           </form>
         </CardContent>
       </Card>
+      )}
     </Container>
   );
 }

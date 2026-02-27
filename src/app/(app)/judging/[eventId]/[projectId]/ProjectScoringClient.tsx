@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Container,
@@ -25,37 +25,55 @@ import {
   CheckCircle as CheckIcon,
 } from "@mui/icons-material";
 
+interface RubricCriterion {
+  name: string;
+  description: string;
+  weight: number;
+  maxScore: number;
+}
+
 interface ProjectScoringClientProps {
-  event: any;
-  project: any;
-  existingScore: any;
-  assignment: any;
+  event: {
+    name: string;
+    judgingRubric?: RubricCriterion[];
+    [key: string]: unknown;
+  };
+  project: {
+    _id: string;
+    name: string;
+    description?: string;
+    technologies?: string[];
+    repoUrl?: string;
+    demoUrl?: string;
+    videoUrl?: string;
+    aiSummary?: string;
+    status?: string;
+    teamId?: { name: string };
+    [key: string]: unknown;
+  };
+  existingScore: {
+    scores?: Record<string, number>;
+    comments?: string;
+    submittedAt?: string;
+  } | null;
+  assignment: { _id: string; [key: string]: unknown };
   eventId: string;
   projectId: string;
 }
 
-const criteria = [
-  {
-    key: "innovation",
-    label: "Innovation",
-    description: "How novel and creative is the solution?",
-  },
-  {
-    key: "technical",
-    label: "Technical Complexity",
-    description: "How sophisticated is the implementation?",
-  },
-  {
-    key: "impact",
-    label: "Impact",
-    description: "How valuable is the solution to users?",
-  },
-  {
-    key: "presentation",
-    label: "Presentation",
-    description: "How well is the project documented and demoed?",
-  },
+const DEFAULT_CRITERIA: RubricCriterion[] = [
+  { name: "innovation", description: "How novel and creative is the solution?", weight: 1, maxScore: 10 },
+  { name: "technical", description: "How sophisticated is the implementation?", weight: 1, maxScore: 10 },
+  { name: "impact", description: "How valuable is the solution to users?", weight: 1, maxScore: 10 },
+  { name: "presentation", description: "How well is the project documented and demoed?", weight: 1, maxScore: 10 },
 ];
+
+// Convert criterion name to a display label (e.g., "technical_complexity" → "Technical Complexity")
+function toLabel(name: string): string {
+  return name
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function ProjectScoringClient({
   event,
@@ -66,21 +84,38 @@ export default function ProjectScoringClient({
   projectId,
 }: ProjectScoringClientProps) {
   const router = useRouter();
-  
-  const [scores, setScores] = useState({
-    innovation: existingScore?.scores?.innovation || 5,
-    technical: existingScore?.scores?.technical || 5,
-    impact: existingScore?.scores?.impact || 5,
-    presentation: existingScore?.scores?.presentation || 5,
+
+  const criteria = useMemo(
+    () =>
+      event.judgingRubric && event.judgingRubric.length > 0
+        ? event.judgingRubric
+        : DEFAULT_CRITERIA,
+    [event.judgingRubric]
+  );
+
+  // Initialize scores from existing data or defaults (midpoint of each criterion's range)
+  const [scores, setScores] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    for (const c of criteria) {
+      initial[c.name] =
+        existingScore?.scores?.[c.name] ?? Math.ceil(c.maxScore / 2);
+    }
+    return initial;
   });
-  
+
   const [comments, setComments] = useState(existingScore?.comments || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-  const maxScore = 40;
+  const totalScore = criteria.reduce(
+    (sum, c) => sum + (scores[c.name] || 0) * c.weight,
+    0
+  );
+  const maxScore = criteria.reduce(
+    (sum, c) => sum + c.maxScore * c.weight,
+    0
+  );
 
   const handleScoreChange = (criterion: string, value: number | number[]) => {
     setScores((prev) => ({ ...prev, [criterion]: value as number }));
@@ -97,7 +132,7 @@ export default function ProjectScoringClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          ...scores,
+          scores,
           comments,
         }),
       });
@@ -108,23 +143,26 @@ export default function ProjectScoringClient({
         throw new Error(data.error || data.message || "Failed to submit score");
       }
 
-      setSuccess("Score submitted successfully! 🎉");
-      
+      setSuccess("Score submitted successfully!");
+
       // Redirect back to dashboard after 2 seconds
       setTimeout(() => {
         router.push(`/judging/${eventId}`);
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit score. Please try again.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to submit score. Please try again.";
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return "success.main";
-    if (score >= 6) return "primary.main";
-    if (score >= 4) return "warning.main";
+  const getScoreColor = (score: number, max: number) => {
+    const pct = score / max;
+    if (pct >= 0.8) return "success.main";
+    if (pct >= 0.6) return "primary.main";
+    if (pct >= 0.4) return "warning.main";
     return "error.main";
   };
 
@@ -223,9 +261,9 @@ export default function ProjectScoringClient({
 
       {/* AI-Generated Summary */}
       {project.aiSummary && (
-        <Alert 
-          severity="info" 
-          sx={{ 
+        <Alert
+          severity="info"
+          sx={{
             mb: 3,
             bgcolor: "rgba(0, 237, 100, 0.08)",
             borderLeft: 4,
@@ -233,7 +271,7 @@ export default function ProjectScoringClient({
           }}
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
-            🤖 AI-Generated Summary
+            AI-Generated Summary
           </Typography>
           <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
             {project.aiSummary}
@@ -245,7 +283,7 @@ export default function ProjectScoringClient({
       {!project.aiSummary && project.status === "submitted" && (
         <Alert severity="warning" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            AI summary is being generated... This usually takes 10-30 seconds after submission. 
+            AI summary is being generated... This usually takes 10-30 seconds after submission.
             Refresh the page in a moment to see the summary.
           </Typography>
         </Alert>
@@ -271,25 +309,35 @@ export default function ProjectScoringClient({
           </Typography>
 
           <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-            Rate each criterion on a scale from 1 (lowest) to 10 (highest). Take your time to review the project thoroughly before scoring.
+            Rate each criterion on the scale shown. Take your time to review the project thoroughly before scoring.
           </Typography>
 
-          {/* Criteria Sliders */}
+          {/* Criteria Sliders — dynamically rendered */}
           <Grid container spacing={4}>
             {criteria.map((criterion) => {
-              const score = scores[criterion.key as keyof typeof scores];
-              
+              const score = scores[criterion.name] || 1;
+
               return (
-                <Grid size={{ xs: 12 }} key={criterion.key}>
+                <Grid size={{ xs: 12 }} key={criterion.name}>
                   <Box>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {criterion.label}
-                      </Typography>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {toLabel(criterion.name)}
+                        </Typography>
+                        {criterion.weight !== 1 && (
+                          <Chip
+                            label={`${criterion.weight}x weight`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ ml: 1 }}
+                          />
+                        )}
+                      </Box>
                       <Chip
-                        label={`${score} / 10`}
+                        label={`${score} / ${criterion.maxScore}`}
                         sx={{
-                          bgcolor: getScoreColor(score),
+                          bgcolor: getScoreColor(score, criterion.maxScore),
                           color: "white",
                           fontWeight: 600,
                           fontSize: "1rem",
@@ -297,16 +345,16 @@ export default function ProjectScoringClient({
                         }}
                       />
                     </Box>
-                    
+
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       {criterion.description}
                     </Typography>
-                    
+
                     <Slider
                       value={score}
-                      onChange={(_, value) => handleScoreChange(criterion.key, value)}
+                      onChange={(_, value) => handleScoreChange(criterion.name, value)}
                       min={1}
-                      max={10}
+                      max={criterion.maxScore}
                       step={1}
                       marks
                       valueLabelDisplay="auto"
@@ -386,7 +434,7 @@ export default function ProjectScoringClient({
 
           {existingScore && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              You previously scored this project on {new Date(existingScore.submittedAt).toLocaleString()}. Submitting will update your score.
+              You previously scored this project on {new Date(existingScore.submittedAt!).toLocaleString()}. Submitting will update your score.
             </Alert>
           )}
         </CardContent>
