@@ -156,39 +156,81 @@ export const hackathonTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Lexend Deca', Arial, sans-serif",
+    // System font stack with Inter as primary (similar to MongoDB's Euclid Circular A)
+    fontFamily:
+      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
+    fontWeightLight: 300,
+    fontWeightRegular: 400,
+    fontWeightMedium: 500,
+    fontWeightBold: 600,
     h1: {
-      fontFamily: "'Source Serif Pro', Georgia, serif",
-      fontWeight: 700,
+      fontWeight: 600,
       letterSpacing: "-0.02em",
       fontSize: "clamp(2rem, 5vw, 3.5rem)",
+      lineHeight: 1.2,
     },
     h2: {
-      fontFamily: "'Source Serif Pro', Georgia, serif",
-      fontWeight: 700,
+      fontWeight: 600,
       letterSpacing: "-0.01em",
       fontSize: "clamp(1.75rem, 4vw, 3rem)",
+      lineHeight: 1.25,
     },
     h3: {
       fontWeight: 600,
       fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+      lineHeight: 1.3,
     },
     h4: {
       fontWeight: 600,
       fontSize: "clamp(1.25rem, 2.5vw, 2rem)",
+      lineHeight: 1.35,
     },
     h5: {
-      fontWeight: 600,
+      fontWeight: 500,
       fontSize: "clamp(1.125rem, 2vw, 1.5rem)",
+      lineHeight: 1.4,
     },
     h6: {
-      fontWeight: 600,
+      fontWeight: 500,
       fontSize: "clamp(1rem, 1.5vw, 1.25rem)",
+      lineHeight: 1.45,
+    },
+    body1: {
+      fontSize: "1rem",
+      lineHeight: 1.6,
+      fontWeight: 400,
+    },
+    body2: {
+      fontSize: "0.875rem",
+      lineHeight: 1.6,
+      fontWeight: 400,
+    },
+    subtitle1: {
+      fontSize: "1rem",
+      lineHeight: 1.5,
+      fontWeight: 500,
+    },
+    subtitle2: {
+      fontSize: "0.875rem",
+      lineHeight: 1.5,
+      fontWeight: 500,
     },
     button: {
       fontWeight: 500,
-      letterSpacing: "0.02em",
+      letterSpacing: "0.01em",
       textTransform: "none",
+    },
+    caption: {
+      fontSize: "0.75rem",
+      lineHeight: 1.4,
+      fontWeight: 400,
+    },
+    overline: {
+      fontSize: "0.75rem",
+      lineHeight: 1.4,
+      fontWeight: 500,
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
     },
   },
   components: {
@@ -291,11 +333,12 @@ export const hackathonTheme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           textTransform: "none" as const,
-          fontWeight: 600,
+          fontWeight: 500,
           fontSize: "0.95rem",
           minHeight: 48,
           "&.Mui-selected": {
             color: theme.vars.palette.primary.main,
+            fontWeight: 600,
           },
         }),
       },
@@ -326,7 +369,7 @@ export const hackathonTheme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           color: theme.vars.palette.primary.main,
-          fontWeight: 600,
+          fontWeight: 500,
           textDecoration: "none",
           "&:hover": {
             color: theme.vars.palette.primary.dark,
@@ -359,7 +402,7 @@ export const hackathonTheme = createTheme({
             backgroundColor: "transparent",
           },
           "& .MuiTableCell-root": {
-            fontWeight: 600,
+            fontWeight: 500,
             fontSize: "0.8rem",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
