@@ -415,53 +415,7 @@ export default function Navbar() {
                   <>
                     {user ? (
                       <>
-                        {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
-                          <Button
-                            color="inherit"
-                            href="/judging"
-                            startIcon={<GavelIcon />}
-                            sx={{ textTransform: "none" }}
-                          >
-                            Judging
-                          </Button>
-                        )}
 
-                        {(user.role === "admin" || user.role === "super_admin") && (
-                          <Button
-                            color="inherit"
-                            href="/admin"
-                            startIcon={<AdminIcon />}
-                            sx={{
-                              bgcolor: "rgba(255, 255, 255, 0.1)",
-                              "&:hover": {
-                                bgcolor: "rgba(255, 255, 255, 0.2)",
-                              },
-                              textTransform: "none",
-                            }}
-                          >
-                            Admin
-                          </Button>
-                        )}
-
-                        <Button
-                          color="inherit"
-                          href="/dashboard"
-                          startIcon={<DashboardIcon />}
-                          sx={{ textTransform: "none" }}
-                        >
-                          Dashboard
-                        </Button>
-
-                        <Chip
-                          label={user.role || "user"}
-                          size="small"
-                          sx={{
-                            bgcolor: "rgba(255, 255, 255, 0.2)",
-                            color: "inherit",
-                            fontWeight: 500,
-                            textTransform: "uppercase",
-                          }}
-                        />
 
                         <IconButton onClick={handleMenu} sx={{ ml: 1 }}>
                           <Avatar
@@ -500,7 +454,46 @@ export default function Navbar() {
                             <Typography variant="caption" color="text.secondary">
                               {user?.email}
                             </Typography>
+                            <Chip
+                              label={user.role || "user"}
+                              size="small"
+                              sx={{
+                                mt: 0.5,
+                                bgcolor: "primary.main",
+                                color: "white",
+                                fontWeight: 600,
+                                textTransform: "uppercase",
+                                fontSize: "0.7rem",
+                              }}
+                            />
                           </Box>
+
+                          <Divider />
+
+                          <MenuItem onClick={() => handleNavigate("/dashboard")}>
+                            <ListItemIcon>
+                              <DashboardIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Dashboard</ListItemText>
+                          </MenuItem>
+
+                          {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+                            <MenuItem onClick={() => handleNavigate("/judging")}>
+                              <ListItemIcon>
+                                <GavelIcon fontSize="small" />
+                              </ListItemIcon>
+                              <ListItemText>Judging</ListItemText>
+                            </MenuItem>
+                          )}
+
+                          {(user.role === "admin" || user.role === "super_admin") && (
+                            <MenuItem onClick={() => handleNavigate("/admin")}>
+                              <ListItemIcon>
+                                <AdminIcon fontSize="small" color="primary" />
+                              </ListItemIcon>
+                              <ListItemText>Admin</ListItemText>
+                            </MenuItem>
+                          )}
 
                           <Divider />
 
@@ -598,9 +591,59 @@ export default function Navbar() {
                   }}
                   PaperProps={{
                     elevation: 3,
-                    sx: { minWidth: 180, mt: 1 },
+                    sx: { minWidth: 200, mt: 1 },
                   }}
                 >
+                  <Box sx={{ px: 2, py: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Signed in as
+                    </Typography>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      {user?.name || "User"}
+                    </Typography>
+                    <Chip
+                      label={user.role || "user"}
+                      size="small"
+                      sx={{
+                        mt: 0.5,
+                        bgcolor: "primary.main",
+                        color: "white",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        fontSize: "0.7rem",
+                      }}
+                    />
+                  </Box>
+
+                  <Divider />
+
+                  <MenuItem onClick={() => handleNavigate("/dashboard")}>
+                    <ListItemIcon>
+                      <DashboardIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Dashboard</ListItemText>
+                  </MenuItem>
+
+                  {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+                    <MenuItem onClick={() => handleNavigate("/judging")}>
+                      <ListItemIcon>
+                        <GavelIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Judging</ListItemText>
+                    </MenuItem>
+                  )}
+
+                  {(user.role === "admin" || user.role === "super_admin") && (
+                    <MenuItem onClick={() => handleNavigate("/admin")}>
+                      <ListItemIcon>
+                        <AdminIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Admin</ListItemText>
+                    </MenuItem>
+                  )}
+
+                  <Divider />
+
                   <MenuItem onClick={() => handleNavigate("/profile")}>
                     <ListItemIcon>
                       <PersonIcon fontSize="small" />
