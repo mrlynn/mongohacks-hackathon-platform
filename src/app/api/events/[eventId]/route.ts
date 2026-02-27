@@ -4,6 +4,7 @@ import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { successResponse, errorResponse } from "@/lib/utils";
 import { auth } from "@/lib/auth";
+import { isValidObjectId } from "mongoose";
 
 export async function GET(
   request: NextRequest,
@@ -13,6 +14,11 @@ export async function GET(
     await connectToDatabase();
     const { eventId } = await params;
     const session = await auth();
+
+    // Validate eventId is a valid MongoDB ObjectId
+    if (!isValidObjectId(eventId)) {
+      return errorResponse("Invalid event ID format", 400);
+    }
 
     const event = await EventModel.findById(eventId).lean();
 
