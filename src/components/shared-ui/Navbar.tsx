@@ -37,6 +37,8 @@ import {
   LightMode as LightModeIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
+  Gavel as GavelIcon,
+  MenuBook as MenuBookIcon,
 } from "@mui/icons-material";
 import { useColorScheme } from "@mui/material/styles";
 import Image from "next/image";
@@ -198,6 +200,20 @@ export default function Navbar() {
           </ListItemButton>
         </ListItem>
 
+        <ListItem disablePadding>
+          <ListItemButton
+            component="a"
+            href="https://docs.mongohacks.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ListItemIcon>
+              <MenuBookIcon />
+            </ListItemIcon>
+            <ListItemText primary="Documentation" />
+          </ListItemButton>
+        </ListItem>
+
         {user && (
           <>
             <Divider sx={{ my: 1 }} />
@@ -213,6 +229,20 @@ export default function Navbar() {
                 <ListItemText primary="Dashboard" />
               </ListItemButton>
             </ListItem>
+
+            {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => handleNavigate("/judging")}
+                  selected={pathname.startsWith("/judging")}
+                >
+                  <ListItemIcon>
+                    <GavelIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Judging" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
             {(user.role === "admin" || user.role === "super_admin") && (
               <ListItem disablePadding>
@@ -310,7 +340,7 @@ export default function Navbar() {
   return (
     <>
       <AppBar position="sticky" elevation={0}>
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1, sm: 2 } }}>
           <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 } }}>
             {/* Mobile Menu Icon */}
             {isMobile && (
@@ -370,10 +400,32 @@ export default function Navbar() {
                   Map
                 </Button>
 
+                <Button
+                  color="inherit"
+                  href="https://docs.mongohacks.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<MenuBookIcon />}
+                  sx={{ textTransform: "none" }}
+                >
+                  Docs
+                </Button>
+
                 {mounted && (
                   <>
                     {user ? (
                       <>
+                        {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+                          <Button
+                            color="inherit"
+                            href="/judging"
+                            startIcon={<GavelIcon />}
+                            sx={{ textTransform: "none" }}
+                          >
+                            Judging
+                          </Button>
+                        )}
+
                         {(user.role === "admin" || user.role === "super_admin") && (
                           <Button
                             color="inherit"
