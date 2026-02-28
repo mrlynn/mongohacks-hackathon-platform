@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Box,
   Table,
@@ -28,6 +28,12 @@ import {
 } from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
+import {
+  FilterToolbar,
+  RangeFilter,
+  DateRangeFilter,
+  useFilterState,
+} from "@/components/shared-ui/filters";
 
 interface Judge {
   _id: string;
@@ -48,12 +54,92 @@ interface JudgesViewProps {
   assignmentCountMap: Record<string, number>;
 }
 
+
+const DEFAULT_FILTERS = {
+  search: "",
+  assignmentsMin: 0,
+  assignmentsMax: 50,
+  joinedFrom: "",
+  joinedTo: "",
+  sortField: "name",
+  sortDirection: "asc" as "asc" | "desc",
+};
+
 export default function JudgesView({
   judges,
   events,
   assignmentCountMap,
 }: JudgesViewProps) {
   const [view, setView] = useState<"table" | "card">("table");
+
+  const {
+    filters,
+    updateFilter,
+    clearFilters,
+    activeFilters,
+  } = useFilterState(DEFAULT_FILTERS);
+
+  // Apply filters and search
+  const filteredAndSortedJudges = useMemo(() => {
+    let result = [...judges];
+
+    // Search
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      result = result.filter(
+        (j) =>
+          j.name.toLowerCase().includes(searchLower) ||
+          j.email.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Assignment count range
+    result = result.filter((j) => {
+      const count = assignmentCountMap[j._id] || 0;
+      return count >= filters.assignmentsMin && count <= filters.assignmentsMax;
+    });
+
+    // Join date range
+    if (filters.joinedFrom) {
+      result = result.filter((j) => new Date(j.createdAt) >= new Date(filters.joinedFrom));
+    }
+    if (filters.joinedTo) {
+      result = result.filter((j) => new Date(j.createdAt) <= new Date(filters.joinedTo));
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      switch (filters.sortField) {
+        case "name":
+          aVal = a.name;
+          bVal = b.name;
+          break;
+        case "email":
+          aVal = a.email;
+          bVal = b.email;
+          break;
+        case "assignments":
+          aVal = assignmentCountMap[a._id] || 0;
+          bVal = assignmentCountMap[b._id] || 0;
+          break;
+        case "createdAt":
+          aVal = new Date(a.createdAt);
+          bVal = new Date(b.createdAt);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return filters.sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return filters.sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [judges, filters, assignmentCountMap]);
 
   // CSV export columns
   const csvColumns = [
@@ -63,12 +149,12 @@ export default function JudgesView({
   ];
 
   // Transform data for CSV
-  const csvData = judges.map((judge) => ({
+  const csvData = filteredAndSortedJudges.map((judge) => ({
     ...judge,
     createdAt: new Date(judge.createdAt).toLocaleDateString(),
   }));
 
-  if (judges.length === 0) {
+  if (judges.length === 0 && !filters.search && activeFilters.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: "center" }}>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
@@ -124,11 +210,67 @@ export default function JudgesView({
         </Alert>
       )}
 
-      {/* Toolbar */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-        <ViewToggle view={view} onChange={setView} />
-        <ExportButton data={csvData} filename="judges" columns={csvColumns} />
-      </Box>
+      {/* Filter Toolbar */}
+      <FilterToolbar
+        searchValue={filters.search}
+        onSearchChange={(value) => updateFilter("search", value)}
+        searchPlaceholder="Search judges by name or email..."
+        sortField={filters.sortField}
+        sortDirection={filters.sortDirection}
+        onSortFieldChange={(field) => updateFilter("sortField", field)}
+        onSortDirectionChange={(dir) => updateFilter("sortDirection", dir)}
+        sortOptions={[
+          { value: "name", label: "Name" },
+          { value: "email", label: "Email" },
+          { value: "assignments", label: "Assignments" },
+          { value: "createdAt", label: "Joined" },
+        ]}
+        activeFilters={activeFilters}
+        onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
+        onClearAllFilters={clearFilters}
+        rightActions={
+          <>
+            <ViewToggle view={view} onChange={setView} />
+            <ExportButton data={csvData} filename="judges" columns={csvColumns} />
+          </>
+        }
+      >
+        {/* Filter Groups */}
+        <RangeFilter
+          label="Assigned Projects"
+          min={0}
+          max={50}
+          value={[filters.assignmentsMin, filters.assignmentsMax]}
+          onChange={([min, max]) => {
+            updateFilter("assignmentsMin", min);
+            updateFilter("assignmentsMax", max);
+          }}
+          step={1}
+          unit="projects"
+        />
+
+        <DateRangeFilter
+          label="Join Date"
+          startDate={filters.joinedFrom}
+          endDate={filters.joinedTo}
+          onStartDateChange={(date) => updateFilter("joinedFrom", date)}
+          onEndDateChange={(date) => updateFilter("joinedTo", date)}
+        />
+      </FilterToolbar>
+
+      {/* Results count */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Showing {filteredAndSortedJudges.length} of {judges.length} judges
+      </Typography>
+
+      {/* Empty state */}
+      {filteredAndSortedJudges.length === 0 && (filters.search || activeFilters.length > 0) && (
+        <Paper elevation={2} sx={{ p: 4, textAlign: "center" }}>
+          <Box sx={{ color: "text.secondary" }}>
+            No judges match your filters. Try adjusting your search criteria.
+          </Box>
+        </Paper>
+      )}
 
       {/* Table View */}
       {view === "table" && (
@@ -145,7 +287,7 @@ export default function JudgesView({
               </TableRow>
             </TableHead>
             <TableBody>
-              {judges.map((judge) => (
+              {filteredAndSortedJudges.map((judge) => (
                 <TableRow key={judge._id} hover>
                   <TableCell sx={{ fontWeight: 500 }}>{judge.name}</TableCell>
                   <TableCell>{judge.email}</TableCell>
@@ -174,7 +316,7 @@ export default function JudgesView({
       {/* Card View */}
       {view === "card" && (
         <Grid container spacing={3}>
-          {judges.map((judge) => (
+          {filteredAndSortedJudges.map((judge) => (
             <Grid key={judge._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card elevation={2}>
                 <CardContent>
