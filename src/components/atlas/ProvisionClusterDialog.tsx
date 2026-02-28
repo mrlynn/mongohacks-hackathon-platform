@@ -148,7 +148,7 @@ export default function ProvisionClusterDialog({
               <Typography variant="subtitle2" gutterBottom>
                 Database Username
               </Typography>
-              <Box display="flex" alignItems="center" gap={1} bgcolor="grey.100" p={1.5} borderRadius={1}>
+              <Box display="flex" alignItems="center" gap={1} bgcolor="action.hover" p={1.5} borderRadius={1}>
                 <Typography variant="body2" fontFamily="monospace" sx={{ flex: 1 }}>
                   {result.credentials.username}
                 </Typography>
@@ -168,7 +168,7 @@ export default function ProvisionClusterDialog({
               <Typography variant="subtitle2" gutterBottom>
                 Database Password
               </Typography>
-              <Box display="flex" alignItems="center" gap={1} bgcolor="grey.100" p={1.5} borderRadius={1}>
+              <Box display="flex" alignItems="center" gap={1} bgcolor="action.hover" p={1.5} borderRadius={1}>
                 <Typography variant="body2" fontFamily="monospace" sx={{ flex: 1, wordBreak: 'break-all' }}>
                   {result.credentials.password}
                 </Typography>
@@ -189,7 +189,7 @@ export default function ProvisionClusterDialog({
                 <Typography variant="subtitle2" gutterBottom>
                   Connection String (available once cluster is active)
                 </Typography>
-                <Box display="flex" alignItems="center" gap={1} bgcolor="grey.100" p={1.5} borderRadius={1}>
+                <Box display="flex" alignItems="center" gap={1} bgcolor="action.hover" p={1.5} borderRadius={1}>
                   <Typography
                     variant="body2"
                     fontFamily="monospace"

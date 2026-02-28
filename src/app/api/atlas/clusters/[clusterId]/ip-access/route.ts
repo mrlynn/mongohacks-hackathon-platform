@@ -20,10 +20,10 @@ import { auth } from '@/lib/auth';
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
-    const { clusterId } = params;
+    const { clusterId } = await params;
     const session = await auth();
 
     await connectToDatabase();
@@ -88,10 +88,10 @@ export async function POST(
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
-    const { clusterId } = params;
+    const { clusterId } = await params;
 
     await connectToDatabase();
     const cluster = await AtlasClusterModel.findById(clusterId);
@@ -125,10 +125,10 @@ export async function GET(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
-    const { clusterId } = params;
+    const { clusterId } = await params;
     const { searchParams } = new URL(req.url);
     const entry = searchParams.get('entry');
 

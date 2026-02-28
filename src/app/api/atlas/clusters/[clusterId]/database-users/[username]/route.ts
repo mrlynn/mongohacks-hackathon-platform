@@ -11,10 +11,10 @@ import { errorResponse } from '@/lib/utils';
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { clusterId: string; username: string } }
+  { params }: { params: Promise<{ clusterId: string; username: string }> }
 ) {
   try {
-    const { clusterId, username } = params;
+    const { clusterId, username } = await params;
 
     await connectToDatabase();
     const cluster = await AtlasClusterModel.findById(clusterId);

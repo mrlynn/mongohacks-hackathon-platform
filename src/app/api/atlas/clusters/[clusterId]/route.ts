@@ -11,10 +11,10 @@ import { errorResponse } from '@/lib/utils';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
-    const { clusterId } = params;
+    const { clusterId } = await params;
 
     await connectToDatabase();
     const cluster = await AtlasClusterModel.findById(clusterId)
@@ -44,10 +44,10 @@ export async function GET(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
-    const { clusterId } = params;
+    const { clusterId } = await params;
 
     await connectToDatabase();
     const cluster = await AtlasClusterModel.findById(clusterId);

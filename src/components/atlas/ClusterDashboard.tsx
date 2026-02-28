@@ -236,7 +236,7 @@ export default function ClusterDashboard({
                 display="flex"
                 alignItems="center"
                 gap={1}
-                bgcolor="grey.100"
+                bgcolor="action.hover"
                 p={1.5}
                 borderRadius={1}
               >

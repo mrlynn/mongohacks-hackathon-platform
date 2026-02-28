@@ -4,6 +4,24 @@ import { EventModel } from '@/lib/db/models/Event';
 import * as atlas from './atlas-client';
 import { generateSecurePassword, generateAtlasProjectName } from './utils';
 
+/**
+ * Appends the devrel appName to a MongoDB connection string for attribution tracking.
+ * 
+ * Format: devrel-MEDIUM-PRIMARY-SECONDARY
+ * - MEDIUM: platform
+ * - PRIMARY: hackathon
+ * - SECONDARY: atlas
+ * 
+ * See: /docs/Best_Practice_App_Name.md
+ */
+function addAppNameToConnectionString(connectionString: string): string {
+  if (!connectionString) return connectionString;
+  const appName = 'devrel-platform-hackathon-atlas';
+  const separator = connectionString.includes('?') ? '&' : '?';
+  return `${connectionString}${separator}appName=${appName}`;
+}
+
+
 export class ConflictError extends Error {
   constructor(message: string) {
     super(message);
@@ -117,8 +135,8 @@ export async function provisionCluster(
       atlasProjectName: projectName,
       atlasClusterName: clusterName,
       atlasClusterId: clusterResponse.id || '',
-      connectionString: clusterResponse.connectionStrings?.standardSrv || '',
-      standardConnectionString: clusterResponse.connectionStrings?.standard || '',
+      connectionString: addAppNameToConnectionString(clusterResponse.connectionStrings?.standardSrv || ''),
+      standardConnectionString: addAppNameToConnectionString(clusterResponse.connectionStrings?.standard || ''),
       databaseUsers: [
         {
           username: dbUsername,
