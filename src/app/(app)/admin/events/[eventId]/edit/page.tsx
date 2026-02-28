@@ -888,7 +888,7 @@ export default function EditEventPage({
         {/* Atlas Cluster Provisioning */}
         <Box sx={{ mt: 3 }}>
           <AtlasProvisioningToggle
-            eventId={params.eventId}
+            eventId={eventId}
             initialEnabled={formData.atlasProvisioning?.enabled || false}
             onUpdate={(enabled) => {
               setFormData({
