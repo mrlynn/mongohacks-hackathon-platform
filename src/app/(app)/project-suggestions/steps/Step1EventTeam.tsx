@@ -13,7 +13,7 @@ import {
   Typography,
   FormLabel,
   RadioGroup,
-  FormControlRadio,
+  FormControlLabel,
   Radio,
 } from '@mui/material';
 
@@ -61,9 +61,9 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
           value={teamSize}
           onChange={(e) => setTeamSize(Number(e.target.value))}
         >
-          <FormControlRadio value={1} control={<Radio />} label="Solo" />
-          <FormControlRadio value={3} control={<Radio />} label="2-5 people" />
-          <FormControlRadio value={6} control={<Radio />} label="5+ people" />
+          <FormControlLabel value={1} control={<Radio />} label="Solo" />
+          <FormControlLabel value={3} control={<Radio />} label="2-5 people" />
+          <FormControlLabel value={6} control={<Radio />} label="5+ people" />
         </RadioGroup>
       </FormControl>
 
