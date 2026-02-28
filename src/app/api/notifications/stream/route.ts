@@ -28,11 +28,16 @@ export async function GET() {
             read: false,
           });
 
-          if (count !== lastCount) {
+          if (count !== lastCount && !closed) {
             lastCount = count;
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ unreadCount: count })}\n\n`)
-            );
+            try {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ unreadCount: count })}\n\n`)
+              );
+            } catch {
+              closed = true;
+              return;
+            }
           }
         } catch (error) {
           console.error("SSE poll error:", error);

@@ -242,13 +242,15 @@ export default function AdminClusterOverview() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Link href={`/teams/${cluster.teamId._id}`}>
-                        <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
-                          {cluster.teamId.name}
-                        </Typography>
-                      </Link>
+                      {cluster.teamId ? (
+                        <Link href={`/teams/${cluster.teamId._id}`}>
+                          <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
+                            {cluster.teamId.name}
+                          </Typography>
+                        </Link>
+                      ) : '—'}
                     </TableCell>
-                    <TableCell>{cluster.projectId.name}</TableCell>
+                    <TableCell>{cluster.projectId?.name || '—'}</TableCell>
                     <TableCell>
                       <Typography variant="body2">
                         {cluster.providerName}
