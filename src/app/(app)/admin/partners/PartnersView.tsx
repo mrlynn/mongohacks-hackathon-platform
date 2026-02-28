@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Button,
@@ -37,6 +37,14 @@ import {
   GitHub as GitHubIcon,
 } from "@mui/icons-material";
 import { mongoBrand } from "@/styles/theme";
+import {
+  FilterToolbar,
+  StatusFilter,
+  MultiSelectFilter,
+  useFilterState,
+} from "@/components/shared-ui/filters";
+import ViewToggle from "@/components/shared-ui/ViewToggle";
+import ExportButton from "@/components/shared-ui/ExportButton";
 
 interface Contact {
   name: string;
@@ -88,14 +96,30 @@ const statusColors = {
   pending: mongoBrand.warningYellow,
 };
 
+const DEFAULT_FILTERS = {
+  search: "",
+  tiers: [] as string[],
+  statuses: [] as string[],
+  industries: [] as string[],
+  sortField: "name",
+  sortDirection: "asc" as "asc" | "desc",
+};
+
+
 export default function PartnersView() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
-  const [filterTier, setFilterTier] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [view, setView] = useState<"table" | "card">("card");
+
+  const {
+    filters,
+    updateFilter,
+    clearFilters,
+    activeFilters,
+  } = useFilterState(DEFAULT_FILTERS);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -235,11 +259,99 @@ export default function PartnersView() {
     }
   };
 
-  const filteredPartners = partners.filter((partner) => {
-    if (filterTier !== "all" && partner.tier !== filterTier) return false;
-    if (filterStatus !== "all" && partner.status !== filterStatus) return false;
-    return true;
-  });
+  // Extract unique values for filters
+  const uniqueIndustries = useMemo(() => {
+    const industries = new Set<string>();
+    partners.forEach((p) => {
+      if (p.industry) industries.add(p.industry);
+    });
+    return Array.from(industries).sort();
+  }, [partners]);
+
+  // Apply filters and search
+  const filteredAndSortedPartners = useMemo(() => {
+    let result = [...partners];
+
+    // Search
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.description?.toLowerCase().includes(searchLower) ||
+          p.industry?.toLowerCase().includes(searchLower) ||
+          p.tags?.some((tag) => tag.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Tier filter
+    if (filters.tiers.length > 0) {
+      result = result.filter((p) => filters.tiers.includes(p.tier));
+    }
+
+    // Status filter
+    if (filters.statuses.length > 0) {
+      result = result.filter((p) => filters.statuses.includes(p.status));
+    }
+
+    // Industry filter
+    if (filters.industries.length > 0) {
+      result = result.filter((p) => p.industry && filters.industries.includes(p.industry));
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      switch (filters.sortField) {
+        case "name":
+          aVal = a.name;
+          bVal = b.name;
+          break;
+        case "tier":
+          const tierOrder = { platinum: 0, gold: 1, silver: 2, bronze: 3, community: 4 };
+          aVal = tierOrder[a.tier];
+          bVal = tierOrder[b.tier];
+          break;
+        case "status":
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        case "industry":
+          aVal = a.industry || "";
+          bVal = b.industry || "";
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return filters.sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return filters.sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [partners, filters]);
+
+
+  // CSV export columns
+  const csvColumns = [
+    { key: "name" as const, label: "Partner Name" },
+    { key: "tier" as const, label: "Tier" },
+    { key: "status" as const, label: "Status" },
+    { key: "industry" as const, label: "Industry" },
+    { key: "website" as const, label: "Website" },
+  ];
+
+  // Transform data for CSV
+  const csvData = filteredAndSortedPartners.map((partner) => ({
+    name: partner.name,
+    tier: getTierLabel(partner.tier),
+    status: partner.status,
+    industry: partner.industry || "",
+    website: partner.website || "",
+  }));
 
   const getTierLabel = (tier: string) => {
     return tier.charAt(0).toUpperCase() + tier.slice(1);
@@ -268,15 +380,90 @@ export default function PartnersView() {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>
-          Partners
+      {/* Filter Toolbar */}
+      <FilterToolbar
+        searchValue={filters.search}
+        onSearchChange={(value) => updateFilter("search", value)}
+        searchPlaceholder="Search partners by name, industry, tags..."
+        sortField={filters.sortField}
+        sortDirection={filters.sortDirection}
+        onSortFieldChange={(field) => updateFilter("sortField", field)}
+        onSortDirectionChange={(dir) => updateFilter("sortDirection", dir)}
+        sortOptions={[
+          { value: "name", label: "Name" },
+          { value: "tier", label: "Tier" },
+          { value: "status", label: "Status" },
+          { value: "industry", label: "Industry" },
+        ]}
+        activeFilters={activeFilters}
+        onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
+        onClearAllFilters={clearFilters}
+        rightActions={
+          <>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              
+        >
+          {/* Filter Groups */}
+          <MultiSelectFilter
+            label="Tier"
+            options={[
+              { value: "platinum", label: "Platinum" },
+              { value: "gold", label: "Gold" },
+              { value: "silver", label: "Silver" },
+              { value: "bronze", label: "Bronze" },
+              { value: "community", label: "Community" },
+            ]}
+            selected={filters.tiers}
+            onChange={(value) => updateFilter("tiers", value)}
+          />
+
+          <MultiSelectFilter
+            label="Status"
+            options={[
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+              { value: "pending", label: "Pending" },
+            ]}
+            selected={filters.statuses}
+            onChange={(value) => updateFilter("statuses", value)}
+          />
+
+          {uniqueIndustries.length > 0 && (
+            <MultiSelectFilter
+              label="Industry"
+              options={uniqueIndustries.map((ind) => ({ value: ind, label: ind }))}
+              selected={filters.industries}
+              onChange={(value) => updateFilter("industries", value)}
+            />
+          )}
+        </FilterToolbar>
+
+        {/* Results count */}
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Showing {filteredAndSortedPartners.length} of {partners.length} partners
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          sx={{
+
+        {/* Empty state */}
+        {filteredAndSortedPartners.length === 0 && (filters.search || activeFilters.length > 0) && (
+          <Card sx={{ p: 4, textAlign: "center" }}>
+            <Typography color="text.secondary">
+              No partners match your filters. Try adjusting your search criteria.
+            </Typography>
+          </Card>
+        )}
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} sx={{ display: "none" }}>
+          <Typography variant="h4" fontWeight={700}>
+            Partners
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            sx={{onClick={() => handleOpenDialog()}
+              sx={{
             backgroundColor: mongoBrand.forestGreen,
             "&:hover": { backgroundColor: mongoBrand.evergreen },
           }}
@@ -337,13 +524,13 @@ export default function PartnersView() {
       )}
 
       {/* Partners Grid */}
-      {filteredPartners.length === 0 ? (
+      {filteredAndSortedPartners.length === 0 ? (
         <Alert severity="info">
           No partners found. Click "Add Partner" to create your first partner.
         </Alert>
       ) : (
         <Grid container spacing={3}>
-          {filteredPartners.map((partner) => (
+          {filteredAndSortedPartners.map((partner) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={partner._id}>
               <Card
                 sx={{
