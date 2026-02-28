@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       return errorResponse('Team not found', 404);
     }
 
-    const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
-    const isTeamLeader = team.leaderId.toString() === session.user.id;
+    const isAdmin = ['admin', 'super_admin'].includes((session.user as any).role);
+    const isTeamLeader = team.leaderId.toString() === session.user!.id;
 
     if (!isAdmin && !isTeamLeader) {
       return errorResponse('Only the team leader can provision a cluster', 403);
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       eventId,
       teamId,
       projectId: teamId, // Use teamId as Atlas project identifier
-      userId: session.user.id,
+      userId: session.user!.id,
       provider,
       region,
     });
@@ -126,12 +126,14 @@ export async function GET(req: NextRequest) {
 
     await connectToDatabase();
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = {
+      status: { $nin: ['deleted'] }, // Never return deleted clusters to the UI
+    };
     if (teamId) query.teamId = teamId;
     if (eventId) query.eventId = eventId;
 
     // Non-admins can only see their own team's clusters
-    const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
+    const isAdmin = ['admin', 'super_admin'].includes((session.user as any).role);
     if (!isAdmin && teamId) {
       const team = await TeamModel.findById(teamId);
       if (!team) {
@@ -139,8 +141,8 @@ export async function GET(req: NextRequest) {
       }
 
       const isMember =
-        team.leaderId.toString() === session.user.id ||
-        team.members?.some((m) => m.toString() === session.user.id);
+        team.leaderId.toString() === session.user!.id ||
+        team.members?.some((m: any) => m.toString() === session.user!.id);
 
       if (!isMember) {
         return errorResponse('Access denied', 403);

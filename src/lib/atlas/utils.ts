@@ -76,3 +76,26 @@ export function generateAtlasProjectName(eventId: string, teamId: string): strin
   const shortTeamId = teamId.slice(-6);
   return `mh-${shortEventId}-${shortTeamId}`;
 }
+
+/**
+ * DevRel appName for MongoDB attribution tracking.
+ *
+ * Format: devrel-MEDIUM-PRIMARY-SECONDARY
+ * - MEDIUM: platform (how consumed)
+ * - PRIMARY: hackathon (main topic)
+ * - SECONDARY: atlas (complementary theme)
+ *
+ * See: /docs/Best_Practice_App_Name.md
+ */
+export const DEVREL_APP_NAME = 'devrel-platform-hackathon-atlas';
+
+/**
+ * Appends the devrel appName to a MongoDB connection string for attribution tracking.
+ * Idempotent — won't add appName if already present.
+ */
+export function addAppNameToConnectionString(connectionString: string): string {
+  if (!connectionString) return connectionString;
+  if (connectionString.includes(`appName=${DEVREL_APP_NAME}`)) return connectionString;
+  const separator = connectionString.includes('?') ? '&' : '?';
+  return `${connectionString}${separator}appName=${DEVREL_APP_NAME}`;
+}

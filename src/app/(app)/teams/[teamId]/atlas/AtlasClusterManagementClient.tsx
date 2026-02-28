@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Container, Typography, Box, Grid, Breadcrumbs, Link } from '@mui/material';
 import { NavigateNext as NavigateNextIcon } from '@mui/icons-material';
 import ClusterDashboard from '@/components/atlas/ClusterDashboard';
@@ -14,6 +14,7 @@ interface AtlasClusterManagementClientProps {
   teamName: string;
   eventName: string;
   isTeamLeader: boolean;
+  isAdmin: boolean;
   allowedProviders: string[];
 }
 
@@ -23,27 +24,14 @@ export default function AtlasClusterManagementClient({
   teamName,
   eventName,
   isTeamLeader,
+  isAdmin,
   allowedProviders,
 }: AtlasClusterManagementClientProps) {
   const [provisionDialogOpen, setProvisionDialogOpen] = useState(false);
-  const [clusterId, setClusterId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch cluster to get ID
-  useEffect(() => {
-    const fetchCluster = async () => {
-      try {
-        const res = await fetch(`/api/atlas/clusters?teamId=${teamId}`);
-        const data = await res.json();
-        if (data.clusters?.[0]?._id) {
-          setClusterId(data.clusters[0]._id);
-        }
-      } catch (err) {
-        console.error('Failed to fetch cluster:', err);
-      }
-    };
-    fetchCluster();
-  }, [teamId, refreshKey]);
+  // Admins and team leaders can perform write operations
+  const canManage = isTeamLeader || isAdmin;
 
   const handleProvisionSuccess = () => {
     setRefreshKey((prev) => prev + 1);
@@ -79,27 +67,14 @@ export default function AtlasClusterManagementClient({
         </Typography>
       </Box>
 
-      {/* Cluster Dashboard */}
-      <Box sx={{ mb: 4 }}>
-        <ClusterDashboard
-          teamId={teamId}
-          eventId={eventId}
-          onProvisionClick={() => setProvisionDialogOpen(true)}
-          isTeamLeader={isTeamLeader}
-        />
-      </Box>
-
-      {/* Database Users & IP Access (only shown if cluster exists) */}
-      {clusterId && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <DatabaseUserManager clusterId={clusterId} isTeamLeader={isTeamLeader} />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <IpAccessManager clusterId={clusterId} isTeamLeader={isTeamLeader} />
-          </Grid>
-        </Grid>
-      )}
+      {/* Cluster Dashboard — single source of truth for cluster state */}
+      <ClusterDashboard
+        teamId={teamId}
+        eventId={eventId}
+        onProvisionClick={() => setProvisionDialogOpen(true)}
+        isTeamLeader={canManage}
+        refreshKey={refreshKey}
+      />
 
       {/* Provision Dialog */}
       <ProvisionClusterDialog

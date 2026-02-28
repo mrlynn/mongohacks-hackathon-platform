@@ -120,6 +120,12 @@ export async function createAtlasProject(name: string): Promise<AtlasProject> {
   });
 }
 
+export async function getAtlasProjectByName(name: string): Promise<AtlasProject> {
+  return atlasRequest(`/groups/byName/${encodeURIComponent(name)}`, {
+    method: 'GET',
+  });
+}
+
 export async function deleteAtlasProject(groupId: string): Promise<void> {
   return atlasRequest(`/groups/${groupId}`, { method: 'DELETE' });
 }

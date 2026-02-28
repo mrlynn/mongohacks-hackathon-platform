@@ -1,6 +1,6 @@
 import mongoose, { Schema, model, models, Document } from 'mongoose';
 
-export interface IProjectIdea extends Document {
+export interface IProjectIdea extends Omit<Document, 'model'> {
   userId: mongoose.Types.ObjectId;
   eventId: mongoose.Types.ObjectId;
   

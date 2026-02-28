@@ -21,7 +21,7 @@ export const AI_OPERATIONS = [
 ] as const;
 export type AiOperation = (typeof AI_OPERATIONS)[number];
 
-export interface IAiUsageLog extends Document {
+export interface IAiUsageLog extends Omit<Document, 'model'> {
   category: AiCategory;
   provider: AiProvider;
   model: string;

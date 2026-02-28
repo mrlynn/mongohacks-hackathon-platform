@@ -9,7 +9,7 @@ import { errorResponse } from '@/lib/utils';
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { clusterId: string } }
+  { params }: { params: Promise<{ clusterId: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,11 +18,11 @@ export async function DELETE(
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes(session.user.role)) {
+    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
       return errorResponse('Admin access required', 403);
     }
 
-    const { clusterId } = params;
+    const { clusterId } = await params;
 
     // Delete the cluster (no team leader check)
     await deleteCluster(clusterId);

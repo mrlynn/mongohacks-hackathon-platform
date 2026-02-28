@@ -10,6 +10,7 @@ import {
   Alert,
   Chip,
   Stack,
+  Grid,
   CircularProgress,
   IconButton,
   Tooltip,
@@ -21,12 +22,15 @@ import {
   Delete as DeleteIcon,
   Storage as StorageIcon,
 } from '@mui/icons-material';
+import DatabaseUserManager from '@/components/atlas/DatabaseUserManager';
+import IpAccessManager from '@/components/atlas/IpAccessManager';
 
 interface ClusterDashboardProps {
   teamId: string;
   eventId: string;
   isTeamLeader: boolean;
   onProvisionClick: () => void;
+  refreshKey?: number;
 }
 
 interface Cluster {
@@ -47,6 +51,7 @@ export default function ClusterDashboard({
   eventId,
   isTeamLeader,
   onProvisionClick,
+  refreshKey = 0,
 }: ClusterDashboardProps) {
   const [cluster, setCluster] = useState<Cluster | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +86,16 @@ export default function ClusterDashboard({
 
       if (!res.ok) throw new Error(data.error || 'Failed to poll status');
 
-      setCluster((prev) => prev ? { ...prev, status: data.cluster.status, connectionString: data.cluster.connectionString } : null);
+      // Use the refreshed status data (not the stale cluster object)
+      setCluster((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: data.cluster.status,
+              connectionString: data.cluster.connectionString || prev.connectionString,
+            }
+          : null
+      );
     } catch (err) {
       console.error('Status poll failed:', err);
     } finally {
@@ -102,6 +116,7 @@ export default function ClusterDashboard({
         throw new Error(data.error || 'Failed to delete cluster');
       }
 
+      // Refetch to clear state (cluster is now deleted and filtered out by the API)
       await fetchCluster();
     } catch (err) {
       setError((err as Error).message);
@@ -114,9 +129,10 @@ export default function ClusterDashboard({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Fetch on mount, teamId change, or after provisioning success (refreshKey)
   useEffect(() => {
     fetchCluster();
-  }, [teamId]);
+  }, [teamId, refreshKey]);
 
   // Auto-poll status if creating
   useEffect(() => {
@@ -124,7 +140,7 @@ export default function ClusterDashboard({
       const interval = setInterval(pollStatus, 10000); // Poll every 10s
       return () => clearInterval(interval);
     }
-  }, [cluster?.status]);
+  }, [cluster?.status, cluster?._id]);
 
   if (loading) {
     return (
@@ -148,7 +164,7 @@ export default function ClusterDashboard({
               No Atlas Cluster
             </Typography>
             <Typography variant="body2" color="text.secondary" textAlign="center">
-              Your team hasn't provisioned a MongoDB Atlas cluster yet.
+              Your team hasn&apos;t provisioned a MongoDB Atlas cluster yet.
             </Typography>
             {isTeamLeader && (
               <Button variant="contained" onClick={onProvisionClick} sx={{ mt: 2 }}>
@@ -178,112 +194,127 @@ export default function ClusterDashboard({
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Stack spacing={3}>
-          {/* Header */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Box>
-              <Typography variant="h6">{cluster.atlasClusterName}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {cluster.atlasProjectName}
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={1}>
-              <Tooltip title={pollingStatus ? 'Polling...' : 'Refresh status'}>
-                <IconButton onClick={pollStatus} disabled={pollingStatus} size="small">
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              {isTeamLeader && cluster.status !== 'deleting' && cluster.status !== 'deleted' && (
-                <Tooltip title="Delete cluster">
-                  <IconButton onClick={handleDelete} size="small" color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Stack>
-          </Box>
-
-          {/* Status */}
-          <Box>
-            <Chip
-              label={cluster.status.toUpperCase()}
-              color={getStatusColor(cluster.status)}
-              size="small"
-            />
-            {cluster.status === 'creating' && (
-              <Typography variant="caption" display="block" mt={1} color="text.secondary">
-                Cluster is being created. This may take 5-10 minutes.
-              </Typography>
-            )}
-            {cluster.errorMessage && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {cluster.errorMessage}
-              </Alert>
-            )}
-          </Box>
-
-          <Divider />
-
-          {/* Connection String */}
-          {cluster.connectionString && cluster.status === 'active' && (
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                Connection String
-              </Typography>
-              <Box
-                display="flex"
-                alignItems="center"
-                gap={1}
-                bgcolor="action.hover"
-                p={1.5}
-                borderRadius={1}
-              >
-                <Typography
-                  variant="body2"
-                  fontFamily="monospace"
-                  sx={{ flex: 1, wordBreak: 'break-all' }}
-                >
-                  {cluster.connectionString}
+    <Stack spacing={3}>
+      {/* Cluster Info Card */}
+      <Card>
+        <CardContent>
+          <Stack spacing={3}>
+            {/* Header */}
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="h6">{cluster.atlasClusterName}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {cluster.atlasProjectName}
                 </Typography>
-                <Tooltip title={copied ? 'Copied!' : 'Copy'}>
-                  <IconButton
-                    size="small"
-                    onClick={() => copyToClipboard(cluster.connectionString)}
-                  >
-                    <CopyIcon fontSize="small" />
+              </Box>
+              <Stack direction="row" spacing={1}>
+                <Tooltip title={pollingStatus ? 'Polling...' : 'Refresh status'}>
+                  <IconButton onClick={pollStatus} disabled={pollingStatus} size="small">
+                    <RefreshIcon />
                   </IconButton>
                 </Tooltip>
-              </Box>
+                {isTeamLeader && cluster.status !== 'deleting' && cluster.status !== 'deleted' && (
+                  <Tooltip title="Delete cluster">
+                    <IconButton onClick={handleDelete} size="small" color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
             </Box>
-          )}
 
-          {/* Metadata */}
-          <Stack direction="row" spacing={3}>
+            {/* Status */}
             <Box>
-              <Typography variant="caption" color="text.secondary">
-                Provider
-              </Typography>
-              <Typography variant="body2">{cluster.providerName}</Typography>
+              <Chip
+                label={cluster.status.toUpperCase()}
+                color={getStatusColor(cluster.status)}
+                size="small"
+              />
+              {cluster.status === 'creating' && (
+                <Typography variant="caption" display="block" mt={1} color="text.secondary">
+                  Cluster is being created. This may take 5-10 minutes.
+                </Typography>
+              )}
+              {cluster.errorMessage && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {cluster.errorMessage}
+                </Alert>
+              )}
             </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                Region
-              </Typography>
-              <Typography variant="body2">{cluster.regionName}</Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                Created
-              </Typography>
-              <Typography variant="body2">
-                {new Date(cluster.createdAt).toLocaleDateString()}
-              </Typography>
-            </Box>
+
+            <Divider />
+
+            {/* Connection String */}
+            {cluster.connectionString && cluster.status === 'active' && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Connection String
+                </Typography>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                  bgcolor="action.selected"
+                  p={1.5}
+                  borderRadius={1}
+                >
+                  <Typography
+                    variant="body2"
+                    fontFamily="monospace"
+                    sx={{ flex: 1, wordBreak: 'break-all' }}
+                  >
+                    {cluster.connectionString}
+                  </Typography>
+                  <Tooltip title={copied ? 'Copied!' : 'Copy'}>
+                    <IconButton
+                      size="small"
+                      onClick={() => copyToClipboard(cluster.connectionString)}
+                    >
+                      <CopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            )}
+
+            {/* Metadata */}
+            <Stack direction="row" spacing={3}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Provider
+                </Typography>
+                <Typography variant="body2">{cluster.providerName}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Region
+                </Typography>
+                <Typography variant="body2">{cluster.regionName}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Created
+                </Typography>
+                <Typography variant="body2">
+                  {new Date(cluster.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+            </Stack>
           </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Database Users & IP Access — only when cluster is active/creating */}
+      {cluster._id && cluster.status !== 'deleted' && cluster.status !== 'deleting' && (
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <DatabaseUserManager clusterId={cluster._id} isTeamLeader={isTeamLeader} />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <IpAccessManager clusterId={cluster._id} isTeamLeader={isTeamLeader} />
+          </Grid>
+        </Grid>
+      )}
+    </Stack>
   );
 }

@@ -1,7 +1,7 @@
 import { connectToDatabase } from '@/lib/db/connection';
 import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import * as atlas from './atlas-client';
-import { mapAtlasStateToPlatformStatus } from './utils';
+import { mapAtlasStateToPlatformStatus, addAppNameToConnectionString } from './utils';
 
 export interface ClusterStatus {
   atlasState: string;
@@ -41,10 +41,14 @@ export async function refreshClusterStatus(clusterId: string): Promise<ClusterSt
     // Map Atlas state to platform status
     const platformStatus = mapAtlasStateToPlatformStatus(atlasCluster.stateName);
 
-    // Update local record
+    // Update local record — preserve appName attribution on connection strings
     cluster.status = platformStatus;
-    cluster.connectionString = atlasCluster.connectionStrings?.standardSrv || cluster.connectionString;
-    cluster.standardConnectionString = atlasCluster.connectionStrings?.standard || cluster.standardConnectionString;
+    cluster.connectionString = addAppNameToConnectionString(
+      atlasCluster.connectionStrings?.standardSrv || cluster.connectionString
+    );
+    cluster.standardConnectionString = addAppNameToConnectionString(
+      atlasCluster.connectionStrings?.standard || cluster.standardConnectionString
+    );
     cluster.mongoDBVersion = atlasCluster.mongoDBVersion || '';
     cluster.lastStatusCheck = new Date();
     await cluster.save();

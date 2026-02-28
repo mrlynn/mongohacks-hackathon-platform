@@ -15,7 +15,7 @@ export default async function AdminAtlasPage() {
     redirect('/login');
   }
 
-  if (!['admin', 'super_admin'].includes(session.user.role)) {
+  if (!['admin', 'super_admin'].includes((session.user as any).role)) {
     redirect('/dashboard');
   }
 

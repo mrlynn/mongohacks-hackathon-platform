@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes(session.user.role)) {
+    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes(session.user.role)) {
+    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
       return errorResponse('Admin access required', 403);
     }
 

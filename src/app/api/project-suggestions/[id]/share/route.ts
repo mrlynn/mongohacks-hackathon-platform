@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '@/lib/utils';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const userId = (session.user as any).id;
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { recipients, message } = body;
 

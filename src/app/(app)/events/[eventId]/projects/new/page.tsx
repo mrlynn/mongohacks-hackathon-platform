@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, use } from "react";
 import {
   Box,
   Typography,
@@ -58,8 +58,9 @@ const categories = [
 export default function NewProjectPage({
   params,
 }: {
-  params: { eventId: string };
+  params: Promise<{ eventId: string }>;
 }) {
+  const { eventId } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -94,7 +95,7 @@ export default function NewProjectPage({
     setSaveStatus("saving");
     try {
       const response = await fetch(
-        `/api/events/${params.eventId}/projects/${projectId}`,
+        `/api/events/${eventId}/projects/${projectId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -110,7 +111,7 @@ export default function NewProjectPage({
     } catch {
       setSaveStatus("error");
     }
-  }, [projectId, formData, params.eventId]);
+  }, [projectId, formData, eventId]);
 
   // Trigger auto-save on form changes (debounced 3 seconds)
   useEffect(() => {
@@ -138,7 +139,7 @@ export default function NewProjectPage({
 
     try {
       const response = await fetch(
-        `/api/events/${params.eventId}/projects`,
+        `/api/events/${eventId}/projects`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -194,7 +195,7 @@ export default function NewProjectPage({
       // If no draft yet, create project directly as submitted
       if (!id) {
         const response = await fetch(
-          `/api/events/${params.eventId}/projects`,
+          `/api/events/${eventId}/projects`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -220,7 +221,7 @@ export default function NewProjectPage({
 
         // Then submit
         const response = await fetch(
-          `/api/events/${params.eventId}/projects/${id}`,
+          `/api/events/${eventId}/projects/${id}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -236,7 +237,7 @@ export default function NewProjectPage({
         }
       }
 
-      router.push(`/events/${params.eventId}/hub`);
+      router.push(`/events/${eventId}/hub`);
     } catch (err) {
       setError("An error occurred while submitting the project");
       console.error(err);
@@ -274,14 +275,14 @@ export default function NewProjectPage({
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
-
-      <ProjectSuggestionsCTA 
-        variant="banner" 
-        eventId={params.eventId} 
-        title="Need project ideas?" 
-        description="Let AI generate creative project ideas before you start building!" 
-      />
       )}
+
+      <ProjectSuggestionsCTA
+        variant="banner"
+        eventId={eventId}
+        title="Need project ideas?"
+        description="Let AI generate creative project ideas before you start building!"
+      />
 
       <form>
         <FormCard>

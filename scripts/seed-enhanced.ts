@@ -760,7 +760,7 @@ async function seed() {
     { name: "HackMatch", description: "AI-powered team matching for hackathons using vector embeddings of skills and interests.", eventId: springEvent._id, teamId: springTeam3._id, teamMembers: springTeam3.members, category: "Social", technologies: ["Next.js", "MongoDB Atlas Vector Search", "OpenAI Embeddings", "WebSockets"], repoUrl: "https://github.com/mongodb-developer/search-lab", innovations: "Hybrid matching combining vector similarity with constraint satisfaction.", status: "submitted", submissionDate: new Date("2026-03-22T15:00:00Z") },
   ];
 
-  const projects = [];
+  const projects: any[] = [];
   for (const p of projectDefs) {
     const project = await ProjectModel.create({
       ...p,
@@ -1076,7 +1076,7 @@ async function seed() {
         respondentName: user.name,
         respondentType: "participant",
         userId: user._id,
-        answers: new Map([
+        answers: new Map<string, any>([
           ["overall_rating", randInt(3, 5)],
           ["would_recommend", Math.random() > 0.2 ? "yes" : "maybe"],
           ["best_part", pick(["Mentorship", "Networking", "Workshops", "The prizes", "Learning new tech"])],
@@ -1096,7 +1096,7 @@ async function seed() {
         respondentName: user.name,
         respondentType: "participant",
         userId: user._id,
-        answers: new Map([
+        answers: new Map<string, any>([
           ["overall_rating", randInt(3, 5)],
           ["would_recommend", Math.random() > 0.15 ? "yes" : "maybe"],
           ["best_part", pick(["The community", "Judging feedback", "Workshops", "Prizes"])],

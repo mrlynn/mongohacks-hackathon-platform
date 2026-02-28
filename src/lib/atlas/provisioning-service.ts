@@ -2,24 +2,7 @@ import { connectToDatabase } from '@/lib/db/connection';
 import { AtlasClusterModel, IAtlasCluster } from '@/lib/db/models/AtlasCluster';
 import { EventModel } from '@/lib/db/models/Event';
 import * as atlas from './atlas-client';
-import { generateSecurePassword, generateAtlasProjectName } from './utils';
-
-/**
- * Appends the devrel appName to a MongoDB connection string for attribution tracking.
- * 
- * Format: devrel-MEDIUM-PRIMARY-SECONDARY
- * - MEDIUM: platform
- * - PRIMARY: hackathon
- * - SECONDARY: atlas
- * 
- * See: /docs/Best_Practice_App_Name.md
- */
-function addAppNameToConnectionString(connectionString: string): string {
-  if (!connectionString) return connectionString;
-  const appName = 'devrel-platform-hackathon-atlas';
-  const separator = connectionString.includes('?') ? '&' : '?';
-  return `${connectionString}${separator}appName=${appName}`;
-}
+import { generateSecurePassword, generateAtlasProjectName, addAppNameToConnectionString } from './utils';
 
 
 export class ConflictError extends Error {
@@ -70,7 +53,7 @@ export async function provisionCluster(
     throw new Error('Atlas cluster provisioning is not enabled for this event');
   }
 
-  // 2. Check for existing cluster (idempotency)
+  // 2. Check for existing active cluster (idempotency)
   const existing = await AtlasClusterModel.findOne({
     eventId: params.eventId,
     teamId: params.teamId,
@@ -79,6 +62,13 @@ export async function provisionCluster(
   if (existing) {
     throw new ConflictError('A cluster already exists for this team in this event');
   }
+
+  // 2b. Remove old deleted/error records to avoid unique index collision on (eventId, teamId)
+  await AtlasClusterModel.deleteMany({
+    eventId: params.eventId,
+    teamId: params.teamId,
+    status: { $in: ['deleted', 'error'] },
+  });
 
   // 3. Resolve provider/region
   const provider = params.provider || event.atlasProvisioning.defaultProvider || 'AWS';
@@ -89,39 +79,79 @@ export async function provisionCluster(
   const clusterName = 'hackathon-cluster';
 
   let atlasProject: atlas.AtlasProject | null = null;
+  let projectAlreadyExisted = false;
 
   try {
-    // 5. Create Atlas project
-    console.log(`[Atlas] Creating project: ${projectName}`);
-    atlasProject = await atlas.createAtlasProject(projectName);
+    // 5. Resolve Atlas project — check if one already exists for this event+team combo
+    console.log(`[Atlas] Resolving project: ${projectName}`);
+    try {
+      atlasProject = await atlas.getAtlasProjectByName(projectName);
+      projectAlreadyExisted = true;
+      console.log(`[Atlas] Found existing project: ${atlasProject.id}`);
+    } catch {
+      // Project doesn't exist yet — create it
+      console.log(`[Atlas] Creating new project: ${projectName}`);
+      atlasProject = await atlas.createAtlasProject(projectName);
+    }
 
-    // 6. Create M0 cluster
-    console.log(`[Atlas] Creating M0 cluster in project ${atlasProject.id}`);
-    const clusterResponse = await atlas.createM0Cluster(atlasProject.id, {
-      name: clusterName,
-      backingProvider: provider,
-      region,
-    });
+    // 6. Resolve M0 cluster — check if one already exists in this project
+    let clusterResponse: atlas.AtlasClusterResponse;
+    if (projectAlreadyExisted) {
+      try {
+        clusterResponse = await atlas.getAtlasCluster(atlasProject.id, clusterName);
+        console.log(`[Atlas] Found existing cluster "${clusterName}" (status: ${clusterResponse.stateName})`);
+      } catch {
+        // Cluster doesn't exist in the project — create it
+        console.log(`[Atlas] Creating M0 cluster in existing project ${atlasProject.id}`);
+        clusterResponse = await atlas.createM0Cluster(atlasProject.id, {
+          name: clusterName,
+          backingProvider: provider,
+          region,
+        });
+      }
+    } else {
+      console.log(`[Atlas] Creating M0 cluster in new project ${atlasProject.id}`);
+      clusterResponse = await atlas.createM0Cluster(atlasProject.id, {
+        name: clusterName,
+        backingProvider: provider,
+        region,
+      });
+    }
 
-    // 7. Generate initial database user
+    // 7. Ensure initial database user exists
     const shortTeamId = params.teamId.slice(-6);
     const dbUsername = `team-${shortTeamId}`;
     const dbPassword = generateSecurePassword();
 
-    console.log(`[Atlas] Creating database user: ${dbUsername}`);
-    await atlas.createAtlasDatabaseUser(atlasProject.id, {
-      username: dbUsername,
-      password: dbPassword,
-      clusterName,
-    });
+    console.log(`[Atlas] Ensuring database user: ${dbUsername}`);
+    if (projectAlreadyExisted) {
+      // Check if user already exists
+      const existingUsers = await atlas.listAtlasDatabaseUsers(atlasProject.id);
+      const userExists = existingUsers.some((u) => u.username === dbUsername);
+      if (!userExists) {
+        await atlas.createAtlasDatabaseUser(atlasProject.id, {
+          username: dbUsername,
+          password: dbPassword,
+          clusterName,
+        });
+      } else {
+        console.log(`[Atlas] Database user "${dbUsername}" already exists`);
+      }
+    } else {
+      await atlas.createAtlasDatabaseUser(atlasProject.id, {
+        username: dbUsername,
+        password: dbPassword,
+        clusterName,
+      });
+    }
 
-    // 8. Configure IP access
+    // 8. Configure IP access (idempotent — Atlas deduplicates entries)
     const ipEntries = event.atlasProvisioning.openNetworkAccess
       ? [{ cidrBlock: '0.0.0.0/0', comment: 'Hackathon open access' }]
       : [];
 
     if (ipEntries.length > 0) {
-      console.log(`[Atlas] Adding IP access list`);
+      console.log(`[Atlas] Configuring IP access list`);
       await atlas.addIpAccessListEntries(atlasProject.id, ipEntries);
     }
 
@@ -201,9 +231,35 @@ export async function deleteCluster(clusterId: string): Promise<void> {
     cluster.status = 'deleting';
     await cluster.save();
 
-    // Delete from Atlas (cluster deletion also happens when project is deleted)
-    console.log(`[Atlas] Deleting project ${cluster.atlasProjectId}`);
-    await atlas.deleteAtlasProject(cluster.atlasProjectId);
+    // Step 1: Terminate the cluster first (Atlas requires this before project deletion)
+    if (cluster.atlasClusterName && cluster.atlasProjectId) {
+      console.log(`[Atlas] Terminating cluster ${cluster.atlasClusterName} in project ${cluster.atlasProjectId}`);
+      try {
+        await atlas.deleteAtlasCluster(cluster.atlasProjectId, cluster.atlasClusterName);
+      } catch (clusterErr: unknown) {
+        // Ignore 404 — cluster may already be terminated
+        const msg = (clusterErr as Error).message || '';
+        if (!msg.includes('404')) {
+          console.warn(`[Atlas] Cluster termination warning: ${msg}`);
+        }
+      }
+    }
+
+    // Step 2: Delete the Atlas project
+    // Note: Project deletion may fail if cluster is still terminating.
+    // In that case we still mark our record as deleted — the project can be cleaned up later.
+    if (cluster.atlasProjectId) {
+      console.log(`[Atlas] Deleting project ${cluster.atlasProjectId}`);
+      try {
+        await atlas.deleteAtlasProject(cluster.atlasProjectId);
+      } catch (projErr: unknown) {
+        const msg = (projErr as Error).message || '';
+        // 409 = cluster still terminating; project will be empty and can be cleaned later
+        if (!msg.includes('409')) {
+          console.warn(`[Atlas] Project deletion warning: ${msg}`);
+        }
+      }
+    }
 
     // Mark as deleted
     cluster.status = 'deleted';

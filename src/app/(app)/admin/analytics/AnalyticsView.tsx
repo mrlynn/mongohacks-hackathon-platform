@@ -523,7 +523,7 @@ function AiUsageTab({ aiData }: { aiData: AiAnalyticsData | null }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                   <YAxis tickFormatter={(v) => `$${v}`} />
-                  <Tooltip formatter={(value: number) => [`$${value.toFixed(4)}`, "Cost"]} />
+                  <Tooltip formatter={(value) => [`$${Number(value).toFixed(4)}`, "Cost"]} />
                   <Area
                     type="monotone"
                     dataKey="cost"

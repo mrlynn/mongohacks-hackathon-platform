@@ -34,7 +34,7 @@ export async function POST(
     }
 
     // Require team leader to modify IP access
-    await requireTeamLeader(cluster.teamId.toString());
+    await requireTeamLeader(cluster.teamId?.toString());
 
     const body = await req.json();
     const { entries } = body;
@@ -59,11 +59,11 @@ export async function POST(
     await addIpAccessListEntries(cluster.atlasProjectId, entries);
 
     // Add to cluster record
-    const newEntries = entries.map((e) => ({
+    const newEntries = entries.map((e: any) => ({
       cidrBlock: e.cidrBlock || e.ipAddress || '',
       comment: e.comment || '',
       addedAt: new Date(),
-      addedBy: session!.user.id,
+      addedBy: session!.user!.id,
     }));
 
     cluster.ipAccessList.push(...newEntries);
@@ -101,7 +101,7 @@ export async function GET(
     }
 
     // Require team membership to view
-    await requireTeamMember(cluster.teamId.toString());
+    await requireTeamMember(cluster.teamId?.toString());
 
     // Get from Atlas (source of truth)
     const atlasEntries = await listIpAccessList(cluster.atlasProjectId);
@@ -144,14 +144,14 @@ export async function DELETE(
     }
 
     // Require team leader to modify IP access
-    await requireTeamLeader(cluster.teamId.toString());
+    await requireTeamLeader(cluster.teamId?.toString());
 
     // Remove from Atlas
     await removeIpAccessListEntry(cluster.atlasProjectId, entry);
 
     // Remove from cluster record
     cluster.ipAccessList = cluster.ipAccessList.filter(
-      (e) => e.cidrBlock !== entry
+      (e: any) => e.cidrBlock !== entry
     );
     await cluster.save();
 

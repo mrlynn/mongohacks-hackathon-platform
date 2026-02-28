@@ -97,6 +97,7 @@ export default function EditEventPage({
     status: "draft" as "draft" | "open" | "in_progress" | "concluded",
     atlasProvisioning: {
       enabled: false,
+      allowedProviders: [] as string[],
     },
   });
 

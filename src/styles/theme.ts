@@ -115,7 +115,7 @@ export const hackathonTheme = createTheme({
           // Spring green is accent/CTA only — never use as background fill
           main: mongoBrand.springGreen,   // #00ED64 — buttons, icons, links
           light: "#33F07F",               // lighter green for hover states
-          dark: mongoBrand.slateBlue,     // #001E2B — used as "hero" bg via primary.dark
+          dark: "#00C254",                 // darker spring green for hover states
           contrastText: mongoBrand.slateBlue,
         },
         secondary: {
@@ -152,6 +152,13 @@ export const hackathonTheme = createTheme({
           secondary: mongoBrand.gray[200],
         },
         divider: "rgba(255, 255, 255, 0.08)",
+        action: {
+          hover: "rgba(255, 255, 255, 0.12)",
+          selected: "rgba(255, 255, 255, 0.20)",
+          focus: "rgba(255, 255, 255, 0.16)",
+          disabled: "rgba(255, 255, 255, 0.30)",
+          disabledBackground: "rgba(255, 255, 255, 0.12)",
+        },
       },
     },
   },
@@ -302,12 +309,18 @@ export const hackathonTheme = createTheme({
           padding: "10px 20px",
           transition: "all 0.2s ease-in-out",
         },
-        contained: {
+        contained: ({ theme }) => ({
           boxShadow: "none",
           "&:hover": {
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
           },
-        },
+          // Ensure primary contained buttons stay visible on hover in dark mode
+          ...theme.applyStyles("dark", {
+            "&.MuiButton-containedPrimary:hover": {
+              backgroundColor: "#00C254",
+            },
+          }),
+        }),
         outlined: {
           borderWidth: 1.5,
           "&:hover": {

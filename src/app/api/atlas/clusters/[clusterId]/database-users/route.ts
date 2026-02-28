@@ -34,7 +34,7 @@ export async function POST(
     }
 
     // Require team leader to create users
-    await requireTeamLeader(cluster.teamId.toString());
+    await requireTeamLeader(cluster.teamId?.toString());
 
     // Check max users limit
     const event = await EventModel.findById(cluster.eventId);
@@ -55,7 +55,7 @@ export async function POST(
     }
 
     // Check if user already exists
-    const existingUser = cluster.databaseUsers.find((u) => u.username === username);
+    const existingUser = cluster.databaseUsers.find((u: any) => u.username === username);
     if (existingUser) {
       return errorResponse('User already exists', 409);
     }
@@ -75,7 +75,7 @@ export async function POST(
     cluster.databaseUsers.push({
       username,
       createdAt: new Date(),
-      createdBy: session!.user.id,
+      createdBy: session!.user!.id,
     });
     await cluster.save();
 
@@ -115,7 +115,7 @@ export async function GET(
     }
 
     // Require team membership to view
-    await requireTeamMember(cluster.teamId.toString());
+    await requireTeamMember(cluster.teamId?.toString());
 
     // Get users from Atlas (includes roles and scopes)
     const atlasUsers = await listAtlasDatabaseUsers(cluster.atlasProjectId);
@@ -127,7 +127,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      users: clusterUsers.map((u) => ({
+      users: clusterUsers.map((u: any) => ({
         username: u.username,
         databaseName: u.databaseName,
         roles: u.roles,

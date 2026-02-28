@@ -252,7 +252,7 @@ export default function DatabaseUserManager({
                 <Typography variant="subtitle2" gutterBottom>
                   Username
                 </Typography>
-                <Box display="flex" alignItems="center" gap={1} bgcolor="action.hover" p={1.5} borderRadius={1}>
+                <Box display="flex" alignItems="center" gap={1} bgcolor="action.selected" p={1.5} borderRadius={1}>
                   <Typography variant="body2" fontFamily="monospace" sx={{ flex: 1 }}>
                     {createdCredentials?.username}
                   </Typography>
@@ -271,7 +271,7 @@ export default function DatabaseUserManager({
                 <Typography variant="subtitle2" gutterBottom>
                   Password
                 </Typography>
-                <Box display="flex" alignItems="center" gap={1} bgcolor="action.hover" p={1.5} borderRadius={1}>
+                <Box display="flex" alignItems="center" gap={1} bgcolor="action.selected" p={1.5} borderRadius={1}>
                   <Typography variant="body2" fontFamily="monospace" sx={{ flex: 1, wordBreak: 'break-all' }}>
                     {createdCredentials?.password}
                   </Typography>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db/connection';
 import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { requireTeamMember, requireTeamLeader } from '@/lib/atlas/auth-guard';
@@ -25,8 +26,15 @@ export async function GET(
       return errorResponse('Cluster not found', 404);
     }
 
-    // Require team membership to view
-    await requireTeamMember(cluster.teamId.toString());
+    // Handle corrupt records (missing teamId) — only admins can view
+    if (!cluster.teamId) {
+      const session = await auth();
+      if (!session?.user?.id || !['admin', 'super_admin'].includes((session.user as any).role)) {
+        return errorResponse('Cluster has invalid data. Contact an admin.', 500);
+      }
+    } else {
+      await requireTeamMember(cluster.teamId.toString());
+    }
 
     return NextResponse.json({
       success: true,
@@ -40,7 +48,7 @@ export async function GET(
 
 /**
  * DELETE /api/atlas/clusters/[clusterId]
- * Delete a cluster (team leader only).
+ * Delete a cluster (team leader or admin).
  */
 export async function DELETE(
   req: NextRequest,
@@ -56,11 +64,33 @@ export async function DELETE(
       return errorResponse('Cluster not found', 404);
     }
 
-    // Require team leader to delete
-    await requireTeamLeader(cluster.teamId.toString());
-
-    // Delete the cluster
-    await deleteCluster(clusterId);
+    // Handle corrupt records (missing teamId) — only admins can delete
+    if (!cluster.teamId) {
+      const session = await auth();
+      if (!session?.user?.id || !['admin', 'super_admin'].includes((session.user as any).role)) {
+        return errorResponse('Cluster has invalid data. Contact an admin to delete it.', 403);
+      }
+      // Admin deleting corrupt record — remove directly from database
+      // (no Atlas API calls since the record may not have valid Atlas IDs either)
+      if (cluster.atlasProjectId) {
+        try {
+          await deleteCluster(clusterId);
+        } catch {
+          // If Atlas deletion fails, still remove the corrupt DB record
+          cluster.status = 'deleted';
+          cluster.deletedAt = new Date();
+          await cluster.save();
+        }
+      } else {
+        cluster.status = 'deleted';
+        cluster.deletedAt = new Date();
+        await cluster.save();
+      }
+    } else {
+      // Normal flow: require team leader
+      await requireTeamLeader(cluster.teamId.toString());
+      await deleteCluster(clusterId);
+    }
 
     return NextResponse.json({
       success: true,

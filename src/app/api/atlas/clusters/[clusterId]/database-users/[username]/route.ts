@@ -24,14 +24,14 @@ export async function DELETE(
     }
 
     // Require team leader to delete users
-    await requireTeamLeader(cluster.teamId.toString());
+    await requireTeamLeader(cluster.teamId?.toString());
 
     // Delete from Atlas
     await deleteAtlasDatabaseUser(cluster.atlasProjectId, username);
 
     // Remove from cluster record
     cluster.databaseUsers = cluster.databaseUsers.filter(
-      (u) => u.username !== username
+      (u: any) => u.username !== username
     );
     await cluster.save();
 

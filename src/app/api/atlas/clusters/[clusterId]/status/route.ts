@@ -24,20 +24,21 @@ export async function GET(
       return errorResponse('Cluster not found', 404);
     }
 
-    // Require team membership to view
-    await requireTeamMember(cluster.teamId.toString());
+    // Require team membership to view (handles missing teamId for corrupt records)
+    await requireTeamMember(cluster.teamId?.toString());
 
-    // Refresh status from Atlas
+    // Refresh status from Atlas (returns the updated values)
     const status = await refreshClusterStatus(clusterId);
 
+    // Return the refreshed data from the status service, not the stale cluster object
     return NextResponse.json({
       success: true,
       status,
       cluster: {
         id: cluster._id,
-        status: cluster.status,
-        connectionString: cluster.connectionString,
-        lastStatusCheck: cluster.lastStatusCheck,
+        status: status.platformStatus,
+        connectionString: status.connectionString,
+        lastStatusCheck: new Date(),
       },
     });
   } catch (error) {

@@ -29,12 +29,12 @@ export default function AdminAtlasClient() {
 
       <Grid container spacing={3}>
         {/* Cleanup Controls */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <CleanupControls />
         </Grid>
 
         {/* Cluster Overview */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <AdminClusterOverview />
         </Grid>
       </Grid>
