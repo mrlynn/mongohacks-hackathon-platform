@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
-    const isTeamLeader = team.leader.toString() === session.user.id;
+    const isTeamLeader = team.leaderId.toString() === session.user.id;
 
     if (!isAdmin && !isTeamLeader) {
       return errorResponse('Only the team leader can provision a cluster', 403);
@@ -147,8 +147,8 @@ export async function GET(req: NextRequest) {
       }
 
       const isMember =
-        team.leader.toString() === session.user.id ||
-        team.members.some((m) => m.toString() === session.user.id);
+        team.leaderId.toString() === session.user.id ||
+        team.members?.some((m) => m.toString() === session.user.id);
 
       if (!isMember) {
         return errorResponse('Access denied', 403);
