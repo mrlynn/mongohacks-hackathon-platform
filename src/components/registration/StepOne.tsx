@@ -19,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
+import OAuthButtons from "./OAuthButtons";
 
 interface StepOneProps {
   email: string;
@@ -28,6 +29,7 @@ interface StepOneProps {
   termsAccepted: boolean;
   onTermsChange: (accepted: boolean) => void;
   isLoggedIn: boolean;
+  eventId?: string;
   error?: string;
 }
 
@@ -39,6 +41,7 @@ export default function StepOne({
   termsAccepted,
   onTermsChange,
   isLoggedIn,
+  eventId,
   error,
 }: StepOneProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -86,6 +89,8 @@ export default function StepOne({
           {error}
         </Alert>
       )}
+
+      {!isLoggedIn && <OAuthButtons eventId={eventId} />}
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <TextField

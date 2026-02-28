@@ -20,6 +20,12 @@ export interface IUser extends Document {
   twoFactorExpiry?: Date;
   notificationPreferences: INotificationPreferences;
   role: "super_admin" | "admin" | "organizer" | "judge" | "participant";
+  // GitHub OAuth fields
+  githubUsername?: string;
+  bio?: string;
+  company?: string;
+  location?: string;
+  emailVerified?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +53,12 @@ const UserSchema = new Schema<IUser>(
       enum: ["super_admin", "admin", "organizer", "judge", "participant"],
       default: "participant",
     },
+    // GitHub OAuth fields
+    githubUsername: { type: String },
+    bio: { type: String },
+    company: { type: String },
+    location: { type: String },
+    emailVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

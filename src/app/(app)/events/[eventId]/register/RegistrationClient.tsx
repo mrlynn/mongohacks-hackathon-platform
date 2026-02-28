@@ -220,6 +220,7 @@ export default function RegistrationClient({
           termsAccepted={termsAccepted}
           onTermsChange={setTermsAccepted}
           isLoggedIn={isLoggedIn}
+          eventId={eventId}
           error={error}
         />
 
