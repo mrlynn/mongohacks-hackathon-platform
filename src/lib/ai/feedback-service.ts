@@ -1,7 +1,13 @@
 import OpenAI from "openai";
 import { logAiUsage } from "./usage-logger";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openai: OpenAI;
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 interface JudgeScore {
   innovation: number;
@@ -49,7 +55,7 @@ export async function synthesizeJudgeFeedback(
     .join("\n");
 
   const startTime = Date.now();
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4-turbo",
     messages: [
       {

@@ -1,13 +1,17 @@
 import OpenAI from "openai";
 import { logAiUsage } from "./usage-logger";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI;
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   const startTime = Date.now();
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: "text-embedding-3-small",
     input: text,
   });
@@ -29,7 +33,7 @@ export async function generateEmbeddings(
   texts: string[]
 ): Promise<number[][]> {
   const startTime = Date.now();
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: "text-embedding-3-small",
     input: texts,
   });
