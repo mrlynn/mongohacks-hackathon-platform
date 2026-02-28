@@ -890,15 +890,18 @@ export default function EditEventPage({
           <AtlasProvisioningToggle
             eventId={eventId}
             initialEnabled={formData.atlasProvisioning?.enabled || false}
-            onUpdate={(enabled) => {
+            initialAllowedProviders={formData.atlasProvisioning?.allowedProviders}
+            onUpdate={(enabled, allowedProviders) => {
               setFormData({
                 ...formData,
                 atlasProvisioning: {
                   ...formData.atlasProvisioning,
                   enabled,
+                  allowedProviders,
                 },
               });
             }}
+          />
           />
         </Box>
 

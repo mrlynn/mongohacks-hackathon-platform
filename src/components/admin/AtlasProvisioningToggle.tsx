@@ -11,21 +11,33 @@ import {
   Box,
   Chip,
   CircularProgress,
+  FormGroup,
+  Checkbox,
+  FormLabel,
 } from '@mui/material';
-import { Storage as StorageIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
+import { Storage as StorageIcon, CheckCircle as CheckIcon, Cloud as CloudIcon } from '@mui/icons-material';
 
 interface AtlasProvisioningToggleProps {
   eventId: string;
   initialEnabled: boolean;
-  onUpdate?: (enabled: boolean) => void;
+  initialAllowedProviders?: string[];
+  onUpdate?: (enabled: boolean, allowedProviders: string[]) => void;
 }
+
+const CLOUD_PROVIDERS = [
+  { value: 'AWS', label: 'Amazon Web Services (AWS)' },
+  { value: 'GCP', label: 'Google Cloud Platform (GCP)' },
+  { value: 'AZURE', label: 'Microsoft Azure' },
+];
 
 export default function AtlasProvisioningToggle({
   eventId,
   initialEnabled,
+  initialAllowedProviders = ['AWS', 'GCP', 'AZURE'],
   onUpdate,
 }: AtlasProvisioningToggleProps) {
   const [enabled, setEnabled] = useState(initialEnabled);
+  const [allowedProviders, setAllowedProviders] = useState<string[]>(initialAllowedProviders);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -39,7 +51,7 @@ export default function AtlasProvisioningToggle({
       const res = await fetch(`/api/admin/events/${eventId}/atlas-provisioning`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: checked }),
+        body: JSON.stringify({ enabled: checked, allowedProviders }),
       });
 
       const data = await res.json();
@@ -50,7 +62,7 @@ export default function AtlasProvisioningToggle({
 
       setEnabled(checked);
       setSuccess(true);
-      onUpdate?.(checked);
+      onUpdate?.(checked, allowedProviders);
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
@@ -58,6 +70,51 @@ export default function AtlasProvisioningToggle({
       setError((err as Error).message);
       // Revert toggle on error
       setEnabled(!checked);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProviderChange = async (provider: string, checked: boolean) => {
+    let newProviders: string[];
+    
+    if (checked) {
+      newProviders = [...allowedProviders, provider];
+    } else {
+      newProviders = allowedProviders.filter((p) => p !== provider);
+    }
+
+    // Prevent unchecking all providers
+    if (newProviders.length === 0) {
+      setError('At least one cloud provider must be enabled');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(false);
+
+      const res = await fetch(`/api/admin/events/${eventId}/atlas-provisioning`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, allowedProviders: newProviders }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update allowed providers');
+      }
+
+      setAllowedProviders(newProviders);
+      setSuccess(true);
+      onUpdate?.(enabled, newProviders);
+
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -85,7 +142,7 @@ export default function AtlasProvisioningToggle({
 
         {success && (
           <Alert severity="success" icon={<CheckIcon />} sx={{ mb: 2 }}>
-            Atlas provisioning {enabled ? 'enabled' : 'disabled'} successfully
+            Atlas provisioning settings updated successfully
           </Alert>
         )}
 
@@ -108,26 +165,56 @@ export default function AtlasProvisioningToggle({
         />
 
         {enabled && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="caption" component="div">
-              <strong>Default Configuration:</strong>
+          <Box sx={{ mt: 3 }}>
+            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+              <CloudIcon fontSize="small" color="action" />
+              <FormLabel component="legend">
+                <Typography variant="subtitle2">Allowed Cloud Providers</Typography>
+              </FormLabel>
+            </Box>
+            
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
+              Select which cloud providers teams can use to deploy their clusters.
+              This is useful when an event is sponsored by a specific cloud vendor.
             </Typography>
-            <Typography variant="caption" component="div">
-              • Provider: AWS (teams can choose AWS, GCP, or Azure)
-            </Typography>
-            <Typography variant="caption" component="div">
-              • Region: US_EAST_1 (configurable)
-            </Typography>
-            <Typography variant="caption" component="div">
-              • Network Access: Open (0.0.0.0/0)
-            </Typography>
-            <Typography variant="caption" component="div">
-              • Max DB Users: 5 per cluster
-            </Typography>
-            <Typography variant="caption" component="div">
-              • Auto-cleanup: When event concludes
-            </Typography>
-          </Alert>
+
+            <FormGroup>
+              {CLOUD_PROVIDERS.map((provider) => (
+                <FormControlLabel
+                  key={provider.value}
+                  control={
+                    <Checkbox
+                      checked={allowedProviders.includes(provider.value)}
+                      onChange={(e) => handleProviderChange(provider.value, e.target.checked)}
+                      disabled={loading}
+                    />
+                  }
+                  label={<Typography variant="body2">{provider.label}</Typography>}
+                />
+              ))}
+            </FormGroup>
+
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="caption" component="div">
+                <strong>Default Configuration:</strong>
+              </Typography>
+              <Typography variant="caption" component="div">
+                • Default Provider: {allowedProviders[0] || 'AWS'}
+              </Typography>
+              <Typography variant="caption" component="div">
+                • Default Region: US_EAST_1
+              </Typography>
+              <Typography variant="caption" component="div">
+                • Network Access: Open (0.0.0.0/0)
+              </Typography>
+              <Typography variant="caption" component="div">
+                • Max DB Users: 5 per cluster
+              </Typography>
+              <Typography variant="caption" component="div">
+                • Auto-cleanup: When event concludes
+              </Typography>
+            </Alert>
+          </Box>
         )}
       </CardContent>
     </Card>

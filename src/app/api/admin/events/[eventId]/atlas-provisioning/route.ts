@@ -6,7 +6,7 @@ import { errorResponse } from '@/lib/utils';
 
 /**
  * PATCH /api/admin/events/[eventId]/atlas-provisioning
- * Enable/disable Atlas provisioning for an event
+ * Enable/disable Atlas provisioning and configure allowed providers for an event
  */
 export async function PATCH(
   req: NextRequest,
@@ -26,10 +26,31 @@ export async function PATCH(
     const { eventId } = await params;
 
     const body = await req.json();
-    const { enabled } = body;
+    const { enabled, allowedProviders } = body;
 
     if (typeof enabled !== 'boolean') {
       return errorResponse('enabled must be a boolean', 400);
+    }
+
+    // Validate allowedProviders if provided
+    if (allowedProviders !== undefined) {
+      if (!Array.isArray(allowedProviders)) {
+        return errorResponse('allowedProviders must be an array', 400);
+      }
+
+      const validProviders = ['AWS', 'GCP', 'AZURE'];
+      const invalidProviders = allowedProviders.filter(p => !validProviders.includes(p));
+      
+      if (invalidProviders.length > 0) {
+        return errorResponse(
+          `Invalid providers: ${invalidProviders.join(', ')}. Must be one of: ${validProviders.join(', ')}`,
+          400
+        );
+      }
+
+      if (allowedProviders.length === 0) {
+        return errorResponse('At least one cloud provider must be allowed', 400);
+      }
     }
 
     await connectToDatabase();
@@ -48,11 +69,20 @@ export async function PATCH(
         openNetworkAccess: true,
         maxDbUsersPerCluster: 5,
         autoCleanupOnEventEnd: true,
-        allowedProviders: ['AWS', 'GCP', 'AZURE'],
+        allowedProviders: allowedProviders || ['AWS', 'GCP', 'AZURE'],
         allowedRegions: ['US_EAST_1', 'EU_WEST_1'],
       };
     } else {
       event.atlasProvisioning.enabled = enabled;
+      
+      if (allowedProviders !== undefined) {
+        event.atlasProvisioning.allowedProviders = allowedProviders;
+        
+        // Update defaultProvider if it's no longer in allowed list
+        if (!allowedProviders.includes(event.atlasProvisioning.defaultProvider)) {
+          event.atlasProvisioning.defaultProvider = allowedProviders[0];
+        }
+      }
     }
 
     await event.save();

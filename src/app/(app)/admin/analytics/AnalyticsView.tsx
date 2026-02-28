@@ -637,7 +637,7 @@ export default function AnalyticsView() {
 
   // Fetch AI data lazily when tab is selected
   useEffect(() => {
-    if (activeTab === 7 && !aiData) {
+    if (activeTab === 6 && !aiData) {
       fetch("/api/admin/analytics/ai")
         .then((res) => res.json())
         .then((json) => {
