@@ -17,7 +17,8 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
 interface StepOneProps {
   email: string;
@@ -42,15 +43,32 @@ export default function StepOne({
 }: StepOneProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
-  const validateEmail = (value: string) => {
+  const validateEmail = useCallback((value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (value && !emailRegex.test(value)) {
-      setEmailError("Please enter a valid email address");
-    } else {
+    if (!value) {
       setEmailError("");
+      return;
     }
-  };
+    if (!emailRegex.test(value)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    // Valid format
+    setEmailError("");
+  }, []);
+
+  // Debounced email validation
+  useEffect(() => {
+    if (!email || isLoggedIn) return;
+
+    const timer = setTimeout(() => {
+      validateEmail(email);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [email, isLoggedIn, validateEmail]);
 
   return (
     <Box>
@@ -78,11 +96,13 @@ export default function StepOne({
           value={email}
           onChange={(e) => {
             onEmailChange(e.target.value);
-            validateEmail(e.target.value);
           }}
-          onBlur={(e) => validateEmail(e.target.value)}
           error={!!emailError}
-          helperText={emailError || "We'll send your confirmation here"}
+          helperText={
+            isCheckingEmail
+              ? "Checking email..."
+              : emailError || "We'll send your confirmation here"
+          }
           disabled={isLoggedIn}
           InputProps={{
             startAdornment: (
@@ -94,32 +114,35 @@ export default function StepOne({
         />
 
         {!isLoggedIn && (
-          <TextField
-            fullWidth
-            required
-            type={showPassword ? "text" : "password"}
-            label="Password"
-            value={password}
-            onChange={(e) => onPasswordChange(e.target.value)}
-            helperText="Minimum 8 characters"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Box>
+            <TextField
+              fullWidth
+              required
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              value={password}
+              onChange={(e) => onPasswordChange(e.target.value)}
+              helperText="Minimum 8 characters"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <PasswordStrengthMeter password={password} />
+          </Box>
         )}
 
         <FormControlLabel
