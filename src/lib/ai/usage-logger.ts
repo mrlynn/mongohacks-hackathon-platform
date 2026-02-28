@@ -1,5 +1,6 @@
 import { AiUsageLogModel } from "@/lib/db/models/AiUsageLog";
 import type { AiCategory, AiProvider, AiOperation } from "@/lib/db/models/AiUsageLog";
+import { connectToDatabase } from "@/lib/db/connection";
 
 // Approximate cost per 1M tokens (USD) — input/output blended averages
 const MODEL_COST_PER_MILLION: Record<string, number> = {
@@ -38,21 +39,25 @@ interface LogAiUsageParams {
 export function logAiUsage(params: LogAiUsageParams): void {
   const cost = estimateCost(params.model, params.tokensUsed);
 
-  AiUsageLogModel.create({
-    category: params.category,
-    provider: params.provider,
-    model: params.model,
-    operation: params.operation,
-    tokensUsed: params.tokensUsed,
-    promptTokens: params.promptTokens,
-    completionTokens: params.completionTokens,
-    estimatedCost: cost,
-    durationMs: params.durationMs,
-    userId: params.userId || undefined,
-    eventId: params.eventId || undefined,
-    metadata: params.metadata,
-    error: params.error ?? false,
-  }).catch((err) => {
-    console.error("[AI Usage Logger] Failed to log:", err.message);
-  });
+  connectToDatabase()
+    .then(() =>
+      AiUsageLogModel.create({
+        category: params.category,
+        provider: params.provider,
+        model: params.model,
+        operation: params.operation,
+        tokensUsed: params.tokensUsed,
+        promptTokens: params.promptTokens,
+        completionTokens: params.completionTokens,
+        estimatedCost: cost,
+        durationMs: params.durationMs,
+        userId: params.userId || undefined,
+        eventId: params.eventId || undefined,
+        metadata: params.metadata,
+        error: params.error ?? false,
+      })
+    )
+    .catch((err) => {
+      console.error("[AI Usage Logger] Failed to log:", err.message);
+    });
 }
