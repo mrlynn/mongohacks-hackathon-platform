@@ -36,6 +36,16 @@ export interface IEvent extends Document {
     participant?: Types.ObjectId;
     partner?: Types.ObjectId;
   };
+  atlasProvisioning?: {
+    enabled: boolean;
+    defaultProvider: 'AWS' | 'GCP' | 'AZURE';
+    defaultRegion: string;
+    openNetworkAccess: boolean;
+    maxDbUsersPerCluster: number;
+    autoCleanupOnEventEnd: boolean;
+    allowedProviders: Array<'AWS' | 'GCP' | 'AZURE'>;
+    allowedRegions: string[];
+  };
   descriptionEmbedding?: number[];
   landingPage?: {
     template: string;
@@ -69,16 +79,16 @@ const EventSchema = new Schema<IEvent>(
     endDate: { type: Date, required: true },
     registrationDeadline: { type: Date, required: true },
     submissionDeadline: { type: Date },
-  atlasProvisioning?: {
-    enabled: boolean;
-    defaultProvider: 'AWS' | 'GCP' | 'AZURE';
-    defaultRegion: string;
-    openNetworkAccess: boolean; // 0.0.0.0/0
-    maxDbUsersPerCluster: number;
-    autoCleanupOnEventEnd: boolean;
-    allowedProviders: Array<'AWS' | 'GCP' | 'AZURE'>;
-    allowedRegions: string[];
-  };
+    atlasProvisioning: {
+      enabled: { type: Boolean, default: false },
+      defaultProvider: { type: String, enum: ['AWS', 'GCP', 'AZURE'], default: 'AWS' },
+      defaultRegion: { type: String, default: 'US_EAST_1' },
+      openNetworkAccess: { type: Boolean, default: true },
+      maxDbUsersPerCluster: { type: Number, default: 5 },
+      autoCleanupOnEventEnd: { type: Boolean, default: true },
+      allowedProviders: [{ type: String, enum: ['AWS', 'GCP', 'AZURE'] }],
+      allowedRegions: [{ type: String }],
+    },
     location: { type: String, required: true },
     city: { type: String },
     country: { type: String },
