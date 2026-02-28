@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
@@ -10,7 +11,7 @@ import { z } from "zod";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
 import { notifyRegistrationConfirmed } from "@/lib/notifications/notification-service";
 import { sendEmail } from "@/lib/email/email-service";
-import { registrationConfirmationEmail } from "@/lib/email/templates";
+import { registrationConfirmationEmail, emailVerificationEmail } from "@/lib/email/templates";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -153,6 +154,11 @@ export async function POST(
         let newParticipant: any;
         await dbSession.withTransaction(async () => {
           const passwordHash = await bcrypt.hash(data.password!, 12);
+          
+          // Generate email verification token
+          const verificationToken = crypto.randomBytes(32).toString("hex");
+          const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+          
           const [createdUser] = await UserModel.create(
             [
               {
@@ -161,6 +167,9 @@ export async function POST(
                 passwordHash,
                 role: "participant",
                 needsPasswordSetup: false,
+                emailVerified: false,
+                emailVerificationToken: verificationToken,
+                emailVerificationExpiry: verificationExpiry,
               },
             ],
             { session: dbSession }
@@ -242,6 +251,17 @@ export async function POST(
           html: template.html,
           text: template.text,
         }).catch((err) => console.error("Failed to send confirmation email:", err));
+
+        // Fire-and-forget: send email verification email
+        const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${verificationToken}`;
+        const verificationTemplate = emailVerificationEmail(user!.name, verificationUrl);
+        
+        sendEmail({
+          to: user!.email,
+          subject: verificationTemplate.subject,
+          html: verificationTemplate.html,
+          text: verificationTemplate.text,
+        }).catch((err) => console.error("Failed to send verification email:", err));
 
         return NextResponse.json({
           success: true,

@@ -165,3 +165,32 @@ export function registrationConfirmationEmail(
     text: `Welcome, ${name}!\n\nYou're all set for ${eventName}! We're excited to have you join us.\n\nEvent Details:\nWhen: ${eventDate}\nWhere: ${eventLocation}\n\nAccess your event dashboard: ${dashboardUrl}\n\nWhat to bring:\n- Your laptop with dev environment set up\n- Chargers and any hardware you'll need\n- An open mind and team spirit!\n\nHave questions? Check out our resources page or reach out to the organizers.`,
   };
 }
+
+export function emailVerificationEmail(
+  name: string,
+  verificationUrl: string
+): { subject: string; html: string; text: string } {
+  return {
+    subject: "Verify your email - MongoDB Hackathons",
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Hi ${name},</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        Thanks for registering for MongoDB Hackathons! Please verify your email address to unlock all features.
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Click the button below to verify your email. This link expires in 24 hours.
+      </p>
+      <a href="${verificationUrl}" style="display:inline-block;background:${brandColor};color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;">
+        Verify Email Address
+      </a>
+      <p style="color:#555;font-size:14px;margin:24px 0 0;line-height:1.6;">
+        <strong>Why verify?</strong><br>
+        Verified accounts can submit projects, create teams, and provision MongoDB Atlas clusters.
+      </p>
+      <p style="color:#999;font-size:13px;margin:16px 0 0;">
+        If you didn't create this account, you can safely ignore this email.
+      </p>
+    `),
+    text: `Hi ${name},\n\nThanks for registering for MongoDB Hackathons! Please verify your email address to unlock all features.\n\nVerify your email: ${verificationUrl}\n\nThis link expires in 24 hours.\n\nWhy verify? Verified accounts can submit projects, create teams, and provision MongoDB Atlas clusters.\n\nIf you didn't create this account, you can safely ignore this email.`,
+  };
+}

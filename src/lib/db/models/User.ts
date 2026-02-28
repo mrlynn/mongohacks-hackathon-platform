@@ -26,6 +26,8 @@ export interface IUser extends Document {
   company?: string;
   location?: string;
   emailVerified?: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +61,8 @@ const UserSchema = new Schema<IUser>(
     company: { type: String },
     location: { type: String },
     emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpiry: { type: Date, select: false },
   },
   { timestamps: true }
 );
@@ -66,6 +70,7 @@ const UserSchema = new Schema<IUser>(
 // Indexes
 UserSchema.index({ email: 1 }, { unique: true }); // Critical: email lookups on login/registration
 UserSchema.index({ magicLinkToken: 1 }, { sparse: true });
+UserSchema.index({ emailVerificationToken: 1 }, { sparse: true });
 
 export const UserModel =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

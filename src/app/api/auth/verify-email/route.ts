@@ -1,0 +1,62 @@
+import { NextRequest, NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/db/connection";
+import { UserModel } from "@/lib/db/models/User";
+
+/**
+ * GET /api/auth/verify-email?token=xxx
+ * Verify user's email address via token
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const token = searchParams.get("token");
+
+    if (!token) {
+      return NextResponse.redirect(
+        new URL(
+          "/login?error=Missing verification token",
+          request.url
+        )
+      );
+    }
+
+    await connectToDatabase();
+
+    // Find user by verification token (not expired)
+    const user = await UserModel.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpiry: { $gt: new Date() },
+    }).select("+emailVerificationToken +emailVerificationExpiry");
+
+    if (!user) {
+      return NextResponse.redirect(
+        new URL(
+          "/login?error=Invalid or expired verification link. Please request a new one.",
+          request.url
+        )
+      );
+    }
+
+    // Mark email as verified and clear token
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+    await user.save();
+
+    // Redirect to dashboard with success message
+    return NextResponse.redirect(
+      new URL(
+        "/verify-success",
+        request.url
+      )
+    );
+  } catch (error) {
+    console.error("GET /api/auth/verify-email:", error);
+    return NextResponse.redirect(
+      new URL(
+        "/login?error=Verification failed. Please try again.",
+        request.url
+      )
+    );
+  }
+}
