@@ -18,12 +18,18 @@ import {
   Avatar,
   AvatarGroup,
   Tooltip,
+  IconButton,
+  Button,
+  Stack,
 } from "@mui/material";
 import {
   Group as GroupIcon,
   Person as PersonIcon,
   PersonSearch as PersonSearchIcon,
+  Storage as StorageIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import Link from "next/link";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
 
@@ -95,6 +101,7 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
                 <TableCell sx={{ fontWeight: 600 }}>Skills Needed</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -148,6 +155,29 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
                     )}
                   </TableCell>
                   <TableCell>{new Date(team.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                      <Tooltip title="View team page">
+                        <IconButton
+                          size="small"
+                          component={Link}
+                          href={`/events/${team.eventId}/teams/${team._id}`}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Atlas Cluster">
+                        <IconButton
+                          size="small"
+                          component={Link}
+                          href={`/teams/${team._id}/atlas`}
+                          color="primary"
+                        >
+                          <StorageIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -219,7 +249,7 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
                     </Box>
                   )}
 
-                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                  <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
                     {team.lookingForMembers ? (
                       <Chip
                         label="Looking for Members"
@@ -231,6 +261,31 @@ export default function TeamsView({ teams }: { teams: Team[] }) {
                       <Chip label="Full" size="small" color="success" />
                     )}
                   </Box>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<VisibilityIcon />}
+                      component={Link}
+                      href={`/events/${team.eventId}/teams/${team._id}`}
+                      fullWidth
+                    >
+                      View
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<StorageIcon />}
+                      component={Link}
+                      href={`/teams/${team._id}/atlas`}
+                      color="primary"
+                      fullWidth
+                    >
+                      Atlas
+                    </Button>
+                  </Stack>
 
                   <Typography variant="caption" color="text.secondary">
                     Created: {new Date(team.createdAt).toLocaleDateString()}
