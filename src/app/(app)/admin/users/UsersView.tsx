@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Box,
   Table,
@@ -48,6 +48,12 @@ import {
 } from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
+import {
+  FilterToolbar,
+  MultiSelectFilter,
+  DateRangeFilter,
+  useFilterState,
+} from "@/components/shared-ui/filters";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
 
@@ -69,6 +75,16 @@ const roleColors: Record<
   judge: "info",
   participant: "success",
 };
+
+const DEFAULT_FILTERS = {
+  search: "",
+  roles: [] as string[],
+  joinedFrom: "",
+  joinedTo: "",
+  sortField: "createdAt",
+  sortDirection: "desc" as "asc" | "desc",
+};
+
 
 // ─── Add User Dialog ────────────────────────────────────────────────
 
@@ -515,18 +531,79 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
   const router = useRouter();
   const [view, setView] = useState<"table" | "card">("table");
   const [users, setUsers] = useState(initialUsers);
-  const [search, setSearch] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.role.toLowerCase().includes(search.toLowerCase())
-  );
+  const {
+    filters,
+    updateFilter,
+    clearFilters,
+    activeFilters,
+  } = useFilterState(DEFAULT_FILTERS);
+
+  // Apply filters and search
+  const filteredAndSortedUsers = useMemo(() => {
+    let result = [...users];
+
+    // Search
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      result = result.filter(
+        (u) =>
+          u.name.toLowerCase().includes(searchLower) ||
+          u.email.toLowerCase().includes(searchLower) ||
+          u.role.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Role filter
+    if (filters.roles.length > 0) {
+      result = result.filter((u) => filters.roles.includes(u.role));
+    }
+
+    // Join date range
+    if (filters.joinedFrom) {
+      result = result.filter((u) => new Date(u.createdAt) >= new Date(filters.joinedFrom));
+    }
+    if (filters.joinedTo) {
+      result = result.filter((u) => new Date(u.createdAt) <= new Date(filters.joinedTo));
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      switch (filters.sortField) {
+        case "name":
+          aVal = a.name;
+          bVal = b.name;
+          break;
+        case "email":
+          aVal = a.email;
+          bVal = b.email;
+          break;
+        case "role":
+          aVal = a.role;
+          bVal = b.role;
+          break;
+        case "createdAt":
+          aVal = new Date(a.createdAt);
+          bVal = new Date(b.createdAt);
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return filters.sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return filters.sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [users, filters]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -596,48 +673,77 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
 
   return (
     <Box>
-      {/* Toolbar */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-          gap: 2,
-          flexWrap: "wrap",
-        }}
+      {/* Filter Toolbar */}
+      <FilterToolbar
+        searchValue={filters.search}
+        onSearchChange={(value) => updateFilter("search", value)}
+        searchPlaceholder="Search users by name, email, role..."
+        sortField={filters.sortField}
+        sortDirection={filters.sortDirection}
+        onSortFieldChange={(field) => updateFilter("sortField", field)}
+        onSortDirectionChange={(dir) => updateFilter("sortDirection", dir)}
+        sortOptions={[
+          { value: "name", label: "Name" },
+          { value: "email", label: "Email" },
+          { value: "role", label: "Role" },
+          { value: "createdAt", label: "Joined" },
+        ]}
+        activeFilters={activeFilters}
+        onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
+        onClearAllFilters={clearFilters}
+        rightActions={
+          <>
+            <Button
+              variant="contained"
+              startIcon={<PersonAddOutlined />}
+              onClick={() => setAddOpen(true)}
+              size="small"
+            >
+              Add User
+            </Button>
+            <ViewToggle view={view} onChange={setView} />
+            <ExportButton data={filteredAndSortedUsers} filename="users" columns={csvColumns} />
+          </>
+        }
       >
-        <TextField
-          size="small"
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ minWidth: 280 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchOutlined
-                    sx={{ color: "text.secondary", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-            },
-          }}
+        {/* Filter Groups */}
+        <MultiSelectFilter
+          label="Role"
+          options={[
+            { value: "participant", label: "Participant" },
+            { value: "judge", label: "Judge" },
+            { value: "organizer", label: "Organizer" },
+            { value: "admin", label: "Admin" },
+            { value: "super_admin", label: "Super Admin" },
+          ]}
+          selected={filters.roles}
+          onChange={(value) => updateFilter("roles", value)}
         />
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Button
-            variant="contained"
-            startIcon={<PersonAddOutlined />}
-            onClick={() => setAddOpen(true)}
-            size="small"
-          >
-            Add User
-          </Button>
-          <ViewToggle view={view} onChange={setView} />
-          <ExportButton data={users} filename="users" columns={csvColumns} />
-        </Box>
-      </Box>
+
+        <DateRangeFilter
+          label="Join Date"
+          startDate={filters.joinedFrom}
+          endDate={filters.joinedTo}
+          onStartDateChange={(date) => updateFilter("joinedFrom", date)}
+          onEndDateChange={(date) => updateFilter("joinedTo", date)}
+        />
+      </FilterToolbar>
+
+      {/* Results count */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Showing {filteredAndSortedUsers.length} of {users.length} users
+      </Typography>
+
+      {/* Empty state */}
+      {filteredAndSortedUsers.length === 0 && (
+        <Paper elevation={2} sx={{ p: 4, textAlign: "center" }}>
+          <Box sx={{ color: "text.secondary" }}>
+            {filters.search || activeFilters.length > 0
+              ? "No users match your filters. Try adjusting your search criteria."
+              : "No users found. Create your first user to get started."}
+          </Box>
+        </Paper>
+      )}
 
       {/* Table View */}
       {view === "table" && (
@@ -655,7 +761,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.map((user) => (
+              {filteredAndSortedUsers.map((user) => (
                 <TableRow
                   key={user._id}
                   hover
@@ -755,7 +861,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
       {/* Card View */}
       {view === "card" && (
         <Grid container spacing={3}>
-          {filteredUsers.map((user) => (
+          {filteredAndSortedUsers.map((user) => (
             <Grid key={user._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card
                 sx={{
