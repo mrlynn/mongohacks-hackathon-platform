@@ -28,6 +28,7 @@ import {
   CloudDone as SavedIcon,
   BuildOutlined,
 } from "@mui/icons-material";
+import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
 import { useRouter } from "next/navigation";
 import { mongoColors } from "@/styles/theme";
 import {
@@ -273,6 +274,13 @@ export default function NewProjectPage({
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
+
+      <ProjectSuggestionsCTA 
+        variant="banner" 
+        eventId={params.eventId} 
+        title="Need project ideas?" 
+        description="Let AI generate creative project ideas before you start building!" 
+      />
       )}
 
       <form>

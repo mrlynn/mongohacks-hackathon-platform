@@ -58,12 +58,11 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
       const data = await response.json();
       setEvents(data.events || []);
       
-      // Auto-select first registered event if available
+      // Auto-select first registered event, or first event if none registered
       if (data.events.length > 0 && !eventId) {
         const firstRegistered = data.events.find((e: Event) => e.registered);
-        if (firstRegistered) {
-          setEventId(firstRegistered._id);
-        }
+        const firstEvent = data.events[0];
+        setEventId(firstRegistered?._id || firstEvent?._id);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
@@ -93,12 +92,16 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
         Step 1: Event & Team
       </Typography>
 
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Generate project ideas for any hackathon event. You don't need to be registered yet!
+      </Typography>
+
       {/* Event Selection */}
       {loadingEvents ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <CircularProgress size={24} />
           <Typography variant="body2" color="text.secondary">
-            Loading your events...
+            Loading events...
           </Typography>
         </Box>
       ) : eventsError ? (
@@ -106,8 +109,8 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
           {eventsError}
         </Alert>
       ) : events.length === 0 ? (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          No events found. You need to register for an event first.
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          No events available. Contact the organizer to create events.
         </Alert>
       ) : (
         <>
@@ -127,7 +130,7 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
                         {event.theme && <span>{event.theme} • </span>}
                         <span>{new Date(event.startDate).toLocaleDateString()}</span>
                         {event.registered && (
-                          <Chip label="Registered" size="small" color="success" sx={{ ml: 1 }} />
+                          <Chip label="Registered" size="small" color="success" sx={{ ml: 1, height: 18 }} />
                         )}
                       </Box>
                     }
@@ -150,6 +153,11 @@ export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
               <Typography variant="caption" display="block">
                 {new Date(selectedEvent.startDate).toLocaleDateString()} - {new Date(selectedEvent.endDate).toLocaleDateString()}
               </Typography>
+              {selectedEvent.registered && (
+                <Typography variant="caption" display="block" sx={{ color: 'success.main', mt: 0.5 }}>
+                  ✓ You're registered for this event
+                </Typography>
+              )}
             </Alert>
           )}
         </>

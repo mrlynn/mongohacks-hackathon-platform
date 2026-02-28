@@ -19,43 +19,33 @@ export async function GET(request: NextRequest) {
     // Find events where user has registered projects
     const userProjects = await ProjectModel.find({ userId }).distinct('eventId');
 
-    // Fetch those events
-    const registeredEvents = await EventModel.find({
-      _id: { $in: userProjects },
-    })
+    // Fetch ALL events (active, upcoming, or past)
+    const allEvents = await EventModel.find({})
       .select('_id name theme startDate endDate status')
       .sort({ startDate: -1 })
       .lean();
 
-    // Also fetch upcoming/active events (in case user hasn't registered yet)
-    const upcomingEvents = await EventModel.find({
-      status: { $in: ['upcoming', 'active'] },
-    })
-      .select('_id name theme startDate endDate status')
-      .sort({ startDate: 1 })
-      .limit(10)
-      .lean();
+    // Mark which ones user is registered for
+    const events = allEvents.map((event) => ({
+      ...event,
+      registered: userProjects.some((projectEventId) => 
+        projectEventId.toString() === event._id.toString()
+      ),
+    }));
 
-    // Combine and deduplicate
-    const allEventsMap = new Map();
-    
-    registeredEvents.forEach((event) => {
-      allEventsMap.set(event._id.toString(), { ...event, registered: true });
-    });
-    
-    upcomingEvents.forEach((event) => {
-      const id = event._id.toString();
-      if (!allEventsMap.has(id)) {
-        allEventsMap.set(id, { ...event, registered: false });
-      }
+    // Sort: registered first, then by start date (most recent first)
+    events.sort((a, b) => {
+      if (a.registered && !b.registered) return -1;
+      if (!a.registered && b.registered) return 1;
+      return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
     });
 
-    const events = Array.from(allEventsMap.values());
+    const registeredCount = events.filter((e) => e.registered).length;
 
     return successResponse({
       events,
       total: events.length,
-      registeredCount: registeredEvents.length,
+      registeredCount,
     });
   } catch (error) {
     console.error('GET /api/project-suggestions/events error:', error);

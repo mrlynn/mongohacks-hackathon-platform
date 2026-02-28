@@ -1,4 +1,5 @@
 "use client";
+import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
 
 import { useState, useEffect } from "react";
 import {
@@ -105,6 +106,8 @@ export default function DashboardClient() {
         <Typography variant="body1" color="text.secondary">
           Manage your hackathon registrations, teams, and projects
         </Typography>
+
+      <ProjectSuggestionsCTA variant="card" />
       </Box>
 
       {error && (
