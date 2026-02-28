@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { logAiUsage } from './usage-logger';
 
 let openai: OpenAI | null = null;
 
@@ -155,9 +156,10 @@ export async function generateProjectIdeas(
   numIdeas: number = 3
 ): Promise<GenerationResult> {
   const client = getOpenAIClient();
-  
+
   const prompt = buildPrompt(inputs);
-  
+  const startTime = Date.now();
+
   const response = await client.chat.completions.create({
     model: 'gpt-4o',
     messages: [
@@ -214,6 +216,17 @@ export async function generateProjectIdeas(
     console.error('Failed to parse OpenAI response:', content.substring(0, 500));
     throw new Error('Invalid response format from AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
   }
+
+  logAiUsage({
+    category: 'project_suggestions',
+    provider: 'openai',
+    model: response.model,
+    operation: 'chat_completion',
+    tokensUsed: response.usage?.total_tokens || 0,
+    promptTokens: response.usage?.prompt_tokens,
+    completionTokens: response.usage?.completion_tokens,
+    durationMs: Date.now() - startTime,
+  });
 
   return {
     ideas: ideas.slice(0, numIdeas),

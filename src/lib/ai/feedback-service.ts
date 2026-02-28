@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { logAiUsage } from "./usage-logger";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -47,6 +48,7 @@ export async function synthesizeJudgeFeedback(
     .map((s) => `- ${s.comments!.trim()}`)
     .join("\n");
 
+  const startTime = Date.now();
   const response = await openai.chat.completions.create({
     model: "gpt-4-turbo",
     messages: [
@@ -76,6 +78,17 @@ Write synthesized feedback for the team.`,
     ],
     max_tokens: 500,
     temperature: 0.7,
+  });
+
+  logAiUsage({
+    category: "judge_feedback",
+    provider: "openai",
+    model: response.model,
+    operation: "chat_completion",
+    tokensUsed: response.usage?.total_tokens || 0,
+    promptTokens: response.usage?.prompt_tokens,
+    completionTokens: response.usage?.completion_tokens,
+    durationMs: Date.now() - startTime,
   });
 
   return response.choices[0].message.content?.trim() || "";

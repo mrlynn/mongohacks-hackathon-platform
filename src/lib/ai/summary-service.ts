@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { logAiUsage } from "./usage-logger";
 
 let openai: OpenAI | null = null;
 
@@ -29,6 +30,7 @@ export async function generateProjectSummary(
     : "";
 
   const client = getOpenAIClient();
+  const startTime = Date.now();
   const response = await client.chat.completions.create({
     model: "gpt-4-turbo",
     messages: [
@@ -44,6 +46,17 @@ export async function generateProjectSummary(
     ],
     max_tokens: 150,
     temperature: 0.6,
+  });
+
+  logAiUsage({
+    category: "project_summaries",
+    provider: "openai",
+    model: response.model,
+    operation: "chat_completion",
+    tokensUsed: response.usage?.total_tokens || 0,
+    promptTokens: response.usage?.prompt_tokens,
+    completionTokens: response.usage?.completion_tokens,
+    durationMs: Date.now() - startTime,
   });
 
   return response.choices[0].message.content?.trim() || "";

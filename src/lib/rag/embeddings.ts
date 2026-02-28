@@ -1,4 +1,5 @@
 import type { EmbeddingResult, VoyageInputType } from "./types";
+import { logAiUsage } from "@/lib/ai/usage-logger";
 
 const VOYAGE_API_URL = "https://api.voyageai.com/v1/embeddings";
 const VOYAGE_BATCH_SIZE = 128;
@@ -72,6 +73,7 @@ export async function embedDocuments(
 
   const allEmbeddings: number[][] = [];
   let totalTokens = 0;
+  const startTime = Date.now();
 
   for (let i = 0; i < texts.length; i += VOYAGE_BATCH_SIZE) {
     const batch = texts.slice(i, i + VOYAGE_BATCH_SIZE);
@@ -83,6 +85,16 @@ export async function embedDocuments(
     totalTokens += response.usage.total_tokens;
   }
 
+  logAiUsage({
+    category: "rag_embeddings",
+    provider: "voyage",
+    model: DOCUMENT_MODEL,
+    operation: "embedding",
+    tokensUsed: totalTokens,
+    durationMs: Date.now() - startTime,
+    metadata: { batchSize: texts.length, inputType: "document" },
+  });
+
   return { embeddings: allEmbeddings, totalTokens };
 }
 
@@ -91,6 +103,18 @@ export async function embedDocuments(
  * Uses the query model (can be a lighter Voyage 4 variant in the shared space).
  */
 export async function embedQuery(text: string): Promise<number[]> {
+  const startTime = Date.now();
   const response = await callVoyageAPI([text], "query", QUERY_MODEL);
+
+  logAiUsage({
+    category: "rag_embeddings",
+    provider: "voyage",
+    model: QUERY_MODEL,
+    operation: "embedding",
+    tokensUsed: response.usage.total_tokens,
+    durationMs: Date.now() - startTime,
+    metadata: { inputType: "query" },
+  });
+
   return response.data[0].embedding;
 }

@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { ChatMessage } from "./types";
+import { logAiUsage } from "@/lib/ai/usage-logger";
 
 let openai: OpenAI | null = null;
 
@@ -85,18 +86,41 @@ export async function* streamChatCompletion(
   });
 
   const client = getOpenAIClient();
+  const startTime = Date.now();
   const stream = await client.chat.completions.create({
     model: "gpt-4o",
     messages,
     stream: true,
+    stream_options: { include_usage: true },
     max_tokens: 1024,
     temperature: 0.3,
   });
+
+  let totalTokens = 0;
+  let promptTokens = 0;
+  let completionTokens = 0;
 
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
     if (content) {
       yield content;
     }
+    // The final chunk includes usage when stream_options.include_usage is true
+    if (chunk.usage) {
+      totalTokens = chunk.usage.total_tokens;
+      promptTokens = chunk.usage.prompt_tokens;
+      completionTokens = chunk.usage.completion_tokens;
+    }
   }
+
+  logAiUsage({
+    category: "rag_chat",
+    provider: "openai",
+    model: "gpt-4o",
+    operation: "streaming",
+    tokensUsed: totalTokens,
+    promptTokens,
+    completionTokens,
+    durationMs: Date.now() - startTime,
+  });
 }
