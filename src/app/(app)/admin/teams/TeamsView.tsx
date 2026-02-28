@@ -58,6 +58,7 @@ interface Team {
 
 const DEFAULT_FILTERS = {
   search: "",
+  status: "",
   events: [] as string[],
   lookingForMembers: "",
   skills: [] as string[],

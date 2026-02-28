@@ -152,11 +152,10 @@ export async function POST(
       const dbSession = await mongoose.startSession();
       try {
         let newParticipant: any;
+        // Generate email verification token (hoisted for use after transaction)
+        const verificationToken = crypto.randomBytes(32).toString("hex");
         await dbSession.withTransaction(async () => {
           const passwordHash = await bcrypt.hash(data.password!, 12);
-          
-          // Generate email verification token
-          const verificationToken = crypto.randomBytes(32).toString("hex");
           const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
           
           const [createdUser] = await UserModel.create(

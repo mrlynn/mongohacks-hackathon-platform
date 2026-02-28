@@ -15,11 +15,11 @@ import {
   alpha,
 } from "@mui/material";
 import {
-  SmartToy as ChatIcon,
   Close as CloseIcon,
   OpenInFull as ExpandIcon,
   CloseFullscreen as CollapseIcon,
 } from "@mui/icons-material";
+import MongoLeafIcon from "../icons/MongoLeafIcon";
 import { usePathname } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -248,7 +248,7 @@ export default function ChatWidget() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <ChatIcon sx={{ fontSize: 20, color: "primary.main" }} />
+          <MongoLeafIcon sx={{ fontSize: 20, color: "primary.main" }} />
           <Typography variant="subtitle2" fontWeight={600}>
             MongoHacks Assistant
           </Typography>
@@ -283,7 +283,7 @@ export default function ChatWidget() {
       >
         {messages.length === 0 && (
           <Box sx={{ textAlign: "center", py: 4 }}>
-            <ChatIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+            <MongoLeafIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
             <Typography variant="body2" color="text.secondary">
               Hi! I&apos;m the MongoHacks Assistant.
               <br />
@@ -343,7 +343,7 @@ export default function ChatWidget() {
             zIndex: (theme) => theme.zIndex.modal - 1,
           }}
         >
-          <ChatIcon />
+          <MongoLeafIcon />
         </Fab>
       )}
 

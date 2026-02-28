@@ -8,6 +8,7 @@ import YourTeamSection from "./sections/YourTeamSection";
 import YourProjectSection from "./sections/YourProjectSection";
 import EventResourcesSection from "./sections/EventResourcesSection";
 import BrowseTeamsSection from "./sections/BrowseTeamsSection";
+import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
 
 interface EventHubContentProps {
   data: any;
@@ -60,6 +61,16 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
               <BrowseTeamsSection
                 recommendedTeams={recommendedTeams || []}
                 eventId={eventId}
+              />
+            )}
+
+            {/* Project Ideas CTA (if on a team but no project yet) */}
+            {team && !project && (
+              <ProjectSuggestionsCTA
+                variant="banner"
+                eventId={eventId}
+                title="Need project ideas?"
+                description="Let AI generate creative project ideas tailored to this hackathon's theme and your team's skills."
               />
             )}
 

@@ -108,7 +108,8 @@ export default function HomePageClient({
   const isAdmin =
     user?.role === "admin" ||
     user?.role === "super_admin" ||
-    user?.role === "organizer";
+    user?.role === "organizer" ||
+    user?.role === "marketer";
 
   return (
     <Box

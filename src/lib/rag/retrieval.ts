@@ -25,7 +25,8 @@ interface RetrievedChunk {
  * Aligns with Algolia search prioritization (Admin:15, Features:12, API:3).
  */
 const CATEGORY_BOOST: Record<string, number> = {
-  admin: 1.5, // Highest priority - admin guides
+  events: 1.6, // Highest priority - live event data
+  admin: 1.5, // Admin guides
   "getting-started": 1.4, // Getting started tutorials
   features: 1.2, // Feature documentation
   ai: 1.1, // AI features
@@ -42,10 +43,19 @@ function isApiQuery(query: string): boolean {
 }
 
 /**
+ * Check if query is about events.
+ */
+function isEventQuery(query: string): boolean {
+  const eventKeywords = /\b(event|hackathon|schedule|country|countries|location|venue|date|when|where|register|registration|upcoming|capacity)\b/i;
+  return eventKeywords.test(query);
+}
+
+/**
  * Apply category-based score boosting to prioritize UI docs over API docs.
  */
 function applyScoreBoosting(chunks: RetrievedChunk[], query: string): RetrievedChunk[] {
   const isApi = isApiQuery(query);
+  const isEvent = isEventQuery(query);
 
   return chunks.map((chunk) => {
     const category = chunk.source.category.toLowerCase();
@@ -54,6 +64,11 @@ function applyScoreBoosting(chunks: RetrievedChunk[], query: string): RetrievedC
     // If not an API query, further reduce API doc scores
     if (category === "api" && !isApi) {
       boost = 0.15; // Extra penalty for API docs when not explicitly requested
+    }
+
+    // Extra boost for event data when query is event-related
+    if (category === "events" && isEvent) {
+      boost *= 1.3;
     }
 
     return {
@@ -78,7 +93,9 @@ export async function retrieveContext(
 ): Promise<RetrievalResult> {
   await connectToDatabase();
 
-  const topK = options.topK ?? 5;
+  // Use a higher topK for event queries to ensure all relevant events are included
+  const defaultTopK = isEventQuery(query) ? 10 : 5;
+  const topK = options.topK ?? defaultTopK;
   const scoreThreshold = options.scoreThreshold ?? 0.7;
 
   // Generate query embedding

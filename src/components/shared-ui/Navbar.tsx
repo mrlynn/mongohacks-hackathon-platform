@@ -40,6 +40,7 @@ import {
   Gavel as GavelIcon,
   MenuBook as MenuBookIcon,
   Collections as GalleryIcon,
+  Lightbulb as LightbulbIcon,
 } from "@mui/icons-material";
 import { useColorScheme } from "@mui/material/styles";
 import Image from "next/image";
@@ -213,6 +214,20 @@ export default function Navbar() {
           </ListItemButton>
         </ListItem>
 
+        {user && (
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigate("/project-suggestions")}
+              selected={pathname.startsWith("/project-suggestions")}
+            >
+              <ListItemIcon>
+                <LightbulbIcon />
+              </ListItemIcon>
+              <ListItemText primary="Project Ideas" />
+            </ListItemButton>
+          </ListItem>
+        )}
+
         <ListItem disablePadding>
           <ListItemButton
             component="a"
@@ -243,7 +258,7 @@ export default function Navbar() {
               </ListItemButton>
             </ListItem>
 
-            {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+            {(user.role === "judge" || user.role === "admin" || user.role === "super_admin" || user.role === "organizer") && (
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate("/judging")}
@@ -257,7 +272,7 @@ export default function Navbar() {
               </ListItem>
             )}
 
-            {(user.role === "admin" || user.role === "super_admin") && (
+            {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate("/admin")}
@@ -421,6 +436,17 @@ export default function Navbar() {
                   Gallery
                 </Button>
 
+                {user && (
+                  <Button
+                    color="inherit"
+                    href="/project-suggestions"
+                    startIcon={<LightbulbIcon />}
+                    sx={{ textTransform: "none" }}
+                  >
+                    Ideas
+                  </Button>
+                )}
+
                 <Button
                   color="inherit"
                   href="https://docs.mongohacks.com"
@@ -498,7 +524,7 @@ export default function Navbar() {
                             <ListItemText>Dashboard</ListItemText>
                           </MenuItem>
 
-                          {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+                          {(user.role === "judge" || user.role === "admin" || user.role === "super_admin" || user.role === "organizer") && (
                             <MenuItem onClick={() => handleNavigate("/judging")}>
                               <ListItemIcon>
                                 <GavelIcon fontSize="small" />
@@ -507,7 +533,7 @@ export default function Navbar() {
                             </MenuItem>
                           )}
 
-                          {(user.role === "admin" || user.role === "super_admin") && (
+                          {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
                             <MenuItem onClick={() => handleNavigate("/admin")}>
                               <ListItemIcon>
                                 <AdminIcon fontSize="small" color="primary" />
@@ -645,7 +671,7 @@ export default function Navbar() {
                     <ListItemText>Dashboard</ListItemText>
                   </MenuItem>
 
-                  {(user.role === "judge" || user.role === "admin" || user.role === "super_admin") && (
+                  {(user.role === "judge" || user.role === "admin" || user.role === "super_admin" || user.role === "organizer") && (
                     <MenuItem onClick={() => handleNavigate("/judging")}>
                       <ListItemIcon>
                         <GavelIcon fontSize="small" />
@@ -654,7 +680,7 @@ export default function Navbar() {
                     </MenuItem>
                   )}
 
-                  {(user.role === "admin" || user.role === "super_admin") && (
+                  {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
                     <MenuItem onClick={() => handleNavigate("/admin")}>
                       <ListItemIcon>
                         <AdminIcon fontSize="small" color="primary" />

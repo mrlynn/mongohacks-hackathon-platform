@@ -16,8 +16,11 @@ async function getUsers() {
 }
 
 const roleColors: Record<string, "primary" | "secondary" | "success" | "info" | "warning" | "error"> = {
+  super_admin: "warning",
   admin: "error",
   organizer: "primary",
+  marketer: "secondary",
+  mentor: "info",
   judge: "info",
   participant: "success",
 };
@@ -27,8 +30,10 @@ export default async function AdminUsersPage() {
 
   const stats = {
     total: users.length,
-    admins: users.filter((u) => u.role === "admin").length,
+    admins: users.filter((u) => u.role === "admin" || u.role === "super_admin").length,
     organizers: users.filter((u) => u.role === "organizer").length,
+    marketers: users.filter((u) => u.role === "marketer").length,
+    mentors: users.filter((u) => u.role === "mentor").length,
     judges: users.filter((u) => u.role === "judge").length,
     participants: users.filter((u) => u.role === "participant").length,
   };
@@ -48,6 +53,8 @@ export default async function AdminUsersPage() {
         <Chip label={`${stats.total} Total Users`} />
         <Chip label={`${stats.admins} Admins`} color="error" variant="outlined" />
         <Chip label={`${stats.organizers} Organizers`} color="primary" variant="outlined" />
+        <Chip label={`${stats.marketers} Marketers`} color="secondary" variant="outlined" />
+        <Chip label={`${stats.mentors} Mentors`} color="info" variant="outlined" />
         <Chip label={`${stats.judges} Judges`} color="info" variant="outlined" />
         <Chip label={`${stats.participants} Participants`} color="success" variant="outlined" />
       </Box>

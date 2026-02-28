@@ -38,19 +38,19 @@ export default function PromptPreview({ prompt }: PromptPreviewProps) {
     >
       <ReactMarkdown
         components={{
-          code({ node, inline, className, children, ...props }) {
+          code({ className, children }) {
             const match = /language-(\w+)/.exec(className || "");
-            return !inline && match ? (
+            return match ? (
               <SyntaxHighlighter
-                style={vscDarkPlus}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                style={vscDarkPlus as any}
                 language={match[1]}
                 PreTag="div"
-                {...props}
               >
                 {String(children).replace(/\n$/, "")}
               </SyntaxHighlighter>
             ) : (
-              <code className={className} {...props}>
+              <code className={className}>
                 {children}
               </code>
             );

@@ -260,6 +260,7 @@ async function enhancePromptWithAI(
 ): Promise<string> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+  const startTime = Date.now();
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     temperature: 0.4,
@@ -293,8 +294,9 @@ Return the COMPLETE enhanced prompt in Markdown. Do not remove any existing cont
     tokensUsed: response.usage?.total_tokens || 0,
     promptTokens: response.usage?.prompt_tokens || 0,
     completionTokens: response.usage?.completion_tokens || 0,
-    userId: idea.userId,
-    eventId: idea.eventId,
+    durationMs: Date.now() - startTime,
+    userId: idea.userId?.toString(),
+    eventId: idea.eventId?.toString(),
   });
 
   return response.choices[0]?.message?.content || basePrompt;

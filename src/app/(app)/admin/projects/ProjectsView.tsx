@@ -63,6 +63,7 @@ const statusColors: Record<string, "default" | "success" | "info" | "warning" | 
 
 const DEFAULT_FILTERS = {
   search: "",
+  status: "",
   statuses: [] as string[],
   categories: [] as string[],
   technologies: [] as string[],

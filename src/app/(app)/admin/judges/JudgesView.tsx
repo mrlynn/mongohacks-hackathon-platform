@@ -57,6 +57,7 @@ interface JudgesViewProps {
 
 const DEFAULT_FILTERS = {
   search: "",
+  status: "",
   assignmentsMin: 0,
   assignmentsMax: 50,
   joinedFrom: "",

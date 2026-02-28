@@ -2,14 +2,23 @@ import { auth } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-type UserRole =
+export type UserRole =
   | "super_admin"
   | "admin"
   | "organizer"
+  | "marketer"
+  | "mentor"
   | "judge"
   | "participant";
 
-const ADMIN_ROLES: UserRole[] = ["super_admin", "admin"];
+/** Roles with full admin privileges */
+export const ADMIN_ROLES: UserRole[] = ["super_admin", "admin"];
+
+/** Roles that can access the admin panel (with varying sidebar visibility) */
+export const ADMIN_PANEL_ROLES: UserRole[] = ["super_admin", "admin", "organizer", "marketer"];
+
+/** Roles that can manage events, teams, and projects */
+export const EVENT_MANAGEMENT_ROLES: UserRole[] = ["super_admin", "admin", "organizer"];
 
 /**
  * Returns true if the current request is an admin-initiated impersonation.
@@ -33,8 +42,8 @@ function effectiveRole(user: { role?: string; realAdminRole?: string; isImperson
 }
 
 /**
- * Admin Guard - Server-side protection for admin routes
- * Accepts both "admin" and "super_admin" roles
+ * Admin Guard - Server-side protection for admin-only routes
+ * Accepts "admin" and "super_admin" roles
  */
 export async function requireAdmin() {
   const session = await auth();
@@ -46,6 +55,26 @@ export async function requireAdmin() {
   const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
 
   if (!ADMIN_ROLES.includes(role) && !(await isImpersonationActive())) {
+    redirect("/dashboard");
+  }
+
+  return session;
+}
+
+/**
+ * Admin Panel Guard - Server-side protection for the admin panel layout.
+ * Allows super_admin, admin, organizer, and marketer roles.
+ */
+export async function requireAdminPanel() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
+
+  if (!ADMIN_PANEL_ROLES.includes(role) && !(await isImpersonationActive())) {
     redirect("/dashboard");
   }
 

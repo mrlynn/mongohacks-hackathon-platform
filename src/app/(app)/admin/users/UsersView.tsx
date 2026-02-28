@@ -82,6 +82,7 @@ const roleColors: Record<
 
 const DEFAULT_FILTERS = {
   search: "",
+  status: "",
   roles: [] as string[],
   joinedFrom: "",
   joinedTo: "",
@@ -931,10 +932,10 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                           onClick={() => handleBanUser(user._id, (user as any).banned)}
                           disabled={user.role === "super_admin"}
                           sx={{
-                            color: (user as any).banned ? mongoColors.orange.main : mongoColors.slate.light,
+                            color: (user as any).banned ? "#FF9800" : mongoColors.slate.light,
                             "&:hover": {
-                              bgcolor: `${mongoColors.orange.main}0D`,
-                              color: mongoColors.orange.main,
+                              bgcolor: `${"#FF9800"}0D`,
+                              color: "#FF9800",
                             },
                           }}
                         >
@@ -949,8 +950,8 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                           sx={{
                             color: mongoColors.slate.light,
                             "&:hover": {
-                              bgcolor: `${mongoColors.red.main}0D`,
-                              color: mongoColors.red.main,
+                              bgcolor: `${"#F44336"}0D`,
+                              color: "#F44336",
                             },
                           }}
                         >

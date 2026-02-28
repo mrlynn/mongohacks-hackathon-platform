@@ -98,6 +98,7 @@ const statusColors = {
 
 const DEFAULT_FILTERS = {
   search: "",
+  status: "",
   tiers: [] as string[],
   statuses: [] as string[],
   industries: [] as string[],
@@ -402,7 +403,7 @@ export default function PartnersView() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
+            onClick={() => setOpenDialog(true)}
           >
             Add Partner
           </Button>
@@ -490,40 +491,7 @@ export default function PartnersView() {
         </Alert>
       )}
 
-      {/* Filters */}
-      {!loading && !error && (
-        <Stack direction="row" spacing={2} mb={3}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Tier</InputLabel>
-            <Select
-              value={filterTier}
-              label="Tier"
-              onChange={(e) => setFilterTier(e.target.value)}
-            >
-              <MenuItem value="all">All Tiers</MenuItem>
-              <MenuItem value="platinum">Platinum</MenuItem>
-              <MenuItem value="gold">Gold</MenuItem>
-              <MenuItem value="silver">Silver</MenuItem>
-              <MenuItem value="bronze">Bronze</MenuItem>
-              <MenuItem value="community">Community</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={filterStatus}
-              label="Status"
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      )}
+      {/* Filters are handled by FilterToolbar above */}
 
       {/* Partners Grid */}
       {filteredAndSortedPartners.length === 0 ? (

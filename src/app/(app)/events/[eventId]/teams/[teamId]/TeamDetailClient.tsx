@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import TeamNotes from "@/components/shared-ui/TeamNotes";
+import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
 
 interface TeamDetailClientProps {
   team: any;
@@ -140,7 +141,7 @@ export default function TeamDetailClient({
 
           {/* Description */}
           {team.description && (
-            <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
+            <Box sx={{ mb: 3, p: 2, bgcolor: "action.hover", borderRadius: 1 }}>
               <Typography variant="body1">{team.description}</Typography>
             </Box>
           )}
@@ -240,6 +241,19 @@ export default function TeamDetailClient({
               </Box>
             ))}
           </Box>
+
+          {/* Project Ideas CTA - visible to members */}
+          {isMember && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <ProjectSuggestionsCTA
+                variant="card"
+                eventId={eventId}
+                title="Need project ideas?"
+                description="Use AI to brainstorm project ideas tailored to this hackathon. Generate, refine, and share ideas with your team."
+              />
+            </>
+          )}
 
           {/* Team Notes - visible to members only */}
           {isMember && (

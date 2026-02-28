@@ -41,16 +41,22 @@ import { usePathname } from "next/navigation";
 
 const drawerWidth = 240;
 
+import type { UserRole } from "@/lib/admin-guard";
+
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  /** Roles that can see this item. If omitted, visible to all admin panel roles. */
+  roles?: UserRole[];
 }
 
 interface NavGroup {
   id: string;
   label: string;
   items: NavItem[];
+  /** Roles that can see this group. If omitted, visible to all admin panel roles. */
+  roles?: UserRole[];
 }
 
 const navGroups: NavGroup[] = [
@@ -67,40 +73,54 @@ const navGroups: NavGroup[] = [
     label: "Event Management",
     items: [
       { label: "Events", href: "/admin/events", icon: <EventIcon /> },
-      { label: "Teams", href: "/admin/teams", icon: <TeamsIcon /> },
-      { label: "Projects", href: "/admin/projects", icon: <FolderIcon /> },
-      { label: "Judges", href: "/admin/judges", icon: <GavelIcon /> },
+      { label: "Teams", href: "/admin/teams", icon: <TeamsIcon />, roles: ["super_admin", "admin", "organizer"] },
+      { label: "Projects", href: "/admin/projects", icon: <FolderIcon />, roles: ["super_admin", "admin", "organizer"] },
+      { label: "Judges", href: "/admin/judges", icon: <GavelIcon />, roles: ["super_admin", "admin"] },
     ],
   },
   {
     id: "administration",
     label: "Administration",
+    roles: ["super_admin", "admin", "marketer"],
     items: [
-      { label: "Users", href: "/admin/users", icon: <PeopleIcon /> },
-      { label: "Partners", href: "/admin/partners", icon: <BusinessIcon /> },
-      { label: "RAG / Chat", href: "/admin/rag", icon: <RagIcon /> },
-      { label: "Atlas Clusters", href: "/admin/atlas", icon: <StorageIcon /> },
-      { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon /> },
-      { label: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
+      { label: "Users", href: "/admin/users", icon: <PeopleIcon />, roles: ["super_admin", "admin"] },
+      { label: "Partners", href: "/admin/partners", icon: <BusinessIcon />, roles: ["super_admin", "admin", "marketer"] },
+      { label: "RAG / Chat", href: "/admin/rag", icon: <RagIcon />, roles: ["super_admin", "admin"] },
+      { label: "Atlas Clusters", href: "/admin/atlas", icon: <StorageIcon />, roles: ["super_admin", "admin"] },
+      { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon />, roles: ["super_admin", "admin"] },
+      { label: "Settings", href: "/admin/settings", icon: <SettingsIcon />, roles: ["super_admin", "admin"] },
     ],
   },
 ];
 
-// Flatten for active-route matching logic
-const allNavItems = navGroups.flatMap((g) => g.items);
+/** Filter nav groups and their items based on user role */
+function getFilteredNavGroups(role: UserRole): NavGroup[] {
+  return navGroups
+    .filter((group) => !group.roles || group.roles.includes(role))
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.roles || item.roles.includes(role)),
+    }))
+    .filter((group) => group.items.length > 0);
+}
 
 export default function AdminLayout({
   children,
+  userRole,
 }: {
   children: React.ReactNode;
+  userRole: UserRole;
 }) {
   const pathname = usePathname();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const filteredGroups = getFilteredNavGroups(userRole);
+  const allNavItems = filteredGroups.flatMap((g) => g.items);
+
   // Determine which group contains the active route so we can auto-expand it
-  const activeGroupId = navGroups.find((g) =>
+  const activeGroupId = filteredGroups.find((g) =>
     g.items.some((item) => isActiveRoute(item.href, pathname))
   )?.id;
 
@@ -161,7 +181,7 @@ export default function AdminLayout({
         </Box>
       )}
 
-      {navGroups.map((group, groupIndex) => {
+      {filteredGroups.map((group, groupIndex) => {
         const expanded = isGroupExpanded(group.id);
         const groupHasActive = group.items.some((item) =>
           isActiveRoute(item.href, pathname)

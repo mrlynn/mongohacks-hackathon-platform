@@ -6,10 +6,10 @@ import {
   ThumbDown as ThumbDownIcon,
   ThumbUpOutlined as ThumbUpOutlinedIcon,
   ThumbDownOutlined as ThumbDownOutlinedIcon,
-  SmartToy as BotIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
 import ReactMarkdown from "react-markdown";
+import MongoLeafIcon from "../icons/MongoLeafIcon";
 import ChatSources from "./ChatSources";
 
 interface Source {
@@ -67,7 +67,7 @@ export default function ChatMessage({
         {isUser ? (
           <PersonIcon sx={{ fontSize: 16, color: "primary.main" }} />
         ) : (
-          <BotIcon sx={{ fontSize: 16, color: "secondary.main" }} />
+          <MongoLeafIcon sx={{ fontSize: 16, color: "secondary.main" }} />
         )}
       </Box>
 

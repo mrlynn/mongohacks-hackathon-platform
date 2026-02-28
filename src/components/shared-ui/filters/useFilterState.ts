@@ -3,7 +3,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 export interface FilterState {
   search: string;
-  status: string;
+  status?: string;
   sortField: string;
   sortDirection: "asc" | "desc";
   [key: string]: any;

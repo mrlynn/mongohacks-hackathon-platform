@@ -18,6 +18,7 @@ export const AI_OPERATIONS = [
   "chat_completion",
   "embedding",
   "streaming",
+  "builder_prompt_enhancement",
 ] as const;
 export type AiOperation = (typeof AI_OPERATIONS)[number];
 

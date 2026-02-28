@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RagDocumentModel } from "@/lib/db/models/RagDocument";
 import { RagIngestionRunModel } from "@/lib/db/models/RagIngestionRun";
+import { EventModel } from "@/lib/db/models/Event";
 import { parseMarkdown, chunkDocument } from "./chunker";
 import { embedDocuments } from "./embeddings";
 import type {
@@ -204,7 +205,172 @@ async function executeIngestion(
     stats.filesProcessed++;
   }
 
+  // 5. Ingest event data from the database
+  try {
+    await ingestEvents(runId, triggeredBy, stats);
+  } catch (error) {
+    stats.errors.push({
+      file: "events",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   return stats;
+}
+
+/**
+ * Ingest event data from the database into the RAG system.
+ * Converts each event into a text document, generates embeddings,
+ * and stores them as RagDocuments with source.type = "event".
+ */
+async function ingestEvents(
+  runId: string,
+  triggeredBy: Types.ObjectId,
+  stats: IngestionRunStats
+): Promise<void> {
+  // Fetch all non-draft events
+  const events = await EventModel.find({ status: { $ne: "draft" } }).lean();
+
+  if (events.length === 0) return;
+
+  // Delete previous event documents to refresh
+  const deleteResult = await RagDocumentModel.deleteMany({
+    "source.type": "event",
+  });
+  stats.chunksDeleted += deleteResult.deletedCount;
+
+  const documents: Array<{
+    content: string;
+    contentHash: string;
+    accessLevel: "public" | "authenticated";
+    source: {
+      filePath: string;
+      title: string;
+      section: string;
+      category: string;
+      url: string;
+      type: "event";
+    };
+    chunk: { index: number; totalChunks: number; tokens: number };
+    embedding: number[];
+    ingestion: {
+      runId: string;
+      ingestedAt: Date;
+      ingestedBy: Types.ObjectId;
+      version: number;
+    };
+  }> = [];
+
+  const textsToEmbed: string[] = [];
+  const eventMetas: Array<{
+    eventId: string;
+    name: string;
+    slug: string;
+  }> = [];
+
+  for (const event of events) {
+    const ev = event as Record<string, unknown>;
+    const name = ev.name as string;
+    const description = ev.description as string;
+    const theme = ev.theme as string;
+    const startDate = ev.startDate as Date;
+    const endDate = ev.endDate as Date;
+    const location = ev.location as string;
+    const city = (ev.city as string) || "";
+    const country = (ev.country as string) || "";
+    const venue = (ev.venue as string) || "";
+    const capacity = ev.capacity as number;
+    const isVirtual = ev.isVirtual as boolean;
+    const tags = (ev.tags as string[]) || [];
+    const status = ev.status as string;
+    const registrationDeadline = ev.registrationDeadline as Date;
+    const rules = (ev.rules as string) || "";
+    const judgingCriteria = (ev.judging_criteria as string[]) || [];
+    const landingPage = ev.landingPage as Record<string, unknown> | undefined;
+
+    // Build a rich text representation of the event
+    const parts: string[] = [
+      `Event: ${name}`,
+      `Description: ${description}`,
+      `Theme: ${theme}`,
+      `Status: ${status}`,
+      `Dates: ${startDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} to ${endDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
+      `Registration Deadline: ${registrationDeadline.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
+      `Location: ${location}${city ? `, ${city}` : ""}${country ? `, ${country}` : ""}`,
+    ];
+
+    if (venue) parts.push(`Venue: ${venue}`);
+    parts.push(`Virtual: ${isVirtual ? "Yes" : "No"}`);
+    parts.push(`Capacity: ${capacity}`);
+    if (tags.length > 0) parts.push(`Tags: ${tags.join(", ")}`);
+    if (rules) parts.push(`Rules: ${rules}`);
+    if (judgingCriteria.length > 0) parts.push(`Judging Criteria: ${judgingCriteria.join(", ")}`);
+
+    // Include landing page custom content if available
+    if (landingPage?.customContent) {
+      const custom = landingPage.customContent as Record<string, unknown>;
+      if (custom.about) parts.push(`About: ${custom.about}`);
+      const prizes = custom.prizes as Array<{ title: string; description: string; value?: string }> | undefined;
+      if (prizes && prizes.length > 0) {
+        parts.push(`Prizes: ${prizes.map((p) => `${p.title}${p.value ? ` (${p.value})` : ""} - ${p.description}`).join("; ")}`);
+      }
+      const faq = custom.faq as Array<{ question: string; answer: string }> | undefined;
+      if (faq && faq.length > 0) {
+        parts.push(`FAQ: ${faq.map((f) => `Q: ${f.question} A: ${f.answer}`).join(" | ")}`);
+      }
+    }
+
+    const text = parts.join("\n");
+    textsToEmbed.push(text);
+
+    const slug = (landingPage?.slug as string) || (ev._id as Types.ObjectId).toString();
+    eventMetas.push({
+      eventId: (ev._id as Types.ObjectId).toString(),
+      name,
+      slug,
+    });
+  }
+
+  // Generate embeddings for all events
+  const { embeddings, totalTokens } = await embedDocuments(textsToEmbed);
+  stats.embeddingsGenerated += embeddings.length;
+  stats.totalTokens += totalTokens;
+
+  // Build documents for insertion
+  for (let i = 0; i < textsToEmbed.length; i++) {
+    const meta = eventMetas[i];
+    documents.push({
+      content: textsToEmbed[i],
+      contentHash: createHash("sha256").update(textsToEmbed[i]).digest("hex"),
+      accessLevel: "public",
+      source: {
+        filePath: `event:${meta.eventId}`,
+        title: meta.name,
+        section: "Event Details",
+        category: "events",
+        url: `/events/${meta.slug}`,
+        type: "event",
+      },
+      chunk: {
+        index: 0,
+        totalChunks: 1,
+        tokens: Math.ceil(textsToEmbed[i].length / 4), // rough estimate
+      },
+      embedding: embeddings[i],
+      ingestion: {
+        runId,
+        ingestedAt: new Date(),
+        ingestedBy: triggeredBy,
+        version: 1,
+      },
+    });
+  }
+
+  if (documents.length > 0) {
+    await RagDocumentModel.insertMany(documents);
+    stats.chunksCreated += documents.length;
+    stats.filesProcessed += events.length;
+  }
 }
 
 /**

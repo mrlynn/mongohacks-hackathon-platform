@@ -48,7 +48,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     const role = payload.role;
-    if (role !== "admin" && role !== "super_admin" && role !== "organizer") {
+    if (role !== "admin" && role !== "super_admin" && role !== "organizer" && role !== "marketer") {
       // Redirect unauthorized users to dashboard
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
@@ -80,7 +80,7 @@ export async function middleware(req: NextRequest) {
     const payload = await getTokenPayload(req);
     const role = payload?.role;
 
-    if (role === "admin" || role === "super_admin" || role === "organizer") {
+    if (role === "admin" || role === "super_admin" || role === "organizer" || role === "marketer") {
       return NextResponse.next();
     }
 
