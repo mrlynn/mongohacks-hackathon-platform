@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db/connection';
 import { TeamModel } from '@/lib/db/models/Team';
-import { ProjectModel } from '@/lib/db/models/Project';
 import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { EventModel } from '@/lib/db/models/Event';
 import { provisionCluster, ConflictError } from '@/lib/atlas/provisioning-service';
@@ -14,7 +13,6 @@ import { errorResponse } from '@/lib/utils';
  * 
  * Body: {
  *   teamId: string;
- *   projectId: string;
  *   provider?: 'AWS' | 'GCP' | 'AZURE';
  *   region?: string;
  * }
@@ -27,27 +25,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { teamId, projectId, provider, region } = body;
+    const { teamId, provider, region } = body;
 
-    if (!teamId || !projectId) {
-      return errorResponse('teamId and projectId are required', 400);
+    if (!teamId) {
+      return errorResponse('teamId is required', 400);
     }
 
     await connectToDatabase();
-
-    // Verify project exists and get eventId
-    const project = await ProjectModel.findById(projectId).populate('team');
-    if (!project) {
-      return errorResponse('Project not found', 404);
-    }
-
-    const eventId = project.event.toString();
-
-    // Verify event has provisioning enabled
-    const event = await EventModel.findById(eventId);
-    if (!event?.atlasProvisioning?.enabled) {
-      return errorResponse('Atlas cluster provisioning is not enabled for this event', 403);
-    }
 
     // Verify user is team leader (admins bypass)
     const team = await TeamModel.findById(teamId);
@@ -62,6 +46,14 @@ export async function POST(req: NextRequest) {
       return errorResponse('Only the team leader can provision a cluster', 403);
     }
 
+    // Get event from team and verify provisioning is enabled
+    const eventId = team.eventId.toString();
+    const event = await EventModel.findById(eventId);
+    
+    if (!event?.atlasProvisioning?.enabled) {
+      return errorResponse('Atlas cluster provisioning is not enabled for this event', 403);
+    }
+
     // Check if cluster already exists
     const existing = await AtlasClusterModel.findOne({
       eventId,
@@ -73,11 +65,11 @@ export async function POST(req: NextRequest) {
       return errorResponse('A cluster already exists for this team', 409);
     }
 
-    // Provision the cluster
+    // Provision the cluster (projectId = teamId for Atlas project naming)
     const cluster = await provisionCluster({
       eventId,
       teamId,
-      projectId,
+      projectId: teamId, // Use teamId as Atlas project identifier
       userId: session.user.id,
       provider,
       region,

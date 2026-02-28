@@ -29,7 +29,6 @@ interface ProvisionClusterDialogProps {
   open: boolean;
   onClose: () => void;
   teamId: string;
-  projectId: string;
   allowedProviders: string[];
   onSuccess: () => void;
 }
@@ -55,7 +54,6 @@ export default function ProvisionClusterDialog({
   open,
   onClose,
   teamId,
-  projectId,
   allowedProviders,
   onSuccess,
 }: ProvisionClusterDialogProps) {
@@ -87,7 +85,6 @@ export default function ProvisionClusterDialog({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           teamId,
-          projectId,
           provider,
           region,
         }),

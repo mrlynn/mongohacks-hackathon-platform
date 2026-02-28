@@ -11,7 +11,6 @@ import IpAccessManager from '@/components/atlas/IpAccessManager';
 interface AtlasClusterManagementClientProps {
   teamId: string;
   eventId: string;
-  projectId: string;
   teamName: string;
   eventName: string;
   isTeamLeader: boolean;
@@ -21,7 +20,6 @@ interface AtlasClusterManagementClientProps {
 export default function AtlasClusterManagementClient({
   teamId,
   eventId,
-  projectId,
   teamName,
   eventName,
   isTeamLeader,
@@ -108,7 +106,6 @@ export default function AtlasClusterManagementClient({
         open={provisionDialogOpen}
         onClose={() => setProvisionDialogOpen(false)}
         teamId={teamId}
-        projectId={projectId}
         allowedProviders={allowedProviders}
         onSuccess={handleProvisionSuccess}
       />

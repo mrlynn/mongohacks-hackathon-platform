@@ -53,7 +53,6 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
       teamName={team.name}
       eventId={event._id.toString()}
       eventName={event.name}
-      projectId={teamId}
       isTeamLeader={isTeamLeader}
       isAdmin={isAdmin}
       allowedProviders={event.atlasProvisioning.allowedProviders || ['AWS', 'GCP', 'AZURE']}
