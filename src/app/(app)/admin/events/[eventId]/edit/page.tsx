@@ -902,7 +902,6 @@ export default function EditEventPage({
               });
             }}
           />
-          />
         </Box>
 
         <FormActions>
