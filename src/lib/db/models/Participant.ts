@@ -18,6 +18,7 @@ export interface IParticipant extends Document {
   }[];
   customResponses: Map<string, unknown>;
   teamId: Types.ObjectId | null;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +52,7 @@ const ParticipantSchema = new Schema<IParticipant>(
     ],
     customResponses: { type: Map, of: Schema.Types.Mixed, default: new Map() },
     teamId: { type: Schema.Types.ObjectId, ref: "Team", default: null },
+    deletedAt: { type: Date },
   },
   { timestamps: true }
 );

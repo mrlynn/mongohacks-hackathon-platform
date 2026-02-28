@@ -45,6 +45,8 @@ import {
   BadgeOutlined,
   AdminPanelSettingsOutlined,
   CloseOutlined,
+  Block as BlockIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import ViewToggle from "@/components/shared-ui/ViewToggle";
 import ExportButton from "@/components/shared-ui/ExportButton";
@@ -72,6 +74,8 @@ const roleColors: Record<
   super_admin: "warning",
   admin: "error",
   organizer: "primary",
+  marketer: "secondary",
+  mentor: "info",
   judge: "info",
   participant: "success",
 };
@@ -275,6 +279,10 @@ function AddUserDialog({
                 <Chip label="Participant" size="small" color="success" sx={{ mr: 1 }} />
                 Participant
               </MenuItem>
+              <MenuItem value="mentor">
+                <Chip label="Mentor" size="small" color="info" sx={{ mr: 1 }} />
+                Mentor
+              </MenuItem>
               <MenuItem value="judge">
                 <Chip label="Judge" size="small" color="info" sx={{ mr: 1 }} />
                 Judge
@@ -282,6 +290,10 @@ function AddUserDialog({
               <MenuItem value="organizer">
                 <Chip label="Organizer" size="small" color="primary" sx={{ mr: 1 }} />
                 Organizer
+              </MenuItem>
+              <MenuItem value="marketer">
+                <Chip label="Marketer" size="small" color="secondary" sx={{ mr: 1 }} />
+                Marketer
               </MenuItem>
               <MenuItem value="admin">
                 <Chip label="Admin" size="small" color="error" sx={{ mr: 1 }} />
@@ -486,6 +498,10 @@ function EditUserDialog({
                 <Chip label="Participant" size="small" color="success" sx={{ mr: 1 }} />
                 Participant
               </MenuItem>
+              <MenuItem value="mentor">
+                <Chip label="Mentor" size="small" color="info" sx={{ mr: 1 }} />
+                Mentor
+              </MenuItem>
               <MenuItem value="judge">
                 <Chip label="Judge" size="small" color="info" sx={{ mr: 1 }} />
                 Judge
@@ -493,6 +509,10 @@ function EditUserDialog({
               <MenuItem value="organizer">
                 <Chip label="Organizer" size="small" color="primary" sx={{ mr: 1 }} />
                 Organizer
+              </MenuItem>
+              <MenuItem value="marketer">
+                <Chip label="Marketer" size="small" color="secondary" sx={{ mr: 1 }} />
+                Marketer
               </MenuItem>
               <MenuItem value="admin">
                 <Chip label="Admin" size="small" color="error" sx={{ mr: 1 }} />
@@ -664,6 +684,62 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
     setSuccess(`User "${updated.name}" updated successfully`);
   };
 
+  const handleBanUser = async (userId: string, currentlyBanned: boolean) => {
+    if (!confirm(currentlyBanned ? "Unban this user?" : "Ban this user? They will not be able to log in.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/ban`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason: currentlyBanned ? undefined : "Banned by administrator",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === userId
+              ? { ...u, banned: data.user.banned, bannedAt: data.user.bannedAt, bannedReason: data.user.bannedReason }
+              : u
+          )
+        );
+        setSuccess(currentlyBanned ? "User unbanned successfully" : "User banned successfully");
+      } else {
+        setError(data.error || "Failed to update ban status");
+      }
+    } catch (err) {
+      setError("Failed to update ban status");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Delete this user? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setUsers((prev) => prev.filter((u) => u._id !== userId));
+        setSuccess("User deleted successfully");
+      } else {
+        setError(data.error || "Failed to delete user");
+      }
+    } catch (err) {
+      setError("Failed to delete user");
+    }
+  };
+
   const csvColumns = [
     { key: "name" as const, label: "Name" },
     { key: "email" as const, label: "Email" },
@@ -711,8 +787,10 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
           label="Role"
           options={[
             { value: "participant", label: "Participant" },
+            { value: "mentor", label: "Mentor" },
             { value: "judge", label: "Judge" },
             { value: "organizer", label: "Organizer" },
+            { value: "marketer", label: "Marketer" },
             { value: "admin", label: "Admin" },
             { value: "super_admin", label: "Super Admin" },
           ]}
@@ -787,21 +865,19 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                         sx={{ minWidth: 120 }}
                       >
                         <MenuItem value="participant">
-                          <Chip
-                            label="Participant"
-                            size="small"
-                            color="success"
-                          />
+                          <Chip label="Participant" size="small" color="success" />
+                        </MenuItem>
+                        <MenuItem value="mentor">
+                          <Chip label="Mentor" size="small" color="info" />
                         </MenuItem>
                         <MenuItem value="judge">
                           <Chip label="Judge" size="small" color="info" />
                         </MenuItem>
                         <MenuItem value="organizer">
-                          <Chip
-                            label="Organizer"
-                            size="small"
-                            color="primary"
-                          />
+                          <Chip label="Organizer" size="small" color="primary" />
+                        </MenuItem>
+                        <MenuItem value="marketer">
+                          <Chip label="Marketer" size="small" color="secondary" />
                         </MenuItem>
                         <MenuItem value="admin">
                           <Chip label="Admin" size="small" color="error" />
@@ -847,6 +923,38 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                           }}
                         >
                           <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={(user as any).banned ? "Unban user" : "Ban user"}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleBanUser(user._id, (user as any).banned)}
+                          disabled={user.role === "super_admin"}
+                          sx={{
+                            color: (user as any).banned ? mongoColors.orange.main : mongoColors.slate.light,
+                            "&:hover": {
+                              bgcolor: `${mongoColors.orange.main}0D`,
+                              color: mongoColors.orange.main,
+                            },
+                          }}
+                        >
+                          <BlockIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete user">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteUser(user._id)}
+                          disabled={user.role === "super_admin"}
+                          sx={{
+                            color: mongoColors.slate.light,
+                            "&:hover": {
+                              bgcolor: `${mongoColors.red.main}0D`,
+                              color: mongoColors.red.main,
+                            },
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -937,8 +1045,10 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                       size="small"
                     >
                       <MenuItem value="participant">Participant</MenuItem>
+                      <MenuItem value="mentor">Mentor</MenuItem>
                       <MenuItem value="judge">Judge</MenuItem>
                       <MenuItem value="organizer">Organizer</MenuItem>
+                      <MenuItem value="marketer">Marketer</MenuItem>
                       <MenuItem value="admin">Admin</MenuItem>
                       <MenuItem value="super_admin">Super Admin</MenuItem>
                     </Select>

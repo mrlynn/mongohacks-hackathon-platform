@@ -19,7 +19,7 @@ export interface IUser extends Document {
   twoFactorCode?: string;
   twoFactorExpiry?: Date;
   notificationPreferences: INotificationPreferences;
-  role: "super_admin" | "admin" | "organizer" | "judge" | "participant";
+  role: "super_admin" | "admin" | "organizer" | "marketer" | "mentor" | "judge" | "participant";
   // GitHub OAuth fields
   githubUsername?: string;
   bio?: string;
@@ -28,6 +28,10 @@ export interface IUser extends Document {
   emailVerified?: boolean;
   emailVerificationToken?: string;
   emailVerificationExpiry?: Date;
+  banned?: boolean;
+  bannedAt?: Date;
+  bannedReason?: string;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,7 +56,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["super_admin", "admin", "organizer", "judge", "participant"],
+      enum: ["super_admin", "admin", "organizer", "marketer", "mentor", "judge", "participant"],
       default: "participant",
     },
     // GitHub OAuth fields
@@ -63,6 +67,10 @@ const UserSchema = new Schema<IUser>(
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpiry: { type: Date, select: false },
+    banned: { type: Boolean, default: false },
+    bannedAt: { type: Date },
+    bannedReason: { type: String },
+    deletedAt: { type: Date },
   },
   { timestamps: true }
 );
@@ -71,6 +79,8 @@ const UserSchema = new Schema<IUser>(
 UserSchema.index({ email: 1 }, { unique: true }); // Critical: email lookups on login/registration
 UserSchema.index({ magicLinkToken: 1 }, { sparse: true });
 UserSchema.index({ emailVerificationToken: 1 }, { sparse: true });
+UserSchema.index({ banned: 1 });
+UserSchema.index({ deletedAt: 1 });
 
 export const UserModel =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

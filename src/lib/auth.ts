@@ -42,6 +42,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Check if user is banned or deleted
+        if (user.banned || user.deletedAt) {
+          throw new Error(user.bannedReason || "Your account has been suspended. Please contact support.");
+        }
+
         // If 2FA is enabled, generate and send code instead of signing in
         if (user.twoFactorEnabled) {
           const code = Math.floor(100000 + Math.random() * 900000).toString();

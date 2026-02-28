@@ -16,7 +16,7 @@ export async function PATCH(
     const { role } = body;
 
     // Validate role
-    const validRoles = ["participant", "judge", "organizer", "admin", "super_admin"];
+    const validRoles = ["participant", "mentor", "judge", "organizer", "marketer", "admin", "super_admin"];
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         {
