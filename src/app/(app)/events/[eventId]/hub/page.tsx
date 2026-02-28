@@ -134,6 +134,25 @@ async function getHubData(eventId: string, userId: string) {
       .lean();
   }
 
+  // Fallback: check if user is a member/leader of a team even if participant.teamId is not set
+  if (!team) {
+    team = await TeamModel.findOne({
+      eventId,
+      $or: [{ members: userId }, { leaderId: userId }],
+    })
+      .populate("members", "name email")
+      .populate("leaderId", "name email")
+      .lean();
+
+    // Sync participant.teamId if we found a team
+    if (team) {
+      await ParticipantModel.updateOne(
+        { _id: participant._id },
+        { $set: { teamId: team._id } }
+      );
+    }
+  }
+
   // Get project (if exists)
   let project = null;
   if (team) {
