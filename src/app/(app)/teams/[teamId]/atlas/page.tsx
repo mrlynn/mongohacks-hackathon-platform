@@ -47,17 +47,13 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
     notFound();
   }
 
-  const project = team.project
-    ? { _id: team.project.toString(), name: team.name }
-    : null;
-
   return (
     <AtlasClusterManagementClient
       teamId={teamId}
       teamName={team.name}
       eventId={event._id.toString()}
       eventName={event.name}
-      project={project}
+      projectId={teamId}
       isTeamLeader={isTeamLeader}
       isAdmin={isAdmin}
       allowedProviders={event.atlasProvisioning.allowedProviders || ['AWS', 'GCP', 'AZURE']}
