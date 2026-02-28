@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  params: { teamId: string };
+  params: Promise<{ teamId: string }>;
 }
 
 export default async function AtlasClusterManagementPage({ params }: PageProps) {
@@ -21,9 +21,12 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
     redirect('/login');
   }
 
+  // Await params in Next.js 16
+  const { teamId } = await params;
+
   await connectToDatabase();
 
-  const team = await TeamModel.findById(params.teamId).populate('event').lean();
+  const team = await TeamModel.findById(teamId).populate('event').lean();
   if (!team) {
     notFound();
   }
@@ -50,12 +53,13 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
 
   return (
     <AtlasClusterManagementClient
-      teamId={params.teamId}
-      eventId={team.event.toString()}
-      projectId={project?._id || ''}
+      teamId={teamId}
       teamName={team.name}
+      eventId={event._id.toString()}
       eventName={event.name}
-      isTeamLeader={isTeamLeader || isAdmin}
+      project={project}
+      isTeamLeader={isTeamLeader}
+      isAdmin={isAdmin}
     />
   );
 }
