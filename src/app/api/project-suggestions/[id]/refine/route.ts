@@ -43,8 +43,12 @@ export async function POST(
       return errorResponse('Event not found', 404);
     }
 
-    // Apply refinement adjustments
-    const adjustedInputs = { ...originalIdea.inputs };
+    // Apply refinement adjustments (ensure required fields with defaults for legacy data)
+    const adjustedInputs = {
+      ...originalIdea.inputs,
+      timeCommitment: originalIdea.inputs.timeCommitment ?? 24,
+      complexityPreference: (originalIdea.inputs.complexityPreference || 'moderate') as 'simple' | 'moderate' | 'ambitious',
+    };
 
     // Parse refinement instruction
     const refinementLower = refinement.toLowerCase();
@@ -58,8 +62,9 @@ export async function POST(
     }
 
     if (refinementLower.includes('more ai') || refinementLower.includes('add ai')) {
-      if (!adjustedInputs.interestAreas.includes('AI/ML')) {
-        adjustedInputs.interestAreas.push('AI/ML');
+      const areas = adjustedInputs.interestAreas || [];
+      if (!areas.includes('AI/ML')) {
+        adjustedInputs.interestAreas = [...areas, 'AI/ML'];
       }
     }
 

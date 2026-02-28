@@ -64,6 +64,21 @@ export async function POST(request: NextRequest) {
       targetPrizes: inputs.targetPrizes || [],
     };
 
+    // Build model inputs with required fields and defaults (schema validation)
+    const modelInputs = {
+      teamSize: inputs.teamSize || 1,
+      skillLevels: inputs.skillLevels || [],
+      teamComposition: inputs.teamComposition || [],
+      preferredLanguages: inputs.preferredLanguages || [],
+      preferredFrameworks: inputs.preferredFrameworks || [],
+      preferredDatabases: inputs.preferredDatabases || [],
+      sponsorProducts: inputs.sponsorProducts || [],
+      interestAreas: inputs.interestAreas || [],
+      timeCommitment: inputs.timeCommitment ?? 24,
+      complexityPreference: (inputs.complexityPreference || 'moderate') as 'simple' | 'moderate' | 'ambitious',
+      targetPrizes: inputs.targetPrizes || [],
+    };
+
     // Generate ideas with AI
     const result = await generateProjectIdeas(generationInputs, numIdeas);
 
@@ -73,7 +88,7 @@ export async function POST(request: NextRequest) {
         const projectIdea = new ProjectIdeaModel({
           userId,
           eventId,
-          inputs,
+          inputs: modelInputs,
           idea,
           saved: false,
           shared: false,

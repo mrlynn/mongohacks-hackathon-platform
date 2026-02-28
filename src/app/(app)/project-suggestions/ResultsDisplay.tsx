@@ -21,6 +21,7 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
+import BuilderPromptPanel from '@/components/project-suggestions/BuilderPromptPanel';
 
 export default function ResultsDisplay({ ideas }: { ideas: any[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -304,6 +305,15 @@ export default function ResultsDisplay({ ideas }: { ideas: any[] }) {
           </Collapse>
         </CardContent>
       </Card>
+
+      {/* AI Builder Prompt - generate copy-paste ready prompt for Claude/ChatGPT */}
+      {currentIdeaId && currentIdea?.eventId && (
+        <BuilderPromptPanel
+          ideaId={currentIdeaId}
+          eventId={currentIdea.eventId.toString()}
+          ideaName={currentIdeaContent?.name || 'Project'}
+        />
+      )}
 
       <Button variant="text" href="/project-suggestions" sx={{ mt: 3 }}>
         ← Generate More Ideas
