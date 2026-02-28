@@ -399,13 +399,16 @@ export default function PartnersView() {
         onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
         onClearAllFilters={clearFilters}
         rightActions={
-          <>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              
-        >
-          {/* Filter Groups */}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            Add Partner
+          </Button>
+        }
+      >
+        {/* Filter Groups */}
           <MultiSelectFilter
             label="Tier"
             options={[
@@ -462,8 +465,7 @@ export default function PartnersView() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
-            sx={{onClick={() => handleOpenDialog()}
-              sx={{
+            sx={{
             backgroundColor: mongoBrand.forestGreen,
             "&:hover": { backgroundColor: mongoBrand.evergreen },
           }}
