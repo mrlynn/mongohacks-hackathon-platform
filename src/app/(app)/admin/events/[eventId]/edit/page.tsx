@@ -45,6 +45,7 @@ import {
   FormCard,
   FormSectionHeader,
   FormActions,
+import AtlasProvisioningToggle from '@/components/admin/AtlasProvisioningToggle';
 } from "@/components/shared-ui/FormElements";
 
 export default function EditEventPage({
@@ -80,6 +81,7 @@ export default function EditEventPage({
   const [selectedPartnerFeedback, setSelectedPartnerFeedback] = useState("");
 
   const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     theme: "",
@@ -93,11 +95,10 @@ export default function EditEventPage({
     capacity: 100,
     isVirtual: false,
     status: "draft" as "draft" | "open" | "in_progress" | "concluded",
+    atlasProvisioning: {
+      enabled: false,
+    },
   });
-
-  useEffect(() => {
-    params.then((p) => {
-      setEventId(p.eventId);
       fetchEvent(p.eventId);
       fetchEventFeedbackForms(p.eventId);
     });
@@ -184,6 +185,8 @@ export default function EditEventPage({
           capacity: event.capacity || 100,
           isVirtual: event.isVirtual || false,
           status: event.status || "draft",
+          atlasProvisioning: event.atlasProvisioning || { enabled: false },
+        });
         });
         // Set selected partners (may be populated objects or plain IDs)
         if (event.partners && event.partners.length > 0) {
@@ -877,6 +880,24 @@ export default function EditEventPage({
             )}
           </Grid>
         </FormCard>
+
+
+        {/* Atlas Cluster Provisioning */}
+        <Box sx={{ mt: 3 }}>
+          <AtlasProvisioningToggle
+            eventId={params.eventId}
+            initialEnabled={formData.atlasProvisioning?.enabled || false}
+            onUpdate={(enabled) => {
+              setFormData({
+                ...formData,
+                atlasProvisioning: {
+                  ...formData.atlasProvisioning,
+                  enabled,
+                },
+              });
+            }}
+          />
+        </Box>
 
         <FormActions>
           <Button
