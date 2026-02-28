@@ -10,7 +10,7 @@ import { errorResponse } from '@/lib/utils';
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
     const session = await auth();
@@ -22,6 +22,9 @@ export async function PATCH(
       return errorResponse('Admin access required', 403);
     }
 
+    // Await params in Next.js 16
+    const { eventId } = await params;
+
     const body = await req.json();
     const { enabled } = body;
 
@@ -31,7 +34,7 @@ export async function PATCH(
 
     await connectToDatabase();
 
-    const event = await EventModel.findById(params.eventId);
+    const event = await EventModel.findById(eventId);
     if (!event) {
       return errorResponse('Event not found', 404);
     }
