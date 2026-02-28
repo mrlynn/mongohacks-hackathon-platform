@@ -26,13 +26,13 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
 
   await connectToDatabase();
 
-  const team = await TeamModel.findById(teamId).populate('event').lean();
+  const team = await TeamModel.findById(teamId).lean();
   if (!team) {
     notFound();
   }
 
   // Check if user is team member
-  const isTeamLeader = team.leader.toString() === session.user.id;
+  const isTeamLeader = team.leaderId.toString() === session.user.id;
   const isTeamMember =
     isTeamLeader || team.members.some((m) => m.toString() === session.user.id);
   const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
@@ -42,7 +42,7 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
   }
 
   // Get event and check if Atlas provisioning is enabled
-  const event = await EventModel.findById(team.event).lean();
+  const event = await EventModel.findById(team.eventId).lean();
   if (!event?.atlasProvisioning?.enabled) {
     notFound();
   }
