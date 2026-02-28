@@ -35,6 +35,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Storage as StorageIcon,
 } from "@mui/icons-material";
 import { usePathname } from "next/navigation";
 
@@ -78,6 +79,7 @@ const navGroups: NavGroup[] = [
       { label: "Users", href: "/admin/users", icon: <PeopleIcon /> },
       { label: "Partners", href: "/admin/partners", icon: <BusinessIcon /> },
       { label: "RAG / Chat", href: "/admin/rag", icon: <RagIcon /> },
+      { label: "Atlas Clusters", href: "/admin/atlas", icon: <StorageIcon /> },
       { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon /> },
       { label: "Settings", href: "/admin/settings", icon: <SettingsIcon /> },
     ],

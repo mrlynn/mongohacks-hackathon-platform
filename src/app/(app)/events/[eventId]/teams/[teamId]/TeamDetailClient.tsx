@@ -25,6 +25,7 @@ import {
   ExitToApp as LeaveIcon,
   Edit as EditIcon,
   Star as StarIcon,
+  Storage as StorageIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -261,7 +262,7 @@ export default function TeamDetailClient({
             </Alert>
           )}
 
-          <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
+          <Box sx={{ display: "flex", gap: 2, mt: 4, flexWrap: "wrap" }}>
             {!isMember && participant && spotsLeft > 0 && (
               <Button
                 variant="contained"
@@ -281,6 +282,17 @@ export default function TeamDetailClient({
                 href={`/events/${eventId}/teams/${teamId}/edit`}
               >
                 Manage Team
+              </Button>
+            )}
+
+            {isMember && (
+              <Button
+                variant="outlined"
+                startIcon={<StorageIcon />}
+                component={Link}
+                href={`/teams/${teamId}/atlas`}
+              >
+                Atlas Cluster
               </Button>
             )}
 
