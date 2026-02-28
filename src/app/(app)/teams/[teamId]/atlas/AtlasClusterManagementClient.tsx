@@ -15,6 +15,7 @@ interface AtlasClusterManagementClientProps {
   teamName: string;
   eventName: string;
   isTeamLeader: boolean;
+  allowedProviders: string[];
 }
 
 export default function AtlasClusterManagementClient({
@@ -24,6 +25,7 @@ export default function AtlasClusterManagementClient({
   teamName,
   eventName,
   isTeamLeader,
+  allowedProviders,
 }: AtlasClusterManagementClientProps) {
   const [provisionDialogOpen, setProvisionDialogOpen] = useState(false);
   const [clusterId, setClusterId] = useState<string | null>(null);
@@ -50,43 +52,46 @@ export default function AtlasClusterManagementClient({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
       {/* Breadcrumbs */}
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumb"
         sx={{ mb: 3 }}
       >
-        <Link href="/dashboard" underline="hover" color="inherit">
-          Dashboard
+        <Link underline="hover" color="inherit" href="/">
+          Home
         </Link>
-        <Link href={`/teams/${teamId}`} underline="hover" color="inherit">
+        <Link underline="hover" color="inherit" href={`/events/${eventId}`}>
+          {eventName}
+        </Link>
+        <Link underline="hover" color="inherit" href={`/teams/${teamId}`}>
           {teamName}
         </Link>
         <Typography color="text.primary">Atlas Cluster</Typography>
       </Breadcrumbs>
 
-      {/* Header */}
-      <Box mb={4}>
+      {/* Page Title */}
+      <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           MongoDB Atlas Cluster
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Manage your team's database cluster for {eventName}
+        <Typography variant="body2" color="text.secondary">
+          Free M0 database cluster for {teamName}
         </Typography>
       </Box>
 
       {/* Cluster Dashboard */}
-      <Box mb={3}>
+      <Box sx={{ mb: 4 }}>
         <ClusterDashboard
-          key={refreshKey}
           teamId={teamId}
           eventId={eventId}
-          isTeamLeader={isTeamLeader}
           onProvisionClick={() => setProvisionDialogOpen(true)}
+          isTeamLeader={isTeamLeader}
         />
       </Box>
 
-      {/* Management Sections (only show if cluster exists) */}
+      {/* Database Users & IP Access (only shown if cluster exists) */}
       {clusterId && (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -104,6 +109,7 @@ export default function AtlasClusterManagementClient({
         onClose={() => setProvisionDialogOpen(false)}
         teamId={teamId}
         projectId={projectId}
+        allowedProviders={allowedProviders}
         onSuccess={handleProvisionSuccess}
       />
     </Container>

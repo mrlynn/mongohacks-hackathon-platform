@@ -60,6 +60,7 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
       project={project}
       isTeamLeader={isTeamLeader}
       isAdmin={isAdmin}
+      allowedProviders={event.atlasProvisioning.allowedProviders || ['AWS', 'GCP', 'AZURE']}
     />
   );
 }

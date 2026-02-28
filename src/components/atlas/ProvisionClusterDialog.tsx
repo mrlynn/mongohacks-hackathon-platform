@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -30,6 +30,7 @@ interface ProvisionClusterDialogProps {
   onClose: () => void;
   teamId: string;
   projectId: string;
+  allowedProviders: string[];
   onSuccess: () => void;
 }
 
@@ -44,14 +45,21 @@ interface ProvisionResponse {
   };
 }
 
+const PROVIDER_LABELS: Record<string, string> = {
+  AWS: 'Amazon Web Services (AWS)',
+  GCP: 'Google Cloud Platform (GCP)',
+  AZURE: 'Microsoft Azure',
+};
+
 export default function ProvisionClusterDialog({
   open,
   onClose,
   teamId,
   projectId,
+  allowedProviders,
   onSuccess,
 }: ProvisionClusterDialogProps) {
-  const [provider, setProvider] = useState<'AWS' | 'GCP' | 'AZURE'>('AWS');
+  const [provider, setProvider] = useState<string>(allowedProviders[0] || 'AWS');
   const [region, setRegion] = useState('US_EAST_1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +69,13 @@ export default function ProvisionClusterDialog({
     password: false,
     connection: false,
   });
+
+  // Update provider to first allowed provider when allowedProviders changes
+  useEffect(() => {
+    if (allowedProviders.length > 0 && !allowedProviders.includes(provider)) {
+      setProvider(allowedProviders[0]);
+    }
+  }, [allowedProviders, provider]);
 
   const handleProvision = async () => {
     try {
@@ -229,12 +244,14 @@ export default function ProvisionClusterDialog({
             <Select
               value={provider}
               label="Cloud Provider"
-              onChange={(e) => setProvider(e.target.value as 'AWS' | 'GCP' | 'AZURE')}
+              onChange={(e) => setProvider(e.target.value)}
               disabled={loading}
             >
-              <MenuItem value="AWS">Amazon Web Services (AWS)</MenuItem>
-              <MenuItem value="GCP">Google Cloud Platform (GCP)</MenuItem>
-              <MenuItem value="AZURE">Microsoft Azure</MenuItem>
+              {allowedProviders.map((p) => (
+                <MenuItem key={p} value={p}>
+                  {PROVIDER_LABELS[p] || p}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
