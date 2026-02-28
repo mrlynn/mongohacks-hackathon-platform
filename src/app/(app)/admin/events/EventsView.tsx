@@ -204,7 +204,7 @@ export default function EventsView({ events }: { events: Event[] }) {
   const partnerTiers = useMemo(() => {
     const tiers = new Set<string>();
     events.forEach((e) => {
-      e.partners?.forEach((p) => tiers.add(p.tier.toLowerCase()));
+      e.partners?.forEach((p) => { if (p.tier) tiers.add(p.tier.toLowerCase()); });
     });
     return Array.from(tiers);
   }, [events]);
