@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db/connection';
 import { TeamModel } from '@/lib/db/models/Team';
 import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { EventModel } from '@/lib/db/models/Event';
+import { UserModel } from '@/lib/db/models/User';
 import { provisionCluster, ConflictError } from '@/lib/atlas/provisioning-service';
 import { errorResponse } from '@/lib/utils';
 
@@ -32,6 +33,12 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
+
+    // Email Verification Gate: Check if user's email is verified
+    const user = await UserModel.findById(session.user.id);
+    if (!user?.emailVerified) {
+      return errorResponse('Please verify your email address before provisioning Atlas clusters', 403);
+    }
 
     // Verify user is team leader (admins bypass)
     const team = await TeamModel.findById(teamId);

@@ -5,6 +5,7 @@ import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { UserModel } from "@/lib/db/models/User";
 
 export async function POST(
   request: NextRequest,
@@ -23,6 +24,19 @@ export async function POST(
     const { eventId } = await params;
     const body = await request.json();
     const userId = (session.user as { id: string }).id;
+
+    // Email Verification Gate: Check if user's email is verified
+    const user = await UserModel.findById(userId);
+    if (!user?.emailVerified) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please verify your email address before submitting projects",
+          code: "EMAIL_NOT_VERIFIED",
+        },
+        { status: 403 }
+      );
+    }
 
     // Validation 1: Check if user is registered for this event
     const participant = await ParticipantModel.findOne({

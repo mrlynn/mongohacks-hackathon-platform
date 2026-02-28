@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { UserModel } from "@/lib/db/models/User";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
 
 export async function POST(
@@ -21,6 +22,19 @@ export async function POST(
     await connectToDatabase();
     const { eventId } = await params;
     const body = await request.json();
+
+    // Email Verification Gate: Check if user's email is verified
+    const user = await UserModel.findById(session.user.id);
+    if (!user?.emailVerified) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please verify your email address before creating teams",
+          code: "EMAIL_NOT_VERIFIED",
+        },
+        { status: 403 }
+      );
+    }
 
     // Check if user already has a team for this event
     const existingTeam = await TeamModel.findOne({
