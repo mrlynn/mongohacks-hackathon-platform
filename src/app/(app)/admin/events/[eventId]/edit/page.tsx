@@ -45,8 +45,9 @@ import {
   FormCard,
   FormSectionHeader,
   FormActions,
-import AtlasProvisioningToggle from '@/components/admin/AtlasProvisioningToggle';
 } from "@/components/shared-ui/FormElements";
+import AtlasProvisioningToggle from '@/components/admin/AtlasProvisioningToggle';
+
 
 export default function EditEventPage({
   params,
