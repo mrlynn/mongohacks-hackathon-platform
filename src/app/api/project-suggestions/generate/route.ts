@@ -47,21 +47,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build generation context
+    // Build generation context with safe defaults
     const generationInputs = {
-      eventTheme: event.theme || event.name,
+      eventTheme: event.theme || event.name || 'General Hackathon',
       eventCategories: event.categories || [],
       sponsorProducts: event.partners?.map((p: any) => p.name) || [],
-      teamSize: inputs.teamSize,
-      skillLevels: inputs.skillLevels,
-      teamComposition: inputs.teamComposition,
-      preferredLanguages: inputs.preferredLanguages,
-      preferredFrameworks: inputs.preferredFrameworks,
-      preferredDatabases: inputs.preferredDatabases,
-      interestAreas: inputs.interestAreas,
-      timeCommitment: inputs.timeCommitment,
-      complexityPreference: inputs.complexityPreference,
-      targetPrizes: inputs.targetPrizes,
+      teamSize: inputs.teamSize || 1,
+      skillLevels: inputs.skillLevels || [],
+      teamComposition: inputs.teamComposition || [],
+      preferredLanguages: inputs.preferredLanguages || [],
+      preferredFrameworks: inputs.preferredFrameworks || [],
+      preferredDatabases: inputs.preferredDatabases || [],
+      interestAreas: inputs.interestAreas || [],
+      timeCommitment: inputs.timeCommitment || 24,
+      complexityPreference: inputs.complexityPreference || 'moderate',
+      targetPrizes: inputs.targetPrizes || [],
     };
 
     // Generate ideas with AI

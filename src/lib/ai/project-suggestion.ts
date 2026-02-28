@@ -72,24 +72,35 @@ function buildPrompt(inputs: GenerationInputs): string {
     targetPrizes,
   } = inputs;
 
+  // Safely handle potentially undefined arrays
+  const safeEventCategories = eventCategories || [];
+  const safeSponsorProducts = sponsorProducts || [];
+  const safeTargetPrizes = targetPrizes || [];
+  const safeSkillLevels = skillLevels || [];
+  const safeTeamComposition = teamComposition || [];
+  const safeLanguages = preferredLanguages || [];
+  const safeFrameworks = preferredFrameworks || [];
+  const safeDatabases = preferredDatabases || [];
+  const safeInterestAreas = interestAreas || [];
+
   return `You are a hackathon mentor helping a team brainstorm creative, feasible project ideas.
 
 EVENT CONTEXT:
 - Theme: ${eventTheme}
-- Categories: ${eventCategories.join(', ')}
-- Available Sponsor Products: ${sponsorProducts.join(', ')}
-- Target Prizes: ${targetPrizes.length > 0 ? targetPrizes.join(', ') : 'Any'}
+- Categories: ${safeEventCategories.length > 0 ? safeEventCategories.join(', ') : 'Open Theme'}
+- Available Sponsor Products: ${safeSponsorProducts.length > 0 ? safeSponsorProducts.join(', ') : 'Any'}
+- Target Prizes: ${safeTargetPrizes.length > 0 ? safeTargetPrizes.join(', ') : 'Any'}
 
 TEAM INFORMATION:
 - Team Size: ${teamSize} ${teamSize === 1 ? 'person (solo)' : 'people'}
-- Skill Levels: ${skillLevels.join(', ')}
-- Team Composition: ${teamComposition.join(', ')}
+- Skill Levels: ${safeSkillLevels.length > 0 ? safeSkillLevels.join(', ') : 'Mixed'}
+- Team Composition: ${safeTeamComposition.length > 0 ? safeTeamComposition.join(', ') : 'Full-stack'}
 
 TECHNOLOGY PREFERENCES:
-- Languages: ${preferredLanguages.join(', ')}
-- Frameworks: ${preferredFrameworks.join(', ')}
-- Databases: ${preferredDatabases.join(', ')}
-- Interest Areas: ${interestAreas.join(', ')}
+- Languages: ${safeLanguages.length > 0 ? safeLanguages.join(', ') : 'Any'}
+- Frameworks: ${safeFrameworks.length > 0 ? safeFrameworks.join(', ') : 'Any'}
+- Databases: ${safeDatabases.length > 0 ? safeDatabases.join(', ') : 'Any'}
+- Interest Areas: ${safeInterestAreas.length > 0 ? safeInterestAreas.join(', ') : 'Any'}
 
 CONSTRAINTS:
 - Time Budget: ${timeCommitment} hours
