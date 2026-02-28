@@ -119,3 +119,49 @@ export function notificationEmail(
     text: `Hi ${name || "there"},\n\n${message}${actionUrl ? `\n\nView details: ${actionUrl}` : ""}`,
   };
 }
+
+export function registrationConfirmationEmail(
+  name: string,
+  eventName: string,
+  eventDate: string,
+  eventLocation: string,
+  dashboardUrl: string
+): { subject: string; html: string; text: string } {
+  return {
+    subject: `You're registered for ${eventName}!`,
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Welcome, ${name}!</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+        You're all set for <strong>${eventName}</strong>! We're excited to have you join us.
+      </p>
+      
+      <div style="background:#f5f5f5;border-radius:8px;padding:20px;margin:24px 0;">
+        <p style="color:#333;font-size:14px;margin:0 0 8px;font-weight:600;">Event Details:</p>
+        <p style="color:#555;font-size:14px;margin:0 0 4px;"><strong>When:</strong> ${eventDate}</p>
+        <p style="color:#555;font-size:14px;margin:0;"><strong>Where:</strong> ${eventLocation}</p>
+      </div>
+
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Access your event dashboard to join a team, explore challenges, and connect with other participants.
+      </p>
+      
+      <a href="${dashboardUrl}" style="display:inline-block;background:${brandColor};color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;margin:0 0 24px;">
+        Go to Event Dashboard
+      </a>
+
+      <div style="border-top:1px solid #eee;padding-top:20px;margin-top:20px;">
+        <p style="color:#333;font-size:14px;margin:0 0 12px;font-weight:600;">What to bring:</p>
+        <ul style="color:#555;font-size:14px;margin:0;padding-left:20px;">
+          <li style="margin-bottom:6px;">Your laptop with dev environment set up</li>
+          <li style="margin-bottom:6px;">Chargers and any hardware you'll need</li>
+          <li style="margin-bottom:6px;">An open mind and team spirit!</li>
+        </ul>
+      </div>
+
+      <p style="color:#999;font-size:13px;margin:24px 0 0;">
+        Have questions? Check out our <a href="${dashboardUrl}/resources" style="color:${brandColor};">resources page</a> or reach out to the organizers.
+      </p>
+    `),
+    text: `Welcome, ${name}!\n\nYou're all set for ${eventName}! We're excited to have you join us.\n\nEvent Details:\nWhen: ${eventDate}\nWhere: ${eventLocation}\n\nAccess your event dashboard: ${dashboardUrl}\n\nWhat to bring:\n- Your laptop with dev environment set up\n- Chargers and any hardware you'll need\n- An open mind and team spirit!\n\nHave questions? Check out our resources page or reach out to the organizers.`,
+  };
+}

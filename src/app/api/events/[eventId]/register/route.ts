@@ -9,6 +9,8 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { z } from "zod";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
 import { notifyRegistrationConfirmed } from "@/lib/notifications/notification-service";
+import { sendEmail } from "@/lib/email/email-service";
+import { registrationConfirmationEmail } from "@/lib/email/templates";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -213,6 +215,34 @@ export async function POST(
         // Fire-and-forget: send registration confirmation notification
         notifyRegistrationConfirmed(user!._id.toString(), event.name, eventId);
 
+        // Fire-and-forget: send registration confirmation email
+        const eventDate = event.startDate
+          ? new Date(event.startDate).toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "TBD";
+        const eventLocation =
+          event.location?.address || event.location?.venue || "TBD";
+        const dashboardUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/events/${eventId}/hub`;
+
+        const template = registrationConfirmationEmail(
+          user!.name,
+          event.name,
+          eventDate,
+          eventLocation,
+          dashboardUrl
+        );
+
+        sendEmail({
+          to: user!.email,
+          subject: template.subject,
+          html: template.html,
+          text: template.text,
+        }).catch((err) => console.error("Failed to send confirmation email:", err));
+
         return NextResponse.json({
           success: true,
           message: "Successfully registered for the event!",
@@ -322,6 +352,34 @@ export async function POST(
 
     // Fire-and-forget: send registration confirmation notification
     notifyRegistrationConfirmed(user._id.toString(), event.name, eventId);
+
+    // Fire-and-forget: send registration confirmation email
+    const eventDate = event.startDate
+      ? new Date(event.startDate).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "TBD";
+    const eventLocation =
+      event.location?.address || event.location?.venue || "TBD";
+    const dashboardUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/events/${eventId}/hub`;
+
+    const template = registrationConfirmationEmail(
+      user.name,
+      event.name,
+      eventDate,
+      eventLocation,
+      dashboardUrl
+    );
+
+    sendEmail({
+      to: user.email,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    }).catch((err) => console.error("Failed to send confirmation email:", err));
 
     return NextResponse.json({
       success: true,
