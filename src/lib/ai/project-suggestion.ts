@@ -102,48 +102,52 @@ Generate 3 unique hackathon project ideas that:
 5. Have a unique innovation angle or differentiator
 6. Include practical utility or social impact
 
-For each idea, provide a JSON object with this exact structure:
+Return a JSON object with this EXACT structure:
 {
-  "name": "Catchy project name (3-5 words)",
-  "tagline": "One-sentence elevator pitch",
-  "problemStatement": "2-3 sentences describing the problem",
-  "solution": "3-4 sentences describing the proposed solution",
-  "techStack": {
-    "frontend": ["specific frameworks/libraries"],
-    "backend": ["specific frameworks/libraries"],
-    "database": ["specific databases"],
-    "apis": ["sponsor products and third-party APIs"],
-    "deployment": ["platforms/services"]
-  },
-  "timeline": [
+  "ideas": [
     {
-      "phase": "Foundation",
-      "hours": "1-4",
-      "tasks": ["Task 1", "Task 2", "Task 3"]
-    },
-    {
-      "phase": "Core Features",
-      "hours": "5-12",
-      "tasks": ["Task 1", "Task 2"]
-    },
-    {
-      "phase": "Integration",
-      "hours": "13-18",
-      "tasks": ["Task 1", "Task 2"]
-    },
-    {
-      "phase": "Polish & Demo",
-      "hours": "19-${timeCommitment}",
-      "tasks": ["Task 1", "Task 2"]
+      "name": "Catchy project name (3-5 words)",
+      "tagline": "One-sentence elevator pitch",
+      "problemStatement": "2-3 sentences describing the problem",
+      "solution": "3-4 sentences describing the proposed solution",
+      "techStack": {
+        "frontend": ["specific frameworks/libraries"],
+        "backend": ["specific frameworks/libraries"],
+        "database": ["specific databases"],
+        "apis": ["sponsor products and third-party APIs"],
+        "deployment": ["platforms/services"]
+      },
+      "timeline": [
+        {
+          "phase": "Foundation",
+          "hours": "1-4",
+          "tasks": ["Task 1", "Task 2", "Task 3"]
+        },
+        {
+          "phase": "Core Features",
+          "hours": "5-12",
+          "tasks": ["Task 1", "Task 2"]
+        },
+        {
+          "phase": "Integration",
+          "hours": "13-18",
+          "tasks": ["Task 1", "Task 2"]
+        },
+        {
+          "phase": "Polish & Demo",
+          "hours": "19-${timeCommitment}",
+          "tasks": ["Task 1", "Task 2"]
+        }
+      ],
+      "difficulty": 3,
+      "prizeCategories": ["Prize categories this project qualifies for"],
+      "differentiator": "What makes this idea unique or innovative",
+      "implementationGuide": "Brief markdown guide with key implementation tips, API setup steps, and gotchas to avoid"
     }
-  ],
-  "difficulty": 1-5 (1=beginner friendly, 5=very challenging),
-  "prizeCategories": ["Prize categories this project qualifies for"],
-  "differentiator": "What makes this idea unique or innovative",
-  "implementationGuide": "Brief markdown guide with key implementation tips, API setup steps, and gotchas to avoid"
+  ]
 }
 
-Return ONLY a JSON array of 3 project ideas. No additional text or explanation.`;
+IMPORTANT: Return ONLY the JSON object with an "ideas" array containing exactly 3 project ideas. No additional text.`;
 }
 
 export async function generateProjectIdeas(
@@ -179,15 +183,36 @@ export async function generateProjectIdeas(
   let ideas: ProjectIdea[];
   try {
     const parsed = JSON.parse(content);
-    // Handle both {ideas: [...]} and direct array formats
-    ideas = Array.isArray(parsed) ? parsed : parsed.ideas || [];
+    console.log('Parsed OpenAI response:', JSON.stringify(parsed).substring(0, 200) + '...');
+    
+    // Handle multiple possible response formats
+    if (Array.isArray(parsed)) {
+      // Direct array (shouldn't happen with json_object format)
+      ideas = parsed;
+    } else if (parsed.ideas && Array.isArray(parsed.ideas)) {
+      // { ideas: [...] } format
+      ideas = parsed.ideas;
+    } else if (parsed.projects && Array.isArray(parsed.projects)) {
+      // { projects: [...] } format
+      ideas = parsed.projects;
+    } else {
+      // Try to extract any array from the object
+      const values = Object.values(parsed);
+      const arrayValue = values.find((v) => Array.isArray(v));
+      if (arrayValue && Array.isArray(arrayValue)) {
+        ideas = arrayValue;
+      } else {
+        console.error('Invalid OpenAI response structure:', parsed);
+        throw new Error('Response does not contain an array of ideas');
+      }
+    }
     
     if (ideas.length === 0) {
       throw new Error('No ideas generated');
     }
   } catch (error) {
-    console.error('Failed to parse OpenAI response:', content);
-    throw new Error('Invalid response format from AI');
+    console.error('Failed to parse OpenAI response:', content.substring(0, 500));
+    throw new Error('Invalid response format from AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
   }
 
   return {
