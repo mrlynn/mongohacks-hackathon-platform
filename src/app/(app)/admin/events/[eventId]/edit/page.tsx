@@ -191,7 +191,6 @@ export default function EditEventPage({
           status: event.status || "draft",
           atlasProvisioning: event.atlasProvisioning || { enabled: false },
         });
-        });
         // Set selected partners (may be populated objects or plain IDs)
         if (event.partners && event.partners.length > 0) {
           setSelectedPartnerIds(
