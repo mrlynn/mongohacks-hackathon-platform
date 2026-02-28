@@ -82,7 +82,6 @@ export default function EditEventPage({
   const [selectedPartnerFeedback, setSelectedPartnerFeedback] = useState("");
 
   const [formData, setFormData] = useState({
-  const [formData, setFormData] = useState({
     name: "",
     description: "",
     theme: "",
@@ -100,6 +99,10 @@ export default function EditEventPage({
       enabled: false,
     },
   });
+
+  useEffect(() => {
+    params.then((p) => {
+      setEventId(p.eventId);
       fetchEvent(p.eventId);
       fetchEventFeedbackForms(p.eventId);
     });
