@@ -67,7 +67,7 @@ const updateTemplateSchema = z.object({
     scale: z.enum(["compact", "default", "large"]),
   }).optional(),
   sections: z.array(z.object({
-    type: z.enum(["hero", "about", "prizes", "schedule", "sponsors", "faq", "cta"]),
+    type: z.enum(["hero", "about", "prizes", "schedule", "sponsors", "partners", "faq", "cta"]),
     enabled: z.boolean(),
     layout: z.string(),
     style: z.object({

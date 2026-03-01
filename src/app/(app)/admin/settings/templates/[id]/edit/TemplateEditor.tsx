@@ -61,7 +61,7 @@ interface TemplateConfig {
     scale: "compact" | "default" | "large";
   };
   sections: Array<{
-    type: "hero" | "about" | "prizes" | "schedule" | "sponsors" | "faq" | "cta";
+    type: "hero" | "about" | "prizes" | "schedule" | "sponsors" | "partners" | "faq" | "cta";
     enabled: boolean;
     layout: string;
     style: {
