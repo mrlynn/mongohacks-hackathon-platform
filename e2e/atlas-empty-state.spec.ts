@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Atlas Cluster Management - Empty State', () => {
   test('should show empty state when no cluster exists', async ({ page }) => {
     // GIVEN: User is logged in as organizer/admin
-    await page.goto('/auth/signin');
+    await page.goto('/login');
     await page.fill('input[name="email"]', 'organizer@mongohacks.test');
     await page.fill('input[name="password"]', 'Organizer123!');
     await page.click('button[type="submit"]');
@@ -29,7 +29,7 @@ test.describe('Atlas Cluster Management - Empty State', () => {
   test('should NOT show phantom clusters', async ({ page }) => {
     // GIVEN: Database is empty (verified via direct query)
     // GIVEN: User is logged in
-    await page.goto('/auth/signin');
+    await page.goto('/login');
     await page.fill('input[name="email"]', 'admin@mongohacks.test');
     await page.fill('input[name="password"]', 'Admin123!');
     await page.click('button[type="submit"]');
@@ -59,7 +59,7 @@ test.describe('Atlas Cluster Management - Empty State', () => {
   
   test('should have proper cache-control headers', async ({ page }) => {
     // GIVEN: User is logged in
-    await page.goto('/auth/signin');
+    await page.goto('/login');
     await page.fill('input[name="email"]', 'admin@mongohacks.test');
     await page.fill('input[name="password"]', 'Admin123!');
     await page.click('button[type="submit"]');
