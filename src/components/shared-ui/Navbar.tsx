@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   Box,
-  Container,
   Menu,
   MenuItem,
   Chip,
@@ -38,6 +37,7 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
   Gavel as GavelIcon,
+  Business as BusinessIcon,
   MenuBook as MenuBookIcon,
   Collections as GalleryIcon,
   Lightbulb as LightbulbIcon,
@@ -272,6 +272,20 @@ export default function Navbar() {
               </ListItem>
             )}
 
+            {(user.role === "partner" || user.role === "admin" || user.role === "super_admin") && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => handleNavigate("/partner")}
+                  selected={pathname.startsWith("/partner")}
+                >
+                  <ListItemIcon>
+                    <BusinessIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Partner Portal" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
             {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -368,8 +382,8 @@ export default function Navbar() {
   return (
     <>
       <AppBar position="sticky" elevation={0}>
-        <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1, sm: 2 } }}>
-          <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 } }}>
+        <Box sx={{ width: "100%", px: { xs: 1, sm: 2 } }}>
+          <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 }, justifyContent: "flex-start" }}>
             {/* Mobile Menu Icon */}
             {isMobile && (
               <IconButton
@@ -390,7 +404,6 @@ export default function Navbar() {
               style={{
                 textDecoration: "none",
                 color: "inherit",
-                flexGrow: 1,
               }}
             >
               <Typography
@@ -405,9 +418,9 @@ export default function Navbar() {
               </Typography>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - pushed to the right */}
             {!isMobile && (
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center", marginLeft: "auto" }}>
                 <ThemeToggle />
                 {user && <NotificationBell />}
 
@@ -416,6 +429,7 @@ export default function Navbar() {
                   href="/events"
                   startIcon={<EmojiEventsIcon />}
                   sx={{ textTransform: "none" }}
+                  data-tour="events-link"
                 >
                   Events
                 </Button>
@@ -517,7 +531,7 @@ export default function Navbar() {
 
                           <Divider />
 
-                          <MenuItem onClick={() => handleNavigate("/dashboard")}>
+                          <MenuItem onClick={() => handleNavigate("/dashboard")} data-tour="dashboard-link">
                             <ListItemIcon>
                               <DashboardIcon fontSize="small" />
                             </ListItemIcon>
@@ -525,7 +539,7 @@ export default function Navbar() {
                           </MenuItem>
 
                           {(user.role === "judge" || user.role === "admin" || user.role === "super_admin" || user.role === "organizer") && (
-                            <MenuItem onClick={() => handleNavigate("/judging")}>
+                            <MenuItem onClick={() => handleNavigate("/judging")} data-tour="judging-link">
                               <ListItemIcon>
                                 <GavelIcon fontSize="small" />
                               </ListItemIcon>
@@ -533,8 +547,17 @@ export default function Navbar() {
                             </MenuItem>
                           )}
 
+                          {(user.role === "partner" || user.role === "admin" || user.role === "super_admin") && (
+                            <MenuItem onClick={() => handleNavigate("/partner")}>
+                              <ListItemIcon>
+                                <BusinessIcon fontSize="small" />
+                              </ListItemIcon>
+                              <ListItemText>Partner Portal</ListItemText>
+                            </MenuItem>
+                          )}
+
                           {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
-                            <MenuItem onClick={() => handleNavigate("/admin")}>
+                            <MenuItem onClick={() => handleNavigate("/admin")} data-tour="admin-link">
                               <ListItemIcon>
                                 <AdminIcon fontSize="small" color="primary" />
                               </ListItemIcon>
@@ -544,7 +567,7 @@ export default function Navbar() {
 
                           <Divider />
 
-                          <MenuItem onClick={() => handleNavigate("/profile")}>
+                          <MenuItem onClick={() => handleNavigate("/profile")} data-tour="profile-link">
                             <ListItemIcon>
                               <PersonIcon fontSize="small" />
                             </ListItemIcon>
@@ -680,6 +703,15 @@ export default function Navbar() {
                     </MenuItem>
                   )}
 
+                  {(user.role === "partner" || user.role === "admin" || user.role === "super_admin") && (
+                    <MenuItem onClick={() => handleNavigate("/partner")}>
+                      <ListItemIcon>
+                        <BusinessIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Partner Portal</ListItemText>
+                    </MenuItem>
+                  )}
+
                   {(user.role === "admin" || user.role === "super_admin" || user.role === "organizer" || user.role === "marketer") && (
                     <MenuItem onClick={() => handleNavigate("/admin")}>
                       <ListItemIcon>
@@ -712,7 +744,7 @@ export default function Navbar() {
               <ThemeToggle />
             )}
           </Toolbar>
-        </Container>
+        </Box>
       </AppBar>
 
       {/* Mobile Drawer */}
