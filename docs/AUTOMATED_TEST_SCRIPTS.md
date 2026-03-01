@@ -1809,3 +1809,626 @@ Before starting automation:
 **Document Version:** 1.0  
 **Last Updated:** March 1, 2026 6:00 AM EST  
 **Maintained By:** Platform Team
+## Test Report Format
+
+### Test Execution Report Structure
+
+```json
+{
+  "reportMetadata": {
+    "reportId": "test-run-2026-03-01-06-00",
+    "environment": "local",
+    "baseUrl": "http://localhost:3000",
+    "timestamp": "2026-03-01T06:00:00.000Z",
+    "tester": "automated",
+    "framework": "playwright",
+    "version": "1.40.0"
+  },
+  "testSuites": [
+    {
+      "suite": "super_admin.spec.ts",
+      "role": "super_admin",
+      "startTime": "2026-03-01T06:00:00.000Z",
+      "endTime": "2026-03-01T06:05:30.000Z",
+      "duration": "5m 30s",
+      "tests": [
+        {
+          "testId": "SA-001",
+          "name": "Super Admin: Login and access dashboard",
+          "status": "passed",
+          "duration": "2.3s",
+          "retries": 0,
+          "evidence": {
+            "screenshots": [
+              "super_admin_login_before_2026-03-01_06-00-00.png",
+              "super_admin_login_after_2026-03-01_06-00-02.png"
+            ],
+            "metadata": [
+              "super_admin_login_before_2026-03-01_06-00-00.json",
+              "super_admin_login_after_2026-03-01_06-00-02.json"
+            ],
+            "networkLogs": "super_admin_login_network_2026-03-01_06-00-00.json",
+            "consoleLogs": "super_admin_login_console_2026-03-01_06-00-00.log"
+          },
+          "assertions": [
+            {
+              "description": "User sees admin navigation",
+              "expected": "Admin link is visible",
+              "actual": "Admin link is visible",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "testId": "SA-002",
+          "name": "Super Admin: Access template settings",
+          "status": "passed",
+          "duration": "1.8s",
+          "retries": 0,
+          "evidence": {
+            "screenshots": [
+              "super_admin_templates_2026-03-01_06-00-05.png"
+            ],
+            "metadata": [
+              "super_admin_templates_2026-03-01_06-00-05.json"
+            ]
+          },
+          "assertions": [
+            {
+              "description": "Page loads successfully",
+              "expected": "No redirect, template list visible",
+              "actual": "Template list visible",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "testId": "SA-003",
+          "name": "Super Admin: Ban a user",
+          "status": "failed",
+          "duration": "3.2s",
+          "retries": 1,
+          "error": {
+            "message": "Element not found: button[aria-label*='Ban']",
+            "stack": "Error: Element not found...",
+            "screenshotOnError": "super_admin_ban_user_error_2026-03-01_06-00-10.png"
+          },
+          "evidence": {
+            "screenshots": [
+              "super_admin_ban_user_before_2026-03-01_06-00-08.png",
+              "super_admin_ban_user_error_2026-03-01_06-00-10.png"
+            ],
+            "metadata": [
+              "super_admin_ban_user_before_2026-03-01_06-00-08.json",
+              "super_admin_ban_user_error_2026-03-01_06-00-10.json"
+            ],
+            "networkLogs": "super_admin_ban_user_network_2026-03-01_06-00-08.json"
+          },
+          "assertions": [
+            {
+              "description": "Ban button exists for participant user",
+              "expected": "Button is visible and clickable",
+              "actual": "Button not found in DOM",
+              "passed": false
+            }
+          ],
+          "issue": {
+            "id": "ISSUE-001",
+            "severity": "high",
+            "component": "UsersView.tsx",
+            "description": "Ban button missing from users table",
+            "reproSteps": [
+              "1. Login as super_admin",
+              "2. Navigate to /admin/users",
+              "3. Look for ban button in participant user row",
+              "4. Button does not exist"
+            ],
+            "expectedBehavior": "Ban button should be visible for all users (except super_admin's own row)",
+            "actualBehavior": "Ban button missing from table rows",
+            "potentialCause": "Button may be conditionally rendered based on role, or component not imported"
+          }
+        }
+      ],
+      "summary": {
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "skipped": 0,
+        "passRate": "80%"
+      }
+    }
+  ],
+  "overallSummary": {
+    "totalSuites": 8,
+    "totalTests": 42,
+    "passed": 38,
+    "failed": 3,
+    "skipped": 1,
+    "passRate": "90.5%",
+    "duration": "45m 30s"
+  },
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "testId": "SA-003",
+      "role": "super_admin",
+      "severity": "high",
+      "component": "UsersView.tsx",
+      "summary": "Ban button missing from users table",
+      "status": "open",
+      "assignedTo": null,
+      "createdAt": "2026-03-01T06:00:10.000Z"
+    },
+    {
+      "id": "ISSUE-002",
+      "testId": "M-002",
+      "role": "marketer",
+      "severity": "medium",
+      "component": "AdminLayout.tsx",
+      "summary": "Marketer sees 'Users' link in sidebar (should be hidden)",
+      "status": "open",
+      "assignedTo": null,
+      "createdAt": "2026-03-01T06:15:22.000Z"
+    }
+  ],
+  "recommendations": [
+    "Fix ISSUE-001 (high severity) before production release",
+    "Review sidebar visibility logic for marketer role",
+    "Add missing ban button to UsersView component",
+    "Consider adding role-based tests to CI/CD pipeline"
+  ]
+}
+```
+
+---
+
+### Issue Tracking Template
+
+When a test fails, create an issue with this structure:
+
+```markdown
+# ISSUE-001: Ban Button Missing from Users Table
+
+**Severity:** High  
+**Component:** `UsersView.tsx`  
+**Role:** super_admin  
+**Test:** SA-003 (Super Admin: Ban a user)  
+**Status:** Open  
+**Detected:** 2026-03-01 06:00 AM EST  
+
+---
+
+## Summary
+
+Ban button is missing from the users table when super_admin tries to moderate users.
+
+---
+
+## Expected Behavior
+
+Ban button should be visible and clickable for all user rows (except the logged-in user's own row).
+
+**Visual Reference:**
+- Button label: "Ban" or icon with aria-label="Ban user"
+- Location: Actions column in users table
+- Enabled state: Disabled for super_admin's own row, enabled for all others
+
+---
+
+## Actual Behavior
+
+Ban button does not exist in the DOM when viewing the users table at `/admin/users`.
+
+---
+
+## Reproduction Steps
+
+1. Run seed script: `npx tsx scripts/seed-test-users.ts`
+2. Login as `super@mongohacks.test` / `SuperAdmin123!`
+3. Navigate to `/admin/users`
+4. Inspect participant user row
+5. **Result:** No ban button found
+
+---
+
+## Evidence
+
+**Screenshots:**
+- Before: `super_admin_ban_user_before_2026-03-01_06-00-08.png`
+- Error state: `super_admin_ban_user_error_2026-03-01_06-00-10.png`
+
+**Metadata:**
+```json
+{
+  "testName": "Super Admin: Ban a user",
+  "role": "super_admin",
+  "action": "Click ban button for participant user",
+  "expectedOutcome": "Confirmation dialog appears",
+  "actualOutcome": "Element not found: button[aria-label*='Ban']",
+  "timestamp": "2026-03-01T06:00:10.000Z",
+  "url": "http://localhost:3000/admin/users"
+}
+```
+
+**Network Logs:**
+- GET `/api/admin/users` → 200 OK (users loaded successfully)
+
+**Console Errors:**
+- None
+
+---
+
+## Potential Causes
+
+1. **Component not imported:** Ban button component missing from `UsersView.tsx`
+2. **Conditional rendering:** Button hidden based on incorrect role check
+3. **CSS issue:** Button exists but is `display: none` or `visibility: hidden`
+4. **Feature flag:** Ban functionality disabled in current environment
+
+---
+
+## Suggested Fix
+
+1. Verify `UsersView.tsx` includes ban button component:
+   ```tsx
+   <IconButton 
+     aria-label="Ban user"
+     onClick={() => handleBan(user._id)}
+     disabled={user.role === 'super_admin'}
+   >
+     <BlockIcon />
+   </IconButton>
+   ```
+
+2. Check role-based visibility logic:
+   ```tsx
+   {(userRole === 'super_admin' || 
+     (userRole === 'admin' && user.role !== 'admin')) && (
+     <BanButton userId={user._id} />
+   )}
+   ```
+
+3. Verify component is rendered in table:
+   ```tsx
+   <TableCell>
+     <BanButton userId={user._id} userRole={user.role} />
+     <DeleteButton userId={user._id} userRole={user.role} />
+   </TableCell>
+   ```
+
+---
+
+## Related Tests
+
+- SA-003: Super Admin: Ban a user (FAILED)
+- A-003: Admin: Can ban participant but NOT another admin (May fail if button missing)
+
+---
+
+## Priority
+
+**High** - User moderation is a core admin feature. Without ban functionality, platform security is compromised.
+
+---
+
+## Assignee
+
+_To be assigned_
+
+---
+
+## Resolution
+
+_Pending_
+```
+
+---
+
+### Playwright Configuration Example
+
+```typescript
+// playwright.config.ts
+
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests',
+  
+  // Test timeout
+  timeout: 30 * 1000,
+  
+  // Expect timeout for assertions
+  expect: {
+    timeout: 5000
+  },
+  
+  // Run tests in parallel
+  fullyParallel: true,
+  
+  // Fail fast on CI
+  forbidOnly: !!process.env.CI,
+  
+  // Retry on CI only
+  retries: process.env.CI ? 2 : 0,
+  
+  // Reporter
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-reports/results.json' }],
+    ['junit', { outputFile: 'test-reports/junit.xml' }],
+    ['allure-playwright']
+  ],
+  
+  // Shared settings for all projects
+  use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    
+    // Screenshot on failure
+    screenshot: 'only-on-failure',
+    
+    // Video on first retry
+    video: 'retain-on-failure',
+    
+    // Trace on first retry
+    trace: 'on-first-retry',
+    
+    // Custom storage state directory
+    storageState: undefined
+  },
+  
+  // Projects for different browsers
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+    
+    // Mobile viewports
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    
+    {
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 13'] },
+    }
+  ],
+  
+  // Web server
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000
+  }
+});
+```
+
+---
+
+### Running the Tests
+
+```bash
+# Install Playwright
+npm install -D @playwright/test
+
+# Install browsers
+npx playwright install
+
+# Set environment variables
+export BASE_URL="http://localhost:3000"
+export TEST_EVENT_ID="<your-test-event-id>"
+export SCREENSHOT_DIR="./test-evidence"
+export REPORT_DIR="./test-reports"
+
+# Create test accounts
+npx tsx scripts/seed-test-users.ts
+
+# Run all tests
+npx playwright test
+
+# Run specific role
+npx playwright test super_admin.spec.ts
+
+# Run in headed mode (see browser)
+npx playwright test --headed
+
+# Run in debug mode
+npx playwright test --debug
+
+# Generate HTML report
+npx playwright show-report
+
+# Run with specific browser
+npx playwright test --project=chromium
+
+# Run tests in parallel with 4 workers
+npx playwright test --workers=4
+```
+
+---
+
+### Test Execution Checklist
+
+Before running automated tests:
+
+- [ ] **Environment Setup**
+  - [ ] MongoDB running and accessible
+  - [ ] Next.js dev server running (`npm run dev`)
+  - [ ] Environment variables set (BASE_URL, etc.)
+
+- [ ] **Test Data**
+  - [ ] Test accounts created (`npx tsx scripts/seed-test-users.ts`)
+  - [ ] Test event created and `TEST_EVENT_ID` set
+  - [ ] Test team created (optional, can be created during tests)
+
+- [ ] **Directories**
+  - [ ] `test-evidence/` directory exists
+  - [ ] `test-reports/` directory exists
+  - [ ] Proper write permissions
+
+- [ ] **Browser Setup**
+  - [ ] Playwright browsers installed (`npx playwright install`)
+  - [ ] No conflicting browser instances
+
+---
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/e2e-tests.yml
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      
+      - name: Build Next.js app
+        run: npm run build
+      
+      - name: Start Next.js server
+        run: npm run start &
+        env:
+          MONGODB_URI: mongodb://admin:password@localhost:27017/mongohacks-test
+      
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000
+      
+      - name: Seed test data
+        run: npx tsx scripts/seed-test-users.ts
+        env:
+          MONGODB_URI: mongodb://admin:password@localhost:27017/mongohacks-test
+      
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          BASE_URL: http://localhost:3000
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+      
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: test-evidence
+          path: test-evidence/
+          retention-days: 30
+```
+
+---
+
+## Summary
+
+### What This Document Provides
+
+✅ **8 Complete Role Test Suites**
+- Super Admin (5 tests)
+- Admin (4 tests)
+- Organizer (3 tests)
+- Marketer (3 tests)
+- Partner (3 tests)
+- Judge (2 tests)
+- Mentor (2 tests)
+- Participant (5 tests)
+
+✅ **~35 Automation-Ready Test Scripts**
+- GIVEN-WHEN-THEN-ASSERT-CAPTURE format
+- Full Playwright/TypeScript code
+- Evidence collection built-in
+
+✅ **Helper Functions & Utilities**
+- Login/logout helpers
+- Test data creation
+- Evidence capture
+- Error handling
+
+✅ **Reporting & Issue Tracking**
+- JSON test report format
+- Issue tracking template (Markdown)
+- Playwright configuration
+- CI/CD integration example
+
+---
+
+### For the AI Engineer
+
+**Next Steps:**
+
+1. **Review this document** - Understand test structure and evidence requirements
+2. **Set up environment** - Install Playwright, seed test accounts
+3. **Run sample test** - Start with `super_admin.spec.ts` to verify setup
+4. **Customize selectors** - Update selectors based on actual component structure
+5. **Expand coverage** - Add more tests for edge cases and negative scenarios
+6. **Integrate CI/CD** - Add tests to GitHub Actions or your CI pipeline
+7. **Document issues** - Use issue template for any bugs found
+
+**Tips:**
+
+- Start with one role (Participant recommended - covers most features)
+- Run tests in headed mode first (`--headed`) to see what's happening
+- Use `--debug` flag for step-by-step execution
+- Screenshot on every assertion for better debugging
+- Keep test data isolated (use `@mongohacks.test` domain)
+- Clean up test data after each run if needed
+
+---
+
+**Questions or Issues?**
+
+Contact: Platform Team  
+Slack: `#engineering`  
+Docs: `/docs`
+
+---
+
+**Last Updated:** March 1, 2026 6:20 AM EST  
+**Version:** 1.0.0  
+**Status:** Ready for Automation
