@@ -7,6 +7,7 @@ import { EventModel } from '@/lib/db/models/Event';
 import { UserModel } from '@/lib/db/models/User';
 import { provisionCluster, ConflictError } from '@/lib/atlas/provisioning-service';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from '@/lib/logger';
 
 /**
  * POST /api/atlas/clusters
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       return errorResponse('Team not found', 404);
     }
 
-    const isAdmin = ['admin', 'super_admin'].includes((session.user as any).role);
+    const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
     const isTeamLeader = team.leaderId.toString() === session.user!.id;
 
     if (!isAdmin && !isTeamLeader) {
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
       credentials: cluster._initialCredentials, // Only returned once
     });
   } catch (error) {
-    console.error('[API] Cluster provisioning failed:', error);
+    atlasLogger.error({ err: error }, "Cluster provisioning failed");
 
     if (error instanceof ConflictError) {
       return errorResponse(error.message, 409);
@@ -140,7 +141,7 @@ export async function GET(req: NextRequest) {
     if (eventId) query.eventId = eventId;
 
     // Non-admins can only see their own team's clusters
-    const isAdmin = ['admin', 'super_admin'].includes((session.user as any).role);
+    const isAdmin = ['admin', 'super_admin'].includes(session.user.role);
     if (!isAdmin && teamId) {
       const team = await TeamModel.findById(teamId);
       if (!team) {
@@ -161,12 +162,21 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({
-      success: true,
-      clusters,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        clusters,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (error) {
-    console.error('[API] Failed to list clusters:', error);
+    atlasLogger.error({ err: error }, "Failed to list clusters");
     return errorResponse(`Failed to list clusters: ${(error as Error).message}`, 500);
   }
 }

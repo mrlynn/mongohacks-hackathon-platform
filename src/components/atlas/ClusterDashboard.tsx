@@ -58,11 +58,14 @@ export default function ClusterDashboard({
   const [error, setError] = useState<string | null>(null);
   const [pollingStatus, setPollingStatus] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const fetchCluster = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/atlas/clusters?teamId=${teamId}`);
+      const res = await fetch(`/api/atlas/clusters?teamId=${teamId}&_t=${Date.now()}`, {
+        cache: 'no-store',
+      });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Failed to fetch cluster');
@@ -103,7 +106,19 @@ export default function ClusterDashboard({
     }
   };
 
-  const handleDelete = async () => {
+  const clearCacheAndRefresh = async () => {
+    setClearing(true);
+    // Clear any browser cache
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    // Force fresh fetch
+    await fetchCluster();
+    setClearing(false);
+  };
+
+    const handleDelete = async () => {
     if (!cluster || !confirm('Are you sure you want to delete this cluster? This action cannot be undone.')) return;
 
     try {
@@ -166,6 +181,17 @@ export default function ClusterDashboard({
             <Typography variant="body2" color="text.secondary" textAlign="center">
               Your team hasn&apos;t provisioned a MongoDB Atlas cluster yet.
             </Typography>
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={clearCacheAndRefresh}
+                disabled={clearing}
+                size="small"
+              >
+                {clearing ? 'Clearing...' : 'Clear Cache & Refresh'}
+              </Button>
+            )}
             {isTeamLeader && (
               <Button variant="contained" onClick={onProvisionClick} sx={{ mt: 2 }}>
                 Provision Free Cluster
