@@ -28,6 +28,7 @@ export interface TemplateRenderProps {
     startDate: string;
     endDate: string;
     location: string;
+    status?: string;
     partners?: LandingPagePartner[];
     partnerPrizes?: LandingPagePartnerPrize[];
     landingPage?: {
@@ -52,6 +53,16 @@ export interface SectionRenderProps {
   config: ITemplateConfig;
   sectionConfig: ITemplateSectionConfig;
   event: TemplateRenderProps["event"];
+}
+
+/**
+ * Get the CTA href for an event based on its status.
+ * Concluded events link to results; all others link to registration.
+ */
+export function getEventCtaHref(event: { _id: unknown; status?: string }): string {
+  return event.status === "concluded"
+    ? `/events/${event._id}/results`
+    : `/events/${event._id}/register`;
 }
 
 /**

@@ -166,6 +166,81 @@ export function registrationConfirmationEmail(
   };
 }
 
+export function partnerInviteEmail(
+  name: string,
+  companyName: string,
+  url: string
+): { subject: string; html: string; text: string } {
+  return {
+    subject: `You've been invited as a partner representative for ${companyName}`,
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Hi ${name || "there"},</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+        You've been invited to join the <strong>MongoDB Hackathon Platform</strong> as a representative of <strong>${companyName}</strong>.
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        As a partner, you'll be able to view your events, manage sponsored prizes, submit feedback, and access analytics. Click below to set up your account.
+      </p>
+      <a href="${url}" style="display:inline-block;background:${brandColor};color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;">
+        Accept Invitation
+      </a>
+      <p style="color:#999;font-size:13px;margin:24px 0 0;">
+        This link expires in 15 minutes. If you didn't expect this invitation, you can safely ignore this email.
+      </p>
+    `),
+    text: `Hi ${name || "there"},\n\nYou've been invited to join the MongoDB Hackathon Platform as a representative of ${companyName}.\n\nAccept your invitation: ${url}\n\nThis link expires in 15 minutes. If you didn't expect this invitation, you can safely ignore this email.`,
+  };
+}
+
+export function partnerAccessApprovedEmail(
+  name: string,
+  companyName: string,
+  portalUrl: string
+): { subject: string; html: string; text: string } {
+  return {
+    subject: `Your partner access has been approved — ${companyName}`,
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Hi ${name || "there"},</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+        Great news! Your request to join the MongoDB Hackathon Platform as a partner representative for <strong>${companyName}</strong> has been approved.
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        You can now access the Partner Portal to view your events, manage prizes, and more.
+      </p>
+      <a href="${portalUrl}" style="display:inline-block;background:${brandColor};color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;">
+        Go to Partner Portal
+      </a>
+    `),
+    text: `Hi ${name || "there"},\n\nYour request to join as a partner representative for ${companyName} has been approved.\n\nAccess the Partner Portal: ${portalUrl}`,
+  };
+}
+
+export function partnerAccessDeniedEmail(
+  name: string,
+  notes?: string
+): { subject: string; html: string; text: string } {
+  const notesSection = notes
+    ? `<div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+        <p style="color:#555;font-size:14px;margin:0;"><strong>Reviewer notes:</strong> ${notes}</p>
+      </div>`
+    : "";
+
+  return {
+    subject: "Update on your partner access request",
+    html: layout(`
+      <h2 style="margin:0 0 16px;color:#333;font-size:22px;">Hi ${name || "there"},</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 8px;">
+        Thank you for your interest in partnering with MongoDB Hackathons. Unfortunately, we're unable to approve your partner access request at this time.
+      </p>
+      ${notesSection}
+      <p style="color:#555;font-size:15px;line-height:1.6;margin:16px 0 0;">
+        If you have questions, please reach out to the hackathon organizers for more information.
+      </p>
+    `),
+    text: `Hi ${name || "there"},\n\nThank you for your interest in partnering with MongoDB Hackathons. Unfortunately, we're unable to approve your partner access request at this time.${notes ? `\n\nReviewer notes: ${notes}` : ""}\n\nIf you have questions, please reach out to the hackathon organizers.`,
+  };
+}
+
 export function emailVerificationEmail(
   name: string,
   verificationUrl: string

@@ -140,7 +140,7 @@ export interface User {
   email: string;
   name: string;
   passwordHash: string;
-  role: "super_admin" | "admin" | "organizer" | "marketer" | "mentor" | "judge" | "participant";
+  role: "super_admin" | "admin" | "organizer" | "marketer" | "mentor" | "judge" | "participant" | "partner";
   createdAt: Date;
   updatedAt: Date;
 }

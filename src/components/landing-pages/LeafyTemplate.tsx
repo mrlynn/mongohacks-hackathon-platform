@@ -20,6 +20,7 @@ import {
   Business as BusinessIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 import { mongoColors } from "@/styles/theme";
 
 interface LeafyTemplateProps {
@@ -132,7 +133,7 @@ export default function LeafyTemplate({ event }: LeafyTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               background: `linear-gradient(135deg, ${mongoColors.green.main} 0%, ${mongoColors.green.dark} 100%)`,
               color: "white",
@@ -616,7 +617,7 @@ export default function LeafyTemplate({ event }: LeafyTemplateProps) {
           <Button
             variant="outlined"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               borderColor: "white",
               color: "white",

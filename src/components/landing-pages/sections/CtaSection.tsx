@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Container, Typography, Button } from "@mui/material";
-import { SectionRenderProps, getFontStack, getSpacingMultiplier } from "@/lib/types/template";
+import { SectionRenderProps, getFontStack, getSpacingMultiplier, getEventCtaHref } from "@/lib/types/template";
 
 export default function CtaSection({ config, sectionConfig, event }: SectionRenderProps) {
   const { colors, typography, hero } = config;
@@ -87,7 +87,7 @@ export default function CtaSection({ config, sectionConfig, event }: SectionRend
           size="large"
           disableElevation
           component="a"
-          href={`/events/${event._id}/register`}
+          href={getEventCtaHref(event)}
           sx={getButtonStyles()}
         >
           {ctaText}

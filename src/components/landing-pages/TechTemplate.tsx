@@ -22,6 +22,7 @@ import {
   Terminal as TerminalIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 
 interface TechTemplateProps {
   event: IEvent;
@@ -131,7 +132,7 @@ export default function TechTemplate({ event }: TechTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "#00ED64",
               color: "#0a0e27",
@@ -637,7 +638,7 @@ export default function TechTemplate({ event }: TechTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "#00ED64",
               color: "#0a0e27",

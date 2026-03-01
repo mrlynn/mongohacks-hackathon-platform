@@ -21,6 +21,7 @@ import {
   Hub as HubIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 import { mongoColors } from "@/styles/theme";
 
 interface AtlasTemplateProps {
@@ -153,7 +154,7 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: mongoColors.green.light,
               color: mongoColors.slate.main,
@@ -662,7 +663,7 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: mongoColors.green.light,
               color: mongoColors.slate.main,

@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
-import { magicLinkEmail } from "@/lib/email/templates";
+import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const verifyUrl = `${baseUrl}/api/auth/magic-link/verify?token=${rawToken}&email=${encodeURIComponent(normalizedEmail)}`;
 
     // Send email
-    const template = magicLinkEmail(user.name, verifyUrl);
+    const template = await renderEmailTemplate("magic_link", { userName: user.name, url: verifyUrl });
     sendEmail({
       to: normalizedEmail,
       subject: template.subject,

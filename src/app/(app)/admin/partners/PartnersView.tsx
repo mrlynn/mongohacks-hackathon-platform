@@ -107,6 +107,10 @@ const DEFAULT_FILTERS = {
 };
 
 
+function getTierLabel(tier: string) {
+  return tier.charAt(0).toUpperCase() + tier.slice(1);
+}
+
 export default function PartnersView() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -353,10 +357,6 @@ export default function PartnersView() {
     industry: partner.industry || "",
     website: partner.website || "",
   }));
-
-  const getTierLabel = (tier: string) => {
-    return tier.charAt(0).toUpperCase() + tier.slice(1);
-  };
 
   const getEngagementBadge = (level?: string) => {
     if (!level) return null;

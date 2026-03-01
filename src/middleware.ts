@@ -75,6 +75,25 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // --- Partner portal route protection ---
+  if (pathname.startsWith("/partner") && !pathname.startsWith("/partner/register")) {
+    const payload = await getTokenPayload(req);
+    if (!payload) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    const role = payload.role;
+    if (
+      role !== "partner" &&
+      role !== "admin" &&
+      role !== "super_admin"
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
+
   // --- Landing page preview mode guard ---
   if (searchParams.get("preview")) {
     const payload = await getTokenPayload(req);
@@ -98,6 +117,7 @@ export const config = {
     // Admin and judging routes
     "/admin/:path*",
     "/judging/:path*",
+    "/partner/:path*",
     // Landing page slugs (not api, _next, static files, or known app routes)
     "/((?!api|_next/static|_next/image|favicon\\.ico|login|register|admin|dashboard|events|judging|profile|projects|settings).*)",
   ],

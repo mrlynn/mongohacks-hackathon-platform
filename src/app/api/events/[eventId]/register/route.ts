@@ -11,7 +11,7 @@ import { z } from "zod";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
 import { notifyRegistrationConfirmed } from "@/lib/notifications/notification-service";
 import { sendEmail } from "@/lib/email/email-service";
-import { registrationConfirmationEmail, emailVerificationEmail } from "@/lib/email/templates";
+import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -236,13 +236,13 @@ export async function POST(
           event.location?.address || event.location?.venue || "TBD";
         const dashboardUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/events/${eventId}/hub`;
 
-        const template = registrationConfirmationEmail(
-          user!.name,
-          event.name,
+        const template = await renderEmailTemplate("registration_confirmation", {
+          userName: user!.name,
+          eventName: event.name,
           eventDate,
           eventLocation,
-          dashboardUrl
-        );
+          dashboardUrl,
+        });
 
         sendEmail({
           to: user!.email,
@@ -253,8 +253,8 @@ export async function POST(
 
         // Fire-and-forget: send email verification email
         const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${verificationToken}`;
-        const verificationTemplate = emailVerificationEmail(user!.name, verificationUrl);
-        
+        const verificationTemplate = await renderEmailTemplate("email_verification", { userName: user!.name, verificationUrl });
+
         sendEmail({
           to: user!.email,
           subject: verificationTemplate.subject,
@@ -385,13 +385,13 @@ export async function POST(
       event.location?.address || event.location?.venue || "TBD";
     const dashboardUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/events/${eventId}/hub`;
 
-    const template = registrationConfirmationEmail(
-      user.name,
-      event.name,
+    const template = await renderEmailTemplate("registration_confirmation", {
+      userName: user.name,
+      eventName: event.name,
       eventDate,
       eventLocation,
-      dashboardUrl
-    );
+      dashboardUrl,
+    });
 
     sendEmail({
       to: user.email,

@@ -31,11 +31,13 @@ import {
   Business as BusinessIcon,
   Analytics as AnalyticsIcon,
   SmartToy as RagIcon,
+  Email as EmailIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Storage as StorageIcon,
+  PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
 import { usePathname } from "next/navigation";
 
@@ -85,9 +87,11 @@ const navGroups: NavGroup[] = [
     items: [
       { label: "Users", href: "/admin/users", icon: <PeopleIcon />, roles: ["super_admin", "admin"] },
       { label: "Partners", href: "/admin/partners", icon: <BusinessIcon />, roles: ["super_admin", "admin", "marketer"] },
+      { label: "Partner Requests", href: "/admin/partners/access-requests", icon: <PersonAddIcon />, roles: ["super_admin", "admin"] },
       { label: "RAG / Chat", href: "/admin/rag", icon: <RagIcon />, roles: ["super_admin", "admin"] },
       { label: "Atlas Clusters", href: "/admin/atlas", icon: <StorageIcon />, roles: ["super_admin", "admin"] },
       { label: "Templates", href: "/admin/settings/templates", icon: <PaletteIcon />, roles: ["super_admin", "admin"] },
+      { label: "Email Templates", href: "/admin/settings/email-templates", icon: <EmailIcon />, roles: ["super_admin", "admin"] },
       { label: "Settings", href: "/admin/settings", icon: <SettingsIcon />, roles: ["super_admin", "admin"] },
     ],
   },

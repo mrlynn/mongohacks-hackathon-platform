@@ -32,6 +32,7 @@ import {
   FormCard,
   FormSectionHeader,
 } from "@/components/shared-ui/FormElements";
+import { useOnboardingSafe } from "@/contexts/OnboardingContext";
 
 interface ProfileData {
   user: {
@@ -51,6 +52,7 @@ interface ProfileData {
 }
 
 export default function ProfileClient({ profile }: { profile: ProfileData }) {
+  const onboarding = useOnboardingSafe();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
@@ -93,6 +95,12 @@ export default function ProfileClient({ profile }: { profile: ProfileData }) {
       if (res.ok) {
         setSuccess("Profile updated successfully!");
         setEditing(false);
+
+        // Mark onboarding step complete if bio was filled in
+        if (formData.bio.trim().length > 0) {
+          onboarding?.completeStep("participant.complete-profile");
+        }
+
         setTimeout(() => {
           window.location.reload();
         }, 1500);

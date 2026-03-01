@@ -20,6 +20,7 @@ import {
   Business as BusinessIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 
 interface ModernTemplateProps {
   event: IEvent;
@@ -80,7 +81,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: "primary.main",
@@ -340,7 +341,7 @@ export default function ModernTemplate({ event }: ModernTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: "primary.main",

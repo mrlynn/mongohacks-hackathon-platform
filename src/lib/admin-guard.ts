@@ -9,7 +9,8 @@ export type UserRole =
   | "marketer"
   | "mentor"
   | "judge"
-  | "participant";
+  | "participant"
+  | "partner";
 
 /** Roles with full admin privileges */
 export const ADMIN_ROLES: UserRole[] = ["super_admin", "admin"];
@@ -19,6 +20,9 @@ export const ADMIN_PANEL_ROLES: UserRole[] = ["super_admin", "admin", "organizer
 
 /** Roles that can manage events, teams, and projects */
 export const EVENT_MANAGEMENT_ROLES: UserRole[] = ["super_admin", "admin", "organizer"];
+
+/** Roles that can access the partner portal */
+export const PARTNER_PORTAL_ROLES: UserRole[] = ["super_admin", "admin", "partner"];
 
 /**
  * Returns true if the current request is an admin-initiated impersonation.
@@ -140,4 +144,24 @@ export async function hasRole(
 
   const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
   return roles.includes(role);
+}
+
+/**
+ * Partner Portal Guard - Server-side protection for partner portal routes.
+ * Allows partner, admin, and super_admin roles.
+ */
+export async function requirePartner() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const role = effectiveRole(session.user as { role?: string; realAdminRole?: string; isImpersonating?: boolean });
+
+  if (!PARTNER_PORTAL_ROLES.includes(role) && !(await isImpersonationActive())) {
+    redirect("/dashboard");
+  }
+
+  return session;
 }

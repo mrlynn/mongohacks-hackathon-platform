@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface INotificationPreferences {
   emailNotifications: boolean;
@@ -19,7 +19,8 @@ export interface IUser extends Document {
   twoFactorCode?: string;
   twoFactorExpiry?: Date;
   notificationPreferences: INotificationPreferences;
-  role: "super_admin" | "admin" | "organizer" | "marketer" | "mentor" | "judge" | "participant";
+  role: "super_admin" | "admin" | "organizer" | "marketer" | "mentor" | "judge" | "participant" | "partner";
+  partnerId?: Types.ObjectId;
   // GitHub OAuth fields
   githubUsername?: string;
   bio?: string;
@@ -32,6 +33,13 @@ export interface IUser extends Document {
   bannedAt?: Date;
   bannedReason?: string;
   deletedAt?: Date;
+  onboardingProgress?: {
+    completedSteps: string[];
+    dismissedAt?: Date;
+    tourCompleted?: boolean;
+    firstLoginSeen?: boolean;
+    lastStepCompletedAt?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,9 +64,10 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["super_admin", "admin", "organizer", "marketer", "mentor", "judge", "participant"],
+      enum: ["super_admin", "admin", "organizer", "marketer", "mentor", "judge", "participant", "partner"],
       default: "participant",
     },
+    partnerId: { type: Schema.Types.ObjectId, ref: "Partner" },
     // GitHub OAuth fields
     githubUsername: { type: String },
     bio: { type: String },
@@ -71,6 +80,13 @@ const UserSchema = new Schema<IUser>(
     bannedAt: { type: Date },
     bannedReason: { type: String },
     deletedAt: { type: Date },
+    onboardingProgress: {
+      completedSteps: [{ type: String }],
+      dismissedAt: { type: Date },
+      tourCompleted: { type: Boolean, default: false },
+      firstLoginSeen: { type: Boolean, default: false },
+      lastStepCompletedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );
@@ -81,6 +97,7 @@ UserSchema.index({ magicLinkToken: 1 }, { sparse: true });
 UserSchema.index({ emailVerificationToken: 1 }, { sparse: true });
 UserSchema.index({ banned: 1 });
 UserSchema.index({ deletedAt: 1 });
+UserSchema.index({ partnerId: 1 }, { sparse: true });
 
 export const UserModel =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

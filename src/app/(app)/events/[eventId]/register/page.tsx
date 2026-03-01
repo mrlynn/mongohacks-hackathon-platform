@@ -16,6 +16,11 @@ async function getEventData(eventId: string, userId?: string) {
     return { error: "Event not found" };
   }
 
+  // Concluded events should show results, not registration
+  if (event.status === "concluded") {
+    return { error: "concluded", eventId };
+  }
+
   // Check if event is open for registration
   const now = new Date();
   if (event.registrationDeadline && now > new Date(event.registrationDeadline)) {
@@ -73,6 +78,10 @@ export default async function RegisterPage({
   const data = await getEventData(eventId, userId);
 
   if ("error" in data) {
+    // Concluded events redirect to results page
+    if (data.error === "concluded") {
+      redirect(`/events/${eventId}/results`);
+    }
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{data.error}</Alert>

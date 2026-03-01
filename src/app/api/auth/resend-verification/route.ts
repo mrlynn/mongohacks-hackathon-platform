@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
-import { emailVerificationEmail } from "@/lib/email/templates";
+import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
 const ResendSchema = z.object({
   email: z.string().email().optional(),
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Send verification email
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${verificationToken}`;
-    const emailContent = emailVerificationEmail(user.name, verificationUrl);
+    const emailContent = await renderEmailTemplate("email_verification", { userName: user.name, verificationUrl });
 
     sendEmail({
       to: user.email,

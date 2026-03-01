@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
-import { twoFactorCodeEmail } from "@/lib/email/templates";
+import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           user.twoFactorExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
           await user.save();
 
-          const template = twoFactorCodeEmail(user.name, code);
+          const template = await renderEmailTemplate("two_factor_code", { userName: user.name, code });
           sendEmail({
             to: user.email,
             subject: template.subject,
@@ -76,6 +76,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          partnerId: user.partnerId?.toString(),
         };
       },
     }),
@@ -123,6 +124,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          partnerId: user.partnerId?.toString(),
         };
       },
     }),
@@ -132,6 +134,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as { role: string }).role;
         token.id = user.id;
+        token.partnerId = (user as { partnerId?: string }).partnerId;
         // NextAuth v5 uses 'sub' as the standard user ID field
         token.sub = user.id;
       }
@@ -143,6 +146,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as unknown as { role: string }).role =
           token.role as string;
         (session.user as unknown as { id: string }).id = (token.id || token.sub) as string;
+        (session.user as unknown as { partnerId?: string }).partnerId =
+          token.partnerId as string | undefined;
 
         // Check for impersonation cookie
         try {

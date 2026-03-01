@@ -21,6 +21,7 @@ import {
   Bolt as BoltIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 
 interface BoldTemplateProps {
   event: IEvent;
@@ -126,7 +127,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: "#0068F9",
@@ -546,7 +547,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: "#0068F9",

@@ -183,7 +183,17 @@ export default function EventDetailPage() {
               View Event Landing Page
             </Button>
           )}
-          {isRegistered ? (
+          {event.status === "concluded" ? (
+            <Button
+              variant="contained"
+              size="large"
+              href={`/events/${eventId}/results`}
+              color="success"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
+              View Results
+            </Button>
+          ) : isRegistered ? (
             <Button
               variant="outlined"
               size="large"

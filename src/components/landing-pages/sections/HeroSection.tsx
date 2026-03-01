@@ -2,7 +2,7 @@
 
 import { Box, Container, Typography, Button, Chip, Stack } from "@mui/material";
 import { CalendarMonth, LocationOn } from "@mui/icons-material";
-import { SectionRenderProps, getFontStack, getSpacingMultiplier } from "@/lib/types/template";
+import { SectionRenderProps, getFontStack, getSpacingMultiplier, getEventCtaHref } from "@/lib/types/template";
 
 export default function HeroSection({ config, sectionConfig, event }: SectionRenderProps) {
   const { colors, hero, typography } = config;
@@ -165,7 +165,7 @@ export default function HeroSection({ config, sectionConfig, event }: SectionRen
           size="large"
           disableElevation
           component="a"
-          href={`/events/${event._id}/register`}
+          href={getEventCtaHref(event)}
           sx={getButtonStyles()}
         >
           {ctaText}

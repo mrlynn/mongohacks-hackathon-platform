@@ -21,6 +21,7 @@ import {
   Diversity3 as CommunityIcon,
 } from "@mui/icons-material";
 import { IEvent } from "@/lib/db/models/Event";
+import { getEventCtaHref } from "@/lib/types/template";
 import { mongoColors } from "@/styles/theme";
 
 interface CommunityTemplateProps {
@@ -142,7 +143,7 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: mongoColors.green.main,
@@ -671,7 +672,7 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
           <Button
             variant="contained"
             size="large"
-            href={`/events/${event._id}/register`}
+            href={getEventCtaHref(event)}
             sx={{
               bgcolor: "white",
               color: mongoColors.green.main,
