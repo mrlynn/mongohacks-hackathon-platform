@@ -39,6 +39,7 @@ import {
   HideImage as NoneIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
+import UnsplashImagePicker from "@/components/admin/UnsplashImagePicker";
 
 const BACKGROUNDS = [
   { file: "collaboration.jpg", label: "Collaboration" },
@@ -735,6 +736,46 @@ export default function LandingPageBuilder({
                       );
                     })}
                   </Grid>
+
+                  {/* Unsplash search */}
+                  <Divider sx={{ my: 2 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Or search Unsplash
+                    </Typography>
+                  </Divider>
+
+                  <UnsplashImagePicker
+                    onSelect={(photo) => {
+                      // Set the background image URL and store attribution metadata
+                      setFormData((prev) => ({
+                        ...prev,
+                        customContent: {
+                          ...prev.customContent,
+                          hero: {
+                            ...prev.customContent.hero,
+                            backgroundImage: photo.url,
+                            backgroundImageAttribution: {
+                              photographerName: photo.photographerName,
+                              photographerUrl: photo.photographerUrl,
+                              unsplashPhotoUrl: photo.unsplashPhotoUrl,
+                            },
+                          },
+                        },
+                      }));
+
+                      // Fire download tracking (TOS compliance, fire-and-forget)
+                      fetch("/api/admin/unsplash/track-download", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          downloadLocation: photo.downloadLocation,
+                        }),
+                      }).catch(() => {
+                        // Silent failure -- tracking is best-effort
+                      });
+                    }}
+                    selectedUrl={formData.customContent.hero.backgroundImage}
+                  />
 
                   <TextField
                     fullWidth
