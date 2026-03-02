@@ -47,6 +47,7 @@ import {
   FormActions,
 } from "@/components/shared-ui/FormElements";
 import AtlasProvisioningToggle from '@/components/admin/AtlasProvisioningToggle';
+import { RUBRIC_TEMPLATES, type RubricTemplate } from "@/lib/rubric-templates";
 
 
 export default function EditEventPage({
@@ -599,12 +600,94 @@ export default function EditEventPage({
           <FormSectionHeader
             icon={<GavelIcon />}
             title="Judging Rubric"
-            subtitle="Define custom scoring criteria for judges"
+            subtitle="Choose a template or define custom scoring criteria for judges"
           />
+
+          {/* Template Selector */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1.5, color: "text.secondary" }}>
+              Quick Start — Apply a Template
+            </Typography>
+            <Grid container spacing={1.5}>
+              {RUBRIC_TEMPLATES.map((template) => {
+                const isActive =
+                  judgingRubric.length === template.criteria.length &&
+                  template.criteria.every((tc, i) =>
+                    judgingRubric[i]?.name === tc.name
+                  );
+                return (
+                  <Grid key={template.id} size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      onClick={() => {
+                        setJudgingRubric(
+                          template.criteria.map((c) => ({
+                            name: c.name,
+                            description: c.description,
+                            weight: c.weight,
+                            maxScore: c.maxScore,
+                          }))
+                        );
+                      }}
+                      sx={{
+                        p: 2,
+                        border: 2,
+                        borderColor: isActive ? "#8B5CF6" : "divider",
+                        borderRadius: 1.5,
+                        cursor: "pointer",
+                        bgcolor: isActive ? "rgba(139,92,246,0.06)" : "background.paper",
+                        transition: "all 0.15s",
+                        "&:hover": {
+                          borderColor: "#8B5CF6",
+                          bgcolor: "rgba(139,92,246,0.04)",
+                        },
+                      }}
+                    >
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        {template.name}
+                        {isActive && (
+                          <Chip
+                            label="Active"
+                            size="small"
+                            sx={{
+                              ml: 1,
+                              height: 20,
+                              fontSize: "0.7rem",
+                              bgcolor: "#8B5CF6",
+                              color: "#fff",
+                            }}
+                          />
+                        )}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                        {template.description}
+                      </Typography>
+                      <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {template.criteria.map((c) => (
+                          <Chip
+                            key={c.name}
+                            label={`${c.name.replace(/_/g, " ")}${c.weight > 1 ? ` (${c.weight}x)` : ""}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontSize: "0.7rem", height: 22, textTransform: "capitalize" }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Box>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <Typography variant="subtitle2" sx={{ mb: 1.5, color: "text.secondary" }}>
+            {judgingRubric.length > 0 ? "Criteria (edit or customize below)" : "Custom Criteria"}
+          </Typography>
 
           {judgingRubric.length === 0 && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              No custom rubric defined. Judges will use the default criteria (Innovation, Technical, Impact, Presentation — each scored 1-10).
+              No custom rubric defined. Select a template above or add criteria manually. Without a rubric, judges will use the default criteria (Innovation, Technical, Impact, Presentation — each scored 1-10).
             </Alert>
           )}
 
@@ -695,18 +778,30 @@ export default function EditEventPage({
             </Box>
           ))}
 
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() =>
-              setJudgingRubric((prev) => [
-                ...prev,
-                { name: "", description: "", weight: 1, maxScore: 10 },
-              ])
-            }
-          >
-            Add Criterion
-          </Button>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() =>
+                setJudgingRubric((prev) => [
+                  ...prev,
+                  { name: "", description: "", weight: 1, maxScore: 10 },
+                ])
+              }
+            >
+              Add Criterion
+            </Button>
+            {judgingRubric.length > 0 && (
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => setJudgingRubric([])}
+              >
+                Clear All
+              </Button>
+            )}
+          </Box>
         </FormCard>
 
         <FormCard

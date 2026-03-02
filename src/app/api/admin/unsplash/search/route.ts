@@ -3,12 +3,11 @@ import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { apiLogger } from "@/lib/logger";
+import { getUnsplashAccessKey } from "@/lib/unsplash";
 import type {
   UnsplashSearchResponse,
   UnsplashSearchResult,
 } from "@/types/unsplash";
-
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 // Simple in-memory rate limiter
 const WINDOW_MS = 3600000; // 1 hour
@@ -53,7 +52,8 @@ export async function GET(request: NextRequest) {
       return errorResponse("Forbidden", 403);
     }
 
-    if (!UNSPLASH_ACCESS_KEY) {
+    const unsplashKey = await getUnsplashAccessKey();
+    if (!unsplashKey) {
       return errorResponse("Unsplash API not configured", 503);
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=12&orientation=landscape`,
       {
         headers: {
-          Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+          Authorization: `Client-ID ${unsplashKey}`,
         },
       }
     );

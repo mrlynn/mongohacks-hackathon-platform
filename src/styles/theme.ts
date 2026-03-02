@@ -62,6 +62,12 @@ export const mongoColors = {
   gray: mongoBrand.gray,
 };
 
+const bodyFontFamily =
+  "'Euclid Circular A', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+const headingFontFamily =
+  "'MongoDB Value Serif', 'Iowan Old Style', 'Palatino', 'Times New Roman', serif";
+
 export const hackathonTheme = createTheme({
   cssVariables: {
     colorSchemeSelector: "data-color-scheme",
@@ -163,76 +169,87 @@ export const hackathonTheme = createTheme({
     },
   },
   typography: {
-    // System font stack with Inter as primary (similar to MongoDB's Euclid Circular A)
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
+    fontFamily: bodyFontFamily,
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 500,
     fontWeightBold: 600,
     h1: {
-      fontWeight: 600,
+      fontFamily: headingFontFamily,
+      fontWeight: 500,
       letterSpacing: "-0.02em",
-      fontSize: "clamp(2rem, 5vw, 3.5rem)",
-      lineHeight: 1.2,
-    },
-    h2: {
-      fontWeight: 600,
-      letterSpacing: "-0.01em",
-      fontSize: "clamp(1.75rem, 4vw, 3rem)",
+      fontSize: "2.25rem",
       lineHeight: 1.25,
     },
-    h3: {
-      fontWeight: 600,
-      fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+    h2: {
+      fontFamily: headingFontFamily,
+      fontWeight: 500,
+      letterSpacing: "-0.01em",
+      fontSize: "1.875rem",
       lineHeight: 1.3,
     },
-    h4: {
-      fontWeight: 600,
-      fontSize: "clamp(1.25rem, 2.5vw, 2rem)",
+    h3: {
+      fontFamily: headingFontFamily,
+      fontWeight: 500,
+      fontSize: "1.5rem",
       lineHeight: 1.35,
     },
-    h5: {
+    h4: {
+      fontFamily: bodyFontFamily,
       fontWeight: 500,
-      fontSize: "clamp(1.125rem, 2vw, 1.5rem)",
+      fontSize: "1.25rem",
       lineHeight: 1.4,
     },
-    h6: {
+    h5: {
+      fontFamily: bodyFontFamily,
       fontWeight: 500,
-      fontSize: "clamp(1rem, 1.5vw, 1.25rem)",
+      fontSize: "1.0625rem",
       lineHeight: 1.45,
     },
+    h6: {
+      fontFamily: bodyFontFamily,
+      fontWeight: 500,
+      fontSize: "0.9375rem",
+      lineHeight: 1.5,
+    },
     body1: {
-      fontSize: "1rem",
+      fontFamily: bodyFontFamily,
+      fontSize: "0.9375rem",
       lineHeight: 1.6,
       fontWeight: 400,
     },
     body2: {
-      fontSize: "0.875rem",
+      fontFamily: bodyFontFamily,
+      fontSize: "0.8125rem",
       lineHeight: 1.6,
       fontWeight: 400,
     },
     subtitle1: {
-      fontSize: "1rem",
+      fontFamily: bodyFontFamily,
+      fontSize: "0.9375rem",
       lineHeight: 1.5,
       fontWeight: 500,
     },
     subtitle2: {
-      fontSize: "0.875rem",
+      fontFamily: bodyFontFamily,
+      fontSize: "0.8125rem",
       lineHeight: 1.5,
       fontWeight: 500,
     },
     button: {
+      fontFamily: bodyFontFamily,
       fontWeight: 500,
       letterSpacing: "0.01em",
       textTransform: "none",
     },
     caption: {
+      fontFamily: bodyFontFamily,
       fontSize: "0.75rem",
       lineHeight: 1.4,
       fontWeight: 400,
     },
     overline: {
+      fontFamily: bodyFontFamily,
       fontSize: "0.75rem",
       lineHeight: 1.4,
       fontWeight: 500,

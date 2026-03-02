@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { apiLogger } from "@/lib/logger";
+import { getUnsplashAccessKey } from "@/lib/unsplash";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +24,8 @@ export async function POST(request: NextRequest) {
       return errorResponse("Forbidden", 403);
     }
 
-    if (!process.env.UNSPLASH_ACCESS_KEY) {
+    const unsplashKey = await getUnsplashAccessKey();
+    if (!unsplashKey) {
       return errorResponse("Unsplash API not configured", 503);
     }
 
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     await fetch(downloadLocation, {
       headers: {
-        Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}`,
+        Authorization: `Client-ID ${unsplashKey}`,
       },
     });
 

@@ -55,8 +55,8 @@ export default function UnsplashImagePicker({
         return;
       }
       const data = await res.json();
-      setResults(data.data.photos);
-      setTotal(data.data.total);
+      setResults(data.photos);
+      setTotal(data.total);
     } catch {
       setError("Failed to search photos. Please try again.");
     } finally {

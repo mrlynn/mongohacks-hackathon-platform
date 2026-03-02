@@ -8,6 +8,7 @@ import {
   Settings as SettingsIcon,
   Assignment as AssignmentIcon,
   RateReview as RateReviewIcon,
+  PhotoLibrary as PhotoLibraryIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
@@ -143,6 +144,40 @@ export default function AdminSettingsPage() {
         </Typography>
         <Divider sx={{ mt: 0.5, mb: 2.5 }} />
         <Grid container spacing={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Card elevation={2} sx={{ height: "100%" }}>
+              <CardActionArea
+                onClick={() => router.push("/admin/settings/unsplash")}
+                sx={{ height: "100%", p: 0 }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        bgcolor: "info.main",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <PhotoLibraryIcon sx={{ color: "#fff", fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Unsplash API
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Configure Unsplash API credentials for the image search feature.
+                    Database overrides take priority over environment variables.
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card elevation={2} sx={{ height: "100%" }}>
               <CardContent sx={{ p: 3 }}>
