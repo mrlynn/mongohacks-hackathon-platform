@@ -27,6 +27,7 @@ interface User {
 
 const roleColors: Record<string, "primary" | "secondary" | "success" | "info" | "warning" | "error"> = {
   super_admin: "warning",
+  partner: "success",
   admin: "error",
   organizer: "primary",
   marketer: "secondary",
@@ -92,6 +93,9 @@ export default function UsersTableClient({ users: initialUsers }: { users: User[
                     >
                       <MenuItem value="participant">
                         <Chip label="Participant" size="small" color="success" />
+                      </MenuItem>
+                      <MenuItem value="partner">
+                        <Chip label="Partner" size="small" color="success" />
                       </MenuItem>
                       <MenuItem value="mentor">
                         <Chip label="Mentor" size="small" color="info" />

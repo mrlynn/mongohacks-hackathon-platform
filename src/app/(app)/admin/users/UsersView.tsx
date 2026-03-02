@@ -72,6 +72,7 @@ const roleColors: Record<
   "primary" | "secondary" | "success" | "info" | "warning" | "error"
 > = {
   super_admin: "warning",
+  partner: "success",
   admin: "error",
   organizer: "primary",
   marketer: "secondary",
@@ -279,6 +280,10 @@ function AddUserDialog({
               <MenuItem value="participant">
                 <Chip label="Participant" size="small" color="success" sx={{ mr: 1 }} />
                 Participant
+              </MenuItem>
+              <MenuItem value="partner">
+                <Chip label="Partner" size="small" color="success" sx={{ mr: 1 }} />
+                Partner
               </MenuItem>
               <MenuItem value="mentor">
                 <Chip label="Mentor" size="small" color="info" sx={{ mr: 1 }} />
@@ -498,6 +503,10 @@ function EditUserDialog({
               <MenuItem value="participant">
                 <Chip label="Participant" size="small" color="success" sx={{ mr: 1 }} />
                 Participant
+              </MenuItem>
+              <MenuItem value="partner">
+                <Chip label="Partner" size="small" color="success" sx={{ mr: 1 }} />
+                Partner
               </MenuItem>
               <MenuItem value="mentor">
                 <Chip label="Mentor" size="small" color="info" sx={{ mr: 1 }} />
@@ -788,6 +797,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
           label="Role"
           options={[
             { value: "participant", label: "Participant" },
+            { value: "partner", label: "Partner" },
             { value: "mentor", label: "Mentor" },
             { value: "judge", label: "Judge" },
             { value: "organizer", label: "Organizer" },
@@ -867,6 +877,9 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                       >
                         <MenuItem value="participant">
                           <Chip label="Participant" size="small" color="success" />
+                        </MenuItem>
+                        <MenuItem value="partner">
+                          <Chip label="Partner" size="small" color="success" />
                         </MenuItem>
                         <MenuItem value="mentor">
                           <Chip label="Mentor" size="small" color="info" />
@@ -1046,6 +1059,7 @@ export default function UsersView({ users: initialUsers }: { users: User[] }) {
                       size="small"
                     >
                       <MenuItem value="participant">Participant</MenuItem>
+                      <MenuItem value="partner">Partner</MenuItem>
                       <MenuItem value="mentor">Mentor</MenuItem>
                       <MenuItem value="judge">Judge</MenuItem>
                       <MenuItem value="organizer">Organizer</MenuItem>

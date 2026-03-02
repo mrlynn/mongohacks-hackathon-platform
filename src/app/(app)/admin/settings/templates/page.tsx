@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -20,6 +20,9 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
+  Collapse,
+  Tooltip,
+  Link as MuiLink,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -28,8 +31,17 @@ import {
   Add as AddIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
+  Visibility as PreviewIcon,
+  Language as LandingPageIcon,
+  ExpandMore as ExpandIcon,
+  ExpandLess as CollapseIcon,
+  OpenInNew as OpenInNewIcon,
+  Close as CloseIcon,
+  Circle as CircleIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import DynamicTemplate from "@/components/landing-pages/DynamicTemplate";
+import { ITemplateConfig } from "@/lib/db/models/TemplateConfig";
 
 interface TemplateConfig {
   _id: string;
@@ -43,9 +55,64 @@ interface TemplateConfig {
   hero: { style: string };
 }
 
+interface TemplateEvent {
+  _id: string;
+  name: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  landingPage?: {
+    slug: string;
+    published: boolean;
+  };
+}
+
+// Sample event data for template preview
+const sampleEvent = {
+  _id: "preview",
+  name: "MongoDB Hackathon 2026",
+  description: "Build the next generation of database-powered applications. Join developers from around the world for an unforgettable 48-hour coding experience.",
+  startDate: "2026-06-15T09:00:00Z",
+  endDate: "2026-06-17T18:00:00Z",
+  location: "San Francisco, CA",
+  landingPage: {
+    customContent: {
+      hero: {
+        headline: "MongoDB Hackathon 2026",
+        subheadline: "Build the future of data-driven applications",
+        ctaText: "Register Now",
+      },
+      about: "Join us for an incredible 48-hour hackathon where developers, designers, and innovators come together to build the next generation of data-powered applications. Whether you're a seasoned pro or just starting out, this event is for you!",
+      prizes: [
+        { title: "1st Place", description: "Grand Prize Winner", value: "$5,000" },
+        { title: "2nd Place", description: "Runner Up", value: "$2,500" },
+        { title: "3rd Place", description: "Third Place", value: "$1,000" },
+      ],
+      schedule: [
+        { time: "9:00 AM", title: "Opening Ceremony", description: "Welcome and team formation" },
+        { time: "10:00 AM", title: "Hacking Begins", description: "Start building your projects" },
+        { time: "12:00 PM", title: "Lunch Break", description: "Refuel and network" },
+        { time: "6:00 PM", title: "Submissions Due", description: "Final project submissions" },
+        { time: "7:00 PM", title: "Awards Ceremony", description: "Winner announcements" },
+      ],
+      sponsors: [
+        { name: "MongoDB", logo: "/mongodb-logo.svg", tier: "Gold" },
+        { name: "Vercel", logo: "/vercel-logo.svg", tier: "Silver" },
+        { name: "GitHub", logo: "/github-logo.svg", tier: "Silver" },
+      ],
+      faq: [
+        { question: "Who can participate?", answer: "Anyone with a passion for coding! All skill levels are welcome." },
+        { question: "Do I need a team?", answer: "You can join solo or form teams of up to 5. We'll help match solo participants with teams." },
+        { question: "What should I bring?", answer: "Your laptop, charger, and creativity! Food and drinks will be provided." },
+      ],
+    },
+  },
+};
+
 export default function TemplateListPage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<TemplateConfig[]>([]);
+  const [fullTemplates, setFullTemplates] = useState<Record<string, ITemplateConfig>>({});
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
     open: false,
@@ -59,6 +126,10 @@ export default function TemplateListPage() {
   const [createDialog, setCreateDialog] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newTemplateSlug, setNewTemplateSlug] = useState("");
+  const [previewTemplate, setPreviewTemplate] = useState<TemplateConfig | null>(null);
+  const [templateEvents, setTemplateEvents] = useState<Record<string, TemplateEvent[]>>({});
+  const [expandedEvents, setExpandedEvents] = useState<Record<string, boolean>>({});
+  const [loadingEvents, setLoadingEvents] = useState<Record<string, boolean>>({});
 
   const fetchTemplates = async () => {
     try {
@@ -73,6 +144,50 @@ export default function TemplateListPage() {
   };
 
   useEffect(() => { fetchTemplates(); }, []);
+
+  const fetchFullTemplate = useCallback(async (templateId: string) => {
+    if (fullTemplates[templateId]) return fullTemplates[templateId];
+    try {
+      const res = await fetch(`/api/admin/templates/${templateId}`);
+      const data = await res.json();
+      if (data.success) {
+        setFullTemplates((prev) => ({ ...prev, [templateId]: data.template }));
+        return data.template;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }, [fullTemplates]);
+
+  const fetchEventsForTemplate = useCallback(async (templateId: string) => {
+    if (templateEvents[templateId] !== undefined) return;
+    setLoadingEvents((prev) => ({ ...prev, [templateId]: true }));
+    try {
+      const res = await fetch(`/api/admin/templates/${templateId}/events`);
+      const data = await res.json();
+      if (data.success) {
+        setTemplateEvents((prev) => ({ ...prev, [templateId]: data.events }));
+      }
+    } catch {
+      setTemplateEvents((prev) => ({ ...prev, [templateId]: [] }));
+    } finally {
+      setLoadingEvents((prev) => ({ ...prev, [templateId]: false }));
+    }
+  }, [templateEvents]);
+
+  const handlePreview = async (template: TemplateConfig) => {
+    setPreviewTemplate(template);
+    await fetchFullTemplate(template._id);
+  };
+
+  const handleToggleEvents = async (template: TemplateConfig) => {
+    const isExpanded = expandedEvents[template._id];
+    setExpandedEvents((prev) => ({ ...prev, [template._id]: !isExpanded }));
+    if (!isExpanded) {
+      await fetchEventsForTemplate(template._id);
+    }
+  };
 
   const handleClone = async (template: TemplateConfig) => {
     try {
@@ -126,7 +241,6 @@ export default function TemplateListPage() {
   const handleCreate = async () => {
     if (!newTemplateName || !newTemplateSlug) return;
     try {
-      // Clone the default template as base, then create
       const defaultTemplate = templates.find((t) => t.isDefault) || templates[0];
       if (defaultTemplate) {
         const res = await fetch(`/api/admin/templates/${defaultTemplate._id}/clone`, {
@@ -194,6 +308,11 @@ export default function TemplateListPage() {
               onClone={() => handleClone(template)}
               onDelete={null}
               onSetDefault={() => handleSetDefault(template)}
+              onPreview={() => handlePreview(template)}
+              onToggleEvents={() => handleToggleEvents(template)}
+              eventsExpanded={expandedEvents[template._id] || false}
+              events={templateEvents[template._id]}
+              loadingEvents={loadingEvents[template._id] || false}
             />
           </Grid>
         ))}
@@ -214,12 +333,58 @@ export default function TemplateListPage() {
                   onClone={() => handleClone(template)}
                   onDelete={() => setDeleteDialog({ open: true, template })}
                   onSetDefault={() => handleSetDefault(template)}
+                  onPreview={() => handlePreview(template)}
+                  onToggleEvents={() => handleToggleEvents(template)}
+                  eventsExpanded={expandedEvents[template._id] || false}
+                  events={templateEvents[template._id]}
+                  loadingEvents={loadingEvents[template._id] || false}
                 />
               </Grid>
             ))}
           </Grid>
         </>
       )}
+
+      {/* Template Preview Dialog */}
+      <Dialog
+        open={previewTemplate !== null}
+        onClose={() => setPreviewTemplate(null)}
+        maxWidth={false}
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: "95vw",
+            height: "90vh",
+            m: 2,
+          },
+        }}
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1 }}>
+          <Box>
+            <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+              Preview: {previewTemplate?.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }} component="span">
+              (Sample data)
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setPreviewTemplate(null)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, overflow: "auto" }}>
+          {previewTemplate && fullTemplates[previewTemplate._id] ? (
+            <DynamicTemplate
+              config={fullTemplates[previewTemplate._id]}
+              event={sampleEvent}
+            />
+          ) : (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CircularProgress />
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Create Dialog */}
       <Dialog open={createDialog} onClose={() => setCreateDialog(false)} maxWidth="sm" fullWidth>
@@ -291,13 +456,25 @@ function TemplateCard({
   onClone,
   onDelete,
   onSetDefault,
+  onPreview,
+  onToggleEvents,
+  eventsExpanded,
+  events,
+  loadingEvents,
 }: {
   template: TemplateConfig;
   onEdit: () => void;
   onClone: () => void;
   onDelete: (() => void) | null;
   onSetDefault: () => void;
+  onPreview: () => void;
+  onToggleEvents: () => void;
+  eventsExpanded: boolean;
+  events?: TemplateEvent[];
+  loadingEvents: boolean;
 }) {
+  const eventCount = events?.length;
+
   return (
     <Card
       elevation={2}
@@ -315,7 +492,10 @@ function TemplateCard({
           height: 64,
           background: `linear-gradient(135deg, ${template.colors.heroBg} 0%, ${template.colors.heroBgEnd} 100%)`,
           position: "relative",
+          cursor: "pointer",
         }}
+        onClick={onPreview}
+        title="Click to preview template"
       >
         <Stack direction="row" spacing={0.5} sx={{ position: "absolute", bottom: 8, left: 12 }}>
           {[template.colors.primary, template.colors.secondary, template.colors.background].map((color, i) => (
@@ -331,6 +511,19 @@ function TemplateCard({
             />
           ))}
         </Stack>
+        <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+          <Chip
+            icon={<PreviewIcon sx={{ fontSize: 14 }} />}
+            label="Preview"
+            size="small"
+            sx={{
+              bgcolor: "rgba(255,255,255,0.9)",
+              fontSize: "0.7rem",
+              height: 24,
+              "& .MuiChip-icon": { ml: 0.5 },
+            }}
+          />
+        </Box>
       </Box>
 
       <CardContent sx={{ flexGrow: 1, pb: 1 }}>
@@ -348,7 +541,7 @@ function TemplateCard({
           </IconButton>
         </Box>
 
-        <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
+        <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: "wrap", gap: 0.5 }}>
           {template.isBuiltIn && <Chip label="Built-in" size="small" color="info" variant="outlined" />}
           {template.isDefault && <Chip label="Default" size="small" color="warning" />}
           <Chip label={template.cards.style} size="small" variant="outlined" />
@@ -360,9 +553,12 @@ function TemplateCard({
         </Typography>
       </CardContent>
 
-      <CardActions sx={{ px: 2, pb: 2 }}>
+      <CardActions sx={{ px: 2, pb: 1, flexWrap: "wrap" }}>
         <Button size="small" startIcon={<EditIcon />} onClick={onEdit}>
           Edit
+        </Button>
+        <Button size="small" startIcon={<PreviewIcon />} onClick={onPreview}>
+          Preview
         </Button>
         <Button size="small" startIcon={<CloneIcon />} onClick={onClone}>
           Clone
@@ -373,6 +569,109 @@ function TemplateCard({
           </Button>
         )}
       </CardActions>
+
+      {/* Landing Pages Toggle */}
+      <Box sx={{ px: 2, pb: 2 }}>
+        <Button
+          size="small"
+          fullWidth
+          variant="outlined"
+          startIcon={<LandingPageIcon />}
+          endIcon={eventsExpanded ? <CollapseIcon /> : <ExpandIcon />}
+          onClick={onToggleEvents}
+          sx={{
+            justifyContent: "space-between",
+            textTransform: "none",
+            fontSize: "0.8rem",
+            borderColor: "divider",
+            color: "text.secondary",
+          }}
+        >
+          Landing Pages {eventCount !== undefined ? `(${eventCount})` : ""}
+        </Button>
+
+        <Collapse in={eventsExpanded}>
+          <Box sx={{ mt: 1.5 }}>
+            {loadingEvents ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
+                <CircularProgress size={20} />
+              </Box>
+            ) : events && events.length > 0 ? (
+              <Stack spacing={1}>
+                {events.map((event) => (
+                  <Box
+                    key={event._id}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 1,
+                      bgcolor: "action.hover",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <Tooltip title={event.landingPage?.published ? "Published" : "Draft"}>
+                      <CircleIcon
+                        sx={{
+                          fontSize: 10,
+                          color: event.landingPage?.published ? "success.main" : "warning.main",
+                          flexShrink: 0,
+                        }}
+                      />
+                    </Tooltip>
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.3 }} noWrap>
+                        {event.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(event.startDate).toLocaleDateString()}
+                        {" \u2022 "}
+                        <Chip
+                          label={event.status}
+                          size="small"
+                          sx={{ height: 16, fontSize: "0.65rem" }}
+                          color={
+                            event.status === "open" ? "success" :
+                            event.status === "in_progress" ? "info" :
+                            event.status === "concluded" ? "default" : "warning"
+                          }
+                        />
+                      </Typography>
+                    </Box>
+                    <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+                      {event.landingPage?.slug && (
+                        <Tooltip title={event.landingPage.published ? "View live page" : "Preview draft"}>
+                          <IconButton
+                            size="small"
+                            component="a"
+                            href={`/${event.landingPage.slug}${event.landingPage.published ? "" : "?preview=true"}`}
+                            target="_blank"
+                          >
+                            <OpenInNewIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="Edit landing page">
+                        <IconButton
+                          size="small"
+                          component="a"
+                          href={`/admin/events/${event._id}/landing-page`}
+                        >
+                          <EditIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 1, fontSize: "0.8rem" }}>
+                No events using this template yet
+              </Typography>
+            )}
+          </Box>
+        </Collapse>
+      </Box>
     </Card>
   );
 }
