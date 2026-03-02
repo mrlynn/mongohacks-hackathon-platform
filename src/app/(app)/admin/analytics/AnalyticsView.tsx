@@ -92,6 +92,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface NameValue {
+  [key: string]: string | number | undefined;
   name: string;
   value: number;
 }
@@ -332,8 +333,7 @@ function SimpleBarChart({
   color = CHART_COLORS[0],
   layout = "horizontal",
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: Array<{ [key: string]: string | number | undefined }>;
   dataKey?: string;
   nameKey?: string;
   color?: string;

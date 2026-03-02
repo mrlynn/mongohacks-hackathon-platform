@@ -100,7 +100,7 @@ export async function PATCH(
 
     // Check if user is a team member
     const isMember = team.members.some(
-      (memberId: any) => memberId.toString() === userId
+      (memberId: { toString(): string }) => memberId.toString() === userId
     );
 
     if (!isMember) {
@@ -203,7 +203,7 @@ export async function POST(
 
     // Check if user is a team member
     const isMember = team.members.some(
-      (memberId: any) => memberId.toString() === userId
+      (memberId: { toString(): string }) => memberId.toString() === userId
     );
 
     if (!isMember) {
@@ -257,7 +257,7 @@ export async function POST(
       }
 
       // Fire-and-forget: notify team members
-      const teamMemberIds = team.members.map((m: any) => m.toString());
+      const teamMemberIds = team.members.map((m: { toString(): string }) => m.toString());
       notifyProjectSubmitted(teamMemberIds, project.name, eventId, projectId);
 
       return NextResponse.json({

@@ -35,8 +35,8 @@ export default async function AtlasClusterManagementPage({ params }: PageProps) 
   const user = session.user!;
   const isTeamLeader = team.leaderId.toString() === user.id;
   const isTeamMember =
-    isTeamLeader || team.members.some((m: any) => m.toString() === user.id);
-  const isAdmin = ['admin', 'super_admin'].includes((user as any).role);
+    isTeamLeader || team.members.some((m: { toString(): string }) => m.toString() === user.id);
+  const isAdmin = ['admin', 'super_admin'].includes(user.role);
 
   if (!isTeamMember && !isAdmin) {
     notFound();

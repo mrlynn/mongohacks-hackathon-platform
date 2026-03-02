@@ -23,8 +23,29 @@ import {
 import { IEvent } from "@/lib/db/models/Event";
 import { getEventCtaHref } from "@/lib/types/template";
 
+interface PopulatedPartner {
+  _id: string;
+  name: string;
+  logo?: string;
+  tier?: string;
+  description?: string;
+  website?: string;
+}
+
+interface PartnerPrize {
+  title: string;
+  description?: string;
+  value?: string;
+  partnerName?: string;
+}
+
+interface LandingPageEvent extends Omit<IEvent, 'partners'> {
+  partners: PopulatedPartner[];
+  partnerPrizes?: PartnerPrize[];
+}
+
 interface BoldTemplateProps {
-  event: IEvent;
+  event: LandingPageEvent;
 }
 
 export default function BoldTemplate({ event }: BoldTemplateProps) {
@@ -34,8 +55,8 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
   const faq = landingPage?.customContent?.faq || [];
-  const partners = (event as any).partners || [];
-  const partnerPrizes = (event as any).partnerPrizes || [];
+  const partners = event.partners || [];
+  const partnerPrizes = event.partnerPrizes || [];
 
   return (
     <Box>
@@ -350,7 +371,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {partners.map((partner: any, idx: number) => (
+              {partners.map((partner: PopulatedPartner, idx: number) => (
                 <Grid key={partner._id || idx} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card
                     elevation={3}
@@ -440,7 +461,7 @@ export default function BoldTemplate({ event }: BoldTemplateProps) {
                   Partner Prizes
                 </Typography>
                 <Grid container spacing={4}>
-                  {partnerPrizes.map((prize: any, idx: number) => (
+                  {partnerPrizes.map((prize: PartnerPrize, idx: number) => (
                     <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
                       <Card
                         elevation={4}

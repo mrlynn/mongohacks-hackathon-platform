@@ -15,18 +15,18 @@ export async function GET(request: NextRequest) {
 
   try {
     await connectToDatabase();
-    const event = await EventModel.findOne({ "landingPage.slug": slug }).lean();
+    const event = await EventModel.findOne({ "landingPage.slug": slug }).lean() as import("@/lib/db/models/Event").IEvent | null;
 
     const title =
-      (event as any)?.landingPage?.customContent?.hero?.headline ||
-      (event as any)?.name ||
+      event?.landingPage?.customContent?.hero?.headline ||
+      event?.name ||
       "Hackathon Event";
     const subtitle =
-      (event as any)?.landingPage?.customContent?.hero?.subheadline ||
-      (event as any)?.description ||
+      event?.landingPage?.customContent?.hero?.subheadline ||
+      event?.description ||
       "";
-    const startDate = (event as any)?.startDate
-      ? new Date((event as any).startDate).toLocaleDateString("en-US", {
+    const startDate = event?.startDate
+      ? new Date(event.startDate).toLocaleDateString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric",

@@ -46,7 +46,7 @@ async function getResults(eventId: string, isAdmin: boolean) {
       return {
         success: true,
         results: [],
-        rubric: rubric.map((c: any) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
+        rubric: rubric.map((c: { name: string; weight: number; maxScore: number }) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
         event: {
           _id: event._id.toString(),
           name: event.name,
@@ -70,7 +70,7 @@ async function getResults(eventId: string, isAdmin: boolean) {
 
     // Max possible weighted score
     const maxPossible = rubric.reduce(
-      (sum: number, c: any) => sum + c.maxScore * c.weight,
+      (sum: number, c: { maxScore: number; weight: number }) => sum + c.maxScore * c.weight,
       0
     );
 
@@ -112,14 +112,14 @@ async function getResults(eventId: string, isAdmin: boolean) {
           name: project.name,
           description: project.description,
           repoUrl: project.repoUrl,
-          demoUrl: (project as any).demoUrl,
-          videoUrl: (project as any).videoUrl,
+          demoUrl: (project as unknown as { demoUrl?: string }).demoUrl,
+          videoUrl: (project as unknown as { videoUrl?: string }).videoUrl,
           technologies: project.technologies,
-          aiSummary: (project as any).aiSummary || null,
-          aiFeedback: (project as any).aiFeedback || null,
+          aiSummary: (project as unknown as { aiSummary?: string }).aiSummary || null,
+          aiFeedback: (project as unknown as { aiFeedback?: string }).aiFeedback || null,
         },
         team: project.teamId
-          ? { _id: (project.teamId as any)._id?.toString(), name: (project.teamId as any).name }
+          ? { _id: (project.teamId as unknown as { _id?: { toString(): string }; name: string })._id?.toString(), name: (project.teamId as unknown as { name: string }).name }
           : null,
         averageScores,
         totalScore,
@@ -152,7 +152,7 @@ async function getResults(eventId: string, isAdmin: boolean) {
     return {
       success: true,
       results: JSON.parse(JSON.stringify(results)),
-      rubric: rubric.map((c: any) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
+      rubric: rubric.map((c: { name: string; weight: number; maxScore: number }) => ({ name: c.name, weight: c.weight, maxScore: c.maxScore })),
       event: {
         _id: event._id.toString(),
         name: event.name,

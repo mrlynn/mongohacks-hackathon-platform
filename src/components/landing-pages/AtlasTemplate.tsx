@@ -24,8 +24,29 @@ import { IEvent } from "@/lib/db/models/Event";
 import { getEventCtaHref } from "@/lib/types/template";
 import { mongoColors } from "@/styles/theme";
 
+interface PopulatedPartner {
+  _id: string;
+  name: string;
+  logo?: string;
+  tier?: string;
+  description?: string;
+  website?: string;
+}
+
+interface PartnerPrize {
+  title: string;
+  description?: string;
+  value?: string;
+  partnerName?: string;
+}
+
+interface LandingPageEvent extends Omit<IEvent, 'partners'> {
+  partners: PopulatedPartner[];
+  partnerPrizes?: PartnerPrize[];
+}
+
 interface AtlasTemplateProps {
-  event: IEvent;
+  event: LandingPageEvent;
 }
 
 const glassCard = {
@@ -44,8 +65,8 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
   const faq = landingPage?.customContent?.faq || [];
-  const partners = (event as any).partners || [];
-  const partnerPrizes = (event as any).partnerPrizes || [];
+  const partners = event.partners || [];
+  const partnerPrizes = event.partnerPrizes || [];
 
   return (
     <Box sx={{ bgcolor: mongoColors.slate.main, color: "white" }}>
@@ -405,7 +426,7 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {partners.map((partner: any, idx: number) => {
+              {partners.map((partner: PopulatedPartner, idx: number) => {
                 const tierColor =
                   partner.tier === "platinum" || partner.tier === "gold"
                     ? "#FFB302"
@@ -503,7 +524,7 @@ export default function AtlasTemplate({ event }: AtlasTemplateProps) {
                   Partner Prizes
                 </Typography>
                 <Grid container spacing={4}>
-                  {partnerPrizes.map((prize: any, idx: number) => (
+                  {partnerPrizes.map((prize: PartnerPrize, idx: number) => (
                     <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
                       <Card
                         elevation={0}

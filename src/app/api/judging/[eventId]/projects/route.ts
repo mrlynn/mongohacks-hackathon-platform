@@ -52,6 +52,9 @@ export async function GET(
     );
 
     // Combine projects with score status
+    interface PopulatedTeam { _id: string; name: string; members?: unknown[] }
+    interface PopulatedMember { _id: string; name: string; email: string }
+
     const projectsWithScores = projects.map((project) => {
       const score = scoresMap.get(project._id.toString());
 
@@ -69,16 +72,19 @@ export async function GET(
         status: project.status,
         team: project.teamId
           ? {
-              _id: (project.teamId as any)._id.toString(),
-              name: (project.teamId as any).name,
-              memberCount: (project.teamId as any).members?.length || 0,
+              _id: (project.teamId as unknown as PopulatedTeam)._id.toString(),
+              name: (project.teamId as unknown as PopulatedTeam).name,
+              memberCount: (project.teamId as unknown as PopulatedTeam).members?.length || 0,
             }
           : null,
-        teamMembers: project.teamMembers?.map((m: any) => ({
-          _id: m._id.toString(),
-          name: m.name,
-          email: m.email,
-        })),
+        teamMembers: project.teamMembers?.map((m: unknown) => {
+          const member = m as PopulatedMember;
+          return {
+            _id: member._id.toString(),
+            name: member.name,
+            email: member.email,
+          };
+        }),
         hasScored: !!score,
         myScore: score
           ? {

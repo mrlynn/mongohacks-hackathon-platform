@@ -55,7 +55,7 @@ export async function findMatchingTeams(
   participant: Participant & { skillsEmbedding?: number[] },
   eventId: string,
   limit: number = 6
-): Promise<any[]> {
+): Promise<Array<Record<string, unknown> & { matchScore: number; matchReasons: string[] }>> {
   await connectToDatabase();
 
   // Try vector search first when the participant has an embedding

@@ -20,13 +20,16 @@ export async function GET() {
 
     const participant = await ParticipantModel.findOne({ userId }).lean();
 
+    interface ParticipantProfile { bio?: string; skills?: string[]; experience_level?: string }
+    const profile = participant as unknown as ParticipantProfile | null;
+
     return NextResponse.json({
       success: true,
-      participant: participant
+      participant: profile
         ? {
-            bio: (participant as any).bio || "",
-            skills: (participant as any).skills || [],
-            experience_level: (participant as any).experience_level || "intermediate",
+            bio: profile.bio || "",
+            skills: profile.skills || [],
+            experience_level: profile.experience_level || "intermediate",
           }
         : null,
     });

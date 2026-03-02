@@ -8,20 +8,12 @@ import {
   EmojiEvents as TrophyIcon,
 } from "@mui/icons-material";
 import { mongoColors } from "@/styles/theme";
+import type { HubEvent, EventPhase, ParticipantStatus } from "@/types/hub";
 
 interface HeroSectionProps {
-  event: any;
-  currentPhase: {
-    name: string;
-    progress: number;
-    color: string;
-  };
-  participantStatus: {
-    registered: boolean;
-    hasTeam: boolean;
-    hasProject: boolean;
-    projectSubmitted: boolean;
-  };
+  event: HubEvent;
+  currentPhase: EventPhase;
+  participantStatus: ParticipantStatus;
 }
 
 function formatCountdown(targetDate: string) {

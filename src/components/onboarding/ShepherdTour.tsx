@@ -8,8 +8,7 @@ import { useOnboarding } from "@/contexts/OnboardingContext";
 
 export default function ShepherdTour() {
   const { journeyMap, markTourCompleted } = useOnboarding();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tourRef = useRef<any>(null);
+  const tourRef = useRef<InstanceType<typeof Shepherd.Tour> | null>(null);
 
   useEffect(() => {
     const tour = new Shepherd.Tour({

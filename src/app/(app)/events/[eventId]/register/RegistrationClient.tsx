@@ -43,8 +43,18 @@ interface FormConfig {
   };
 }
 
+interface RegistrationEvent {
+  _id: string;
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  registrationDeadline?: string;
+  status: string;
+}
+
 interface RegistrationClientProps {
-  event: any;
+  event: RegistrationEvent;
   eventId: string;
   registeredCount: number;
   spotsRemaining: number | null;
@@ -191,8 +201,8 @@ export default function RegistrationClient({
       } else {
         window.location.href = `/events/${eventId}/hub`;
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to register. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to register. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

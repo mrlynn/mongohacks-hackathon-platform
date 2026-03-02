@@ -33,7 +33,20 @@ interface Event {
   registered: boolean;
 }
 
-export default function Step1EventTeam({ data, onUpdate, onNext }: any) {
+interface Step1Data {
+  eventId?: string;
+  teamSize?: number;
+  skillLevels?: string[];
+  teamComposition?: string[];
+}
+
+interface Step1Props {
+  data: Step1Data;
+  onUpdate: (data: Step1Data) => void;
+  onNext: () => void;
+}
+
+export default function Step1EventTeam({ data, onUpdate, onNext }: Step1Props) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);

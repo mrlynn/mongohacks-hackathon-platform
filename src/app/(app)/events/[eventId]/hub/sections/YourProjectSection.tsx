@@ -31,14 +31,15 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
+import type { HubProject, HubTeam, ChipColor } from "@/types/hub";
 
 interface YourProjectSectionProps {
-  project: any;
-  team: any;
+  project: HubProject;
+  team: HubTeam;
   eventId: string;
 }
 
-function getStatusColor(status: string) {
+function getStatusColor(status: string): ChipColor {
   switch (status) {
     case "submitted":
       return "success";
@@ -166,8 +167,8 @@ export default function YourProjectSection({
 
       showSuccess(data.message || 'Project submitted successfully! 🎉');
       router.refresh();
-    } catch (err: any) {
-      showError(err.message || 'Failed to submit project. Please try again.');
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to submit project. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,8 +191,8 @@ export default function YourProjectSection({
 
       showSuccess(data.message || 'Project unsubmitted. You can now make changes.');
       router.refresh();
-    } catch (err: any) {
-      showError(err.message || 'Failed to unsubmit project. Please try again.');
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to unsubmit project. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -213,7 +214,7 @@ export default function YourProjectSection({
           </Box>
           <Chip
             label={statusLabel}
-            color={statusColor as any}
+            color={statusColor}
             sx={{ fontWeight: 600 }}
           />
         </Box>

@@ -9,7 +9,7 @@ async function verifyTeamMembership(userId: string, teamId: string) {
   const team = await TeamModel.findById(teamId).lean();
   if (!team) return null;
   const isMember = team.members?.some(
-    (m: any) => m.toString() === userId
+    (m: { toString(): string }) => m.toString() === userId
   );
   return isMember ? team : null;
 }
@@ -125,8 +125,8 @@ export async function POST(
     const { notifyTeamNotePosted } = await import(
       "@/lib/notifications/notification-service"
     );
-    const otherMembers = (team.members as any[])
-      .map((m: any) => m.toString())
+    const otherMembers = (team.members as Array<{ toString(): string }>)
+      .map((m: { toString(): string }) => m.toString())
       .filter((id: string) => id !== userId);
     const authorName = session.user.name || "A team member";
     notifyTeamNotePosted(otherMembers, authorName, team.name as string, eventId);

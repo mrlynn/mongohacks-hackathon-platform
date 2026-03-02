@@ -23,7 +23,36 @@ import {
 } from '@mui/material';
 import BuilderPromptPanel from '@/components/project-suggestions/BuilderPromptPanel';
 
-export default function ResultsDisplay({ ideas }: { ideas: any[] }) {
+interface TimelinePhase {
+  phase: string;
+  hours: string;
+  tasks?: string[];
+}
+
+interface ProjectIdea {
+  name: string;
+  tagline: string;
+  problemStatement: string;
+  solution: string;
+  techStack: {
+    frontend?: string[];
+    backend?: string[];
+    apis?: string[];
+  };
+  timeline?: TimelinePhase[];
+  difficulty?: number;
+  prizeCategories?: string[];
+  implementationGuide?: string;
+}
+
+interface IdeaEntry {
+  _id: string;
+  idea: ProjectIdea;
+  saved?: boolean;
+  eventId?: { toString(): string };
+}
+
+export default function ResultsDisplay({ ideas }: { ideas: IdeaEntry[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [saved, setSaved] = useState<{ [key: string]: boolean }>({});
@@ -231,7 +260,7 @@ export default function ResultsDisplay({ ideas }: { ideas: any[] }) {
           <Typography variant="h6" gutterBottom>
             ⏱ Timeline ({currentIdeaContent?.timeline?.[currentIdeaContent.timeline.length - 1]?.hours || '24'} hours)
           </Typography>
-          {currentIdeaContent?.timeline?.map((phase: any, index: number) => (
+          {currentIdeaContent?.timeline?.map((phase: TimelinePhase, index: number) => (
             <Box key={index} sx={{ mb: 1 }}>
               <Typography variant="subtitle2">
                 {phase.phase} (Hours {phase.hours})

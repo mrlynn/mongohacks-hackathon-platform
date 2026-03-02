@@ -306,8 +306,8 @@ export default function PartnersView() {
 
     // Sort
     result.sort((a, b) => {
-      let aVal: any;
-      let bVal: any;
+      let aVal: string | number | Date;
+      let bVal: string | number | Date;
 
       switch (filters.sortField) {
         case "name":
@@ -397,7 +397,7 @@ export default function PartnersView() {
           { value: "industry", label: "Industry" },
         ]}
         activeFilters={activeFilters}
-        onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
+        onRemoveFilter={(key) => updateFilter(key as keyof typeof DEFAULT_FILTERS, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
         onClearAllFilters={clearFilters}
         rightActions={
           <Button

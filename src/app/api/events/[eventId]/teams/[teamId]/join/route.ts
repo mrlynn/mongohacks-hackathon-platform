@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Types } from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
@@ -66,7 +67,7 @@ export async function POST(
     }
 
     // Add user to team and auto-close recruitment if full
-    team.members.push(userId as any);
+    team.members.push(userId as unknown as Types.ObjectId);
     if (team.members.length >= team.maxMembers) {
       team.lookingForMembers = false;
     }

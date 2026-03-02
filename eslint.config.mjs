@@ -5,6 +5,12 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // Prevent new `any` types from being introduced (warn now, error later)
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

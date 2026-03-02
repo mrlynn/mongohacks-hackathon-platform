@@ -202,7 +202,7 @@ export default function EditEventPage({
         }
         if (event.judgingRubric && event.judgingRubric.length > 0) {
           setJudgingRubric(
-            event.judgingRubric.map((c: any) => ({
+            event.judgingRubric.map((c: { name?: string; description?: string; weight?: number; maxScore?: number }) => ({
               name: c.name || "",
               description: c.description || "",
               weight: c.weight ?? 1,

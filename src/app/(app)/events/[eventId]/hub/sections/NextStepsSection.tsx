@@ -13,12 +13,13 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ChipColor } from "@/types/hub";
 
 interface NextStepsSectionProps {
   nextMilestone: {
     title: string;
     description: string;
-    deadline: string | null;
+    deadline: string | Date | null;
     action: string;
     priority: string;
     icon: string;
@@ -45,7 +46,9 @@ function getIcon(iconName: string) {
   return icons[iconName] || CheckIcon;
 }
 
-function getPriorityColor(priority: string) {
+type ActionColor = "error" | "warning" | "success" | "info" | "primary" | "secondary";
+
+function getPriorityColor(priority: string): ActionColor {
   switch (priority) {
     case "high":
       return "error";
@@ -100,7 +103,7 @@ function getActionLabel(action: string) {
   }
 }
 
-function formatDeadline(deadline: string | null) {
+function formatDeadline(deadline: string | Date | null) {
   if (!deadline) return null;
 
   const date = new Date(deadline);
@@ -218,7 +221,7 @@ export default function NextStepsSection({
 
             <Button
               variant="contained"
-              color={priorityColor as any}
+              color={priorityColor}
               endIcon={<ArrowIcon />}
               onClick={handleAction}
               size="large"

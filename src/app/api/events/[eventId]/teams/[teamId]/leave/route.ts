@@ -47,7 +47,7 @@ export async function POST(
 
     // Remove user from team
     team.members = team.members.filter(
-      (memberId: any) => memberId.toString() !== userId
+      (memberId: { toString(): string }) => memberId.toString() !== userId
     );
 
     // Clear participant's teamId

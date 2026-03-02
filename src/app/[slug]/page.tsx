@@ -14,6 +14,17 @@ import TechTemplate from "@/components/landing-pages/TechTemplate";
 import LeafyTemplate from "@/components/landing-pages/LeafyTemplate";
 import AtlasTemplate from "@/components/landing-pages/AtlasTemplate";
 import CommunityTemplate from "@/components/landing-pages/CommunityTemplate";
+import type { TemplateRenderProps, LandingPagePartnerPrize } from "@/lib/types/template";
+
+/** Serialized landing-page event -- extends the template render shape with
+ *  fields needed for metadata generation and template selection. */
+type SerializedLandingPageEvent = TemplateRenderProps["event"] & {
+  landingPage?: TemplateRenderProps["event"]["landingPage"] & {
+    template?: string;
+    slug?: string;
+    published?: boolean;
+  };
+};
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -46,17 +57,17 @@ const getCachedLandingPage = cache(
       .sort({ displayOrder: 1 })
       .lean();
 
-    const serialized = serializeDoc(event);
+    const serialized = serializeDoc(event) as SerializedLandingPageEvent;
 
     // Map partner prizes into a flat format for the template
-    (serialized as any).partnerPrizes = partnerPrizes.map((p: any) => ({
-      title: p.title,
-      description: p.description,
-      value: p.value,
-      category: p.category,
-      partnerName: p.partnerId?.name || "Partner",
-      partnerLogo: p.partnerId?.logo,
-    }));
+    serialized.partnerPrizes = partnerPrizes.map((p: Record<string, unknown>) => ({
+      title: p.title as string,
+      description: p.description as string,
+      value: p.value as string | undefined,
+      category: p.category as string,
+      partnerName: (p.partnerId as { name?: string })?.name || "Partner",
+      partnerLogo: (p.partnerId as { logo?: string })?.logo,
+    })) as LandingPagePartnerPrize[];
 
     return serialized;
   }
@@ -81,14 +92,14 @@ export async function generateMetadata({
   }
 
   const heroHeadline =
-    (event as any).landingPage?.customContent?.hero?.headline ||
-    (event as any).name;
+    event.landingPage?.customContent?.hero?.headline ||
+    event.name;
   const heroSubheadline =
-    (event as any).landingPage?.customContent?.hero?.subheadline ||
-    (event as any).description ||
+    event.landingPage?.customContent?.hero?.subheadline ||
+    event.description ||
     "";
   const description = heroSubheadline.slice(0, 160);
-  const isPublished = (event as any).landingPage?.published === true;
+  const isPublished = event.landingPage?.published === true;
   const ogImageUrl = `${BASE_URL}/api/og?slug=${encodeURIComponent(slug)}`;
 
   return {
@@ -143,7 +154,11 @@ export default async function LandingPage({
   }
 
   // Render template based on event.landingPage.template
-  const templateSlug = (event as any).landingPage?.template || "modern";
+  const templateSlug = event.landingPage?.template || "modern";
+  // The serialized event matches TemplateRenderProps["event"], but legacy
+  // templates expect IEvent (Mongoose Document). We cast through unknown
+  // because the shapes overlap at runtime (plain object from lean+serialize).
+  const templateEvent = event as unknown as import("@/lib/db/models/Event").IEvent & TemplateRenderProps["event"];
 
   // Try to find a TemplateConfig for dynamic rendering
   await connectToDatabase();
@@ -152,11 +167,11 @@ export default async function LandingPage({
   }).lean();
 
   if (templateConfig) {
-    const serializedConfig = serializeDoc(templateConfig);
+    const serializedConfig = serializeDoc(templateConfig) as unknown as TemplateRenderProps["config"];
     return (
       <DynamicTemplate
-        config={serializedConfig as any}
-        event={event as any}
+        config={serializedConfig}
+        event={event}
       />
     );
   }
@@ -164,18 +179,18 @@ export default async function LandingPage({
   // Fallback to legacy hardcoded templates
   switch (templateSlug) {
     case "modern":
-      return <ModernTemplate event={event as any} />;
+      return <ModernTemplate event={templateEvent} />;
     case "bold":
-      return <BoldTemplate event={event as any} />;
+      return <BoldTemplate event={templateEvent} />;
     case "tech":
-      return <TechTemplate event={event as any} />;
+      return <TechTemplate event={templateEvent} />;
     case "leafy":
-      return <LeafyTemplate event={event as any} />;
+      return <LeafyTemplate event={templateEvent} />;
     case "atlas":
-      return <AtlasTemplate event={event as any} />;
+      return <AtlasTemplate event={templateEvent} />;
     case "community":
-      return <CommunityTemplate event={event as any} />;
+      return <CommunityTemplate event={templateEvent} />;
     default:
-      return <ModernTemplate event={event as any} />;
+      return <ModernTemplate event={templateEvent} />;
   }
 }

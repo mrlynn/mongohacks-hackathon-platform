@@ -153,8 +153,8 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
 
     // Sort
     result.sort((a, b) => {
-      let aVal: any;
-      let bVal: any;
+      let aVal: string | number | Date;
+      let bVal: string | number | Date;
 
       switch (filters.sortField) {
         case "name":
@@ -249,7 +249,7 @@ export default function ProjectsView({ projects }: { projects: Project[] }) {
           { value: "createdAt", label: "Submitted" },
         ]}
         activeFilters={activeFilters}
-        onRemoveFilter={(key) => updateFilter(key as any, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
+        onRemoveFilter={(key) => updateFilter(key as keyof typeof DEFAULT_FILTERS, DEFAULT_FILTERS[key as keyof typeof DEFAULT_FILTERS])}
         onClearAllFilters={clearFilters}
         rightActions={
           <>

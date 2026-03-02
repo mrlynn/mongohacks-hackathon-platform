@@ -152,7 +152,7 @@ export async function POST(
       // so we don't end up with orphaned User records on failure
       const dbSession = await mongoose.startSession();
       try {
-        let newParticipant: any;
+        let newParticipant: { _id: unknown } = { _id: null };
         // Generate email verification token (hoisted for use after transaction)
         const verificationToken = crypto.randomBytes(32).toString("hex");
         await dbSession.withTransaction(async () => {
@@ -284,7 +284,7 @@ export async function POST(
     if (participant) {
       // Check if already registered for this event
       const alreadyRegistered = participant.registeredEvents.some(
-        (reg: any) => reg.eventId.toString() === eventId
+        (reg: { eventId: { toString(): string } }) => reg.eventId.toString() === eventId
       );
 
       if (alreadyRegistered) {
@@ -299,7 +299,7 @@ export async function POST(
 
       // Add event to existing participant
       participant.registeredEvents.push({
-        eventId: eventId as any,
+        eventId: eventId as unknown as typeof participant.registeredEvents[0]['eventId'],
         registrationDate: new Date(),
         status: "registered",
       });

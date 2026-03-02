@@ -76,10 +76,10 @@ export async function PUT(
       message: "Landing page updated successfully",
       event,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     apiLogger.error({ err: error }, "PUT /api/admin/events/[eventId]/landing-page error")
     // MongoDB duplicate key on slug unique index
-    if (error?.code === 11000) {
+    if (error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 11000) {
       return errorResponse("This URL slug is already in use by another event", 409);
     }
     return errorResponse("Failed to update landing page", 500);

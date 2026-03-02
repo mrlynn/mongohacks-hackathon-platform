@@ -64,8 +64,8 @@ export default function BuilderPromptPanel({
 
       const { data } = await response.json();
       setPromptData(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to generate builder prompt");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate builder prompt");
     } finally {
       setIsGenerating(false);
     }
@@ -91,8 +91,8 @@ export default function BuilderPromptPanel({
 
       const { data } = await response.json();
       setPromptData(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to enhance builder prompt");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to enhance builder prompt");
     } finally {
       setIsEnhancing(false);
     }

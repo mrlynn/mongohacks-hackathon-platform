@@ -1,5 +1,6 @@
 "use client";
 import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
+import type { ChipColor } from "@/types/hub";
 
 import { useState, useEffect } from "react";
 import {
@@ -76,7 +77,7 @@ export default function DashboardClient() {
     }
   };
 
-  const getEventStatusColor = (status: string) => {
+  const getEventStatusColor = (status: string): ChipColor => {
     switch (status) {
       case "open":
         return "success";
@@ -147,7 +148,7 @@ export default function DashboardClient() {
                     </Box>
                     <Chip
                       label={event.status.replace("_", " ")}
-                      color={getEventStatusColor(event.status) as any}
+                      color={getEventStatusColor(event.status)}
                       sx={{ height: "fit-content" }}
                     />
                   </Box>

@@ -240,8 +240,8 @@ export default function RegistrationClient({
         // Already logged in — full reload to hub
         window.location.href = `/events/${eventId}/hub`;
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to register. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to register. Please try again.");
       setSuccess(false);
     } finally {
       setIsSubmitting(false);

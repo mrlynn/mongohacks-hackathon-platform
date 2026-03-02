@@ -24,8 +24,29 @@ import { IEvent } from "@/lib/db/models/Event";
 import { getEventCtaHref } from "@/lib/types/template";
 import { mongoColors } from "@/styles/theme";
 
+interface PopulatedPartner {
+  _id: string;
+  name: string;
+  logo?: string;
+  tier?: string;
+  description?: string;
+  website?: string;
+}
+
+interface PartnerPrize {
+  title: string;
+  description?: string;
+  value?: string;
+  partnerName?: string;
+}
+
+interface LandingPageEvent extends Omit<IEvent, 'partners'> {
+  partners: PopulatedPartner[];
+  partnerPrizes?: PartnerPrize[];
+}
+
 interface CommunityTemplateProps {
-  event: IEvent;
+  event: LandingPageEvent;
 }
 
 const accentColors = [
@@ -41,8 +62,8 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
   const prizes = landingPage?.customContent?.prizes || [];
   const schedule = landingPage?.customContent?.schedule || [];
   const faq = landingPage?.customContent?.faq || [];
-  const partners = (event as any).partners || [];
-  const partnerPrizes = (event as any).partnerPrizes || [];
+  const partners = event.partners || [];
+  const partnerPrizes = event.partnerPrizes || [];
 
   return (
     <Box>
@@ -399,7 +420,7 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
               </Typography>
             </Box>
             <Grid container spacing={4} justifyContent="center">
-              {partners.map((partner: any, idx: number) => {
+              {partners.map((partner: PopulatedPartner, idx: number) => {
                 const accent = accentColors[idx % 3];
                 return (
                   <Grid key={partner._id || idx} size={{ xs: 6, sm: 4, md: 3 }}>
@@ -517,7 +538,7 @@ export default function CommunityTemplate({ event }: CommunityTemplateProps) {
                   Partner Prizes
                 </Typography>
                 <Grid container spacing={4} sx={{ mt: 2 }}>
-                  {partnerPrizes.map((prize: any, idx: number) => {
+                  {partnerPrizes.map((prize: PartnerPrize, idx: number) => {
                     const accent = accentColors[idx % 3];
                     return (
                       <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>

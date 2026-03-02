@@ -48,7 +48,7 @@ export async function POST(
 
     // New leader must be a team member
     const isMember = team.members.some(
-      (memberId: any) => memberId.toString() === newLeaderId
+      (memberId: { toString(): string }) => memberId.toString() === newLeaderId
     );
 
     if (!isMember) {

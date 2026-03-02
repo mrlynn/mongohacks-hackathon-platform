@@ -30,7 +30,8 @@ export async function GET(
       .lean();
 
     // Group scores by project
-    const scoresByProject = new Map<string, any[]>();
+    interface PopulatedScore { scores: Record<string, number>; totalScore: number; comments?: string; judgeId: { _id: string; name: string; email: string } | string; projectId: { toString(): string } }
+    const scoresByProject = new Map<string, PopulatedScore[]>();
     scores.forEach((score) => {
       const projectId = score.projectId.toString();
       if (!scoresByProject.has(projectId)) {
@@ -69,14 +70,17 @@ export async function GET(
           demoUrl: project.demoUrl,
           team: project.teamId
             ? {
-                _id: (project.teamId as any)._id.toString(),
-                name: (project.teamId as any).name,
+                _id: (project.teamId as unknown as { _id: { toString(): string }; name: string })._id.toString(),
+                name: (project.teamId as unknown as { _id: { toString(): string }; name: string }).name,
               }
             : null,
-          teamMembers: project.teamMembers?.map((m: any) => ({
-            _id: m._id.toString(),
-            name: m.name,
-          })),
+          teamMembers: project.teamMembers?.map((m: unknown) => {
+            const member = m as { _id: { toString(): string }; name: string };
+            return {
+              _id: member._id.toString(),
+              name: member.name,
+            };
+          }),
           judgeCount: projectScores.length,
           averageScores: {
             innovation: Number(avgInnovation.toFixed(1)),
@@ -86,7 +90,7 @@ export async function GET(
             total: Number(avgTotal.toFixed(1)),
           },
           individualScores: projectScores.map((s) => ({
-            judge: (s.judgeId as any).name,
+            judge: (s.judgeId as unknown as { name: string }).name,
             scores: s.scores,
             totalScore: s.totalScore,
             comments: s.comments,

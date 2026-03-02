@@ -26,18 +26,19 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ChipColor, HubProject, HubTeam, HubEvent } from "@/types/hub";
 
 interface ProjectDetailClientProps {
-  project: any;
-  team: any;
-  event: any;
+  project: HubProject;
+  team: HubTeam | null;
+  event: HubEvent;
   isTeamMember: boolean;
   isTeamLeader: boolean;
   eventId: string;
   projectId: string;
 }
 
-function getStatusColor(status: string) {
+function getStatusColor(status: string): ChipColor {
   switch (status) {
     case "submitted":
       return "success";
@@ -89,8 +90,8 @@ export default function ProjectDetailClient({
 
       setSuccess(data.message || 'Project submitted successfully! 🎉');
       setTimeout(() => router.refresh(), 1500);
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit project. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit project. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -136,8 +137,8 @@ export default function ProjectDetailClient({
 
       setSuccess(data.message || 'Project unsubmitted. You can now make changes.');
       setTimeout(() => router.refresh(), 1500);
-    } catch (err: any) {
-      setError(err.message || 'Failed to unsubmit project. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to unsubmit project. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -169,7 +170,7 @@ export default function ProjectDetailClient({
             </Box>
             <Chip
               label={project.status}
-              color={statusColor as any}
+              color={statusColor}
               sx={{ textTransform: "capitalize" }}
             />
           </Box>

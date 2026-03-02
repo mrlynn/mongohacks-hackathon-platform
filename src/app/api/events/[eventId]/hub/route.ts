@@ -10,10 +10,10 @@ import { apiLogger } from "@/lib/logger";
 
 // Calculate next milestone based on event state and participant progress
 function calculateNextMilestone(
-  event: any,
-  participant: any,
-  team: any,
-  project: any
+  event: { startDate: Date | string; endDate: Date | string; submissionDeadline?: Date | string },
+  participant: { teamId?: unknown },
+  team: unknown,
+  project: { status?: string } | null
 ) {
   const now = new Date();
 
@@ -101,7 +101,7 @@ function calculateNextMilestone(
 }
 
 // Get upcoming schedule items (next 24 hours)
-function getUpcomingSchedule(event: any) {
+function getUpcomingSchedule(event: { schedule?: Array<{ start?: string | Date }> }) {
   if (!event.schedule || event.schedule.length === 0) {
     return [];
   }
@@ -110,7 +110,8 @@ function getUpcomingSchedule(event: any) {
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   return event.schedule
-    .filter((item: any) => {
+    .filter((item: { start?: string | Date }) => {
+      if (!item.start) return false;
       const itemStart = new Date(item.start);
       return itemStart > now && itemStart < tomorrow;
     })
@@ -118,7 +119,7 @@ function getUpcomingSchedule(event: any) {
 }
 
 // Calculate current event phase
-function getCurrentPhase(event: any) {
+function getCurrentPhase(event: { startDate: Date | string; endDate: Date | string; submissionDeadline?: Date | string; registrationDeadline?: Date | string }) {
   const now = new Date();
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
@@ -179,7 +180,7 @@ export async function GET(
 
     await connectToDatabase();
     const { eventId } = await params;
-    const userId = (session.user as { id: string }).id;
+    const userId = session.user.id;
 
     // 1. Get participant
     const participant = await ParticipantModel.findOne({
@@ -227,7 +228,7 @@ export async function GET(
     }
 
     // 5. Get recommended teams (if no team)
-    let recommendedTeams: any[] = [];
+    let recommendedTeams: unknown[] = [];
     if (!team) {
       // Simple recommendation: teams looking for members, not full
       recommendedTeams = await TeamModel.find({

@@ -33,7 +33,7 @@ export default function UnverifiedEmailBanner({
       } else {
         setError(data.error || "Failed to resend verification email");
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("Failed to resend verification email");
     } finally {
       setIsResending(false);

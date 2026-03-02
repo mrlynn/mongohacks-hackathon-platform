@@ -133,7 +133,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [templateName, setTemplateName] = useState(config.name);
 
-  const updateConfig = useCallback((path: string, value: any) => {
+  const updateConfig = useCallback((path: string, value: string | number | boolean) => {
     setConfig((prev) => {
       const updated = JSON.parse(JSON.stringify(prev));
       const keys = path.split(".");
@@ -350,7 +350,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
               mt: 2,
             }}
           >
-            <DynamicTemplate config={config as any} event={sampleEvent} />
+            <DynamicTemplate config={config as unknown as import("@/lib/db/models/TemplateConfig").ITemplateConfig} event={sampleEvent} />
           </Box>
         </Box>
 
@@ -391,7 +391,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
                     <Box
                       component="input"
                       type="color"
-                      value={(config.colors as any)[key]}
+                      value={config.colors[key as keyof typeof config.colors]}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig(`colors.${key}`, e.target.value)}
                       sx={{
                         width: 36,
@@ -410,7 +410,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
                         {label}
                       </Typography>
                       <TextField
-                        value={(config.colors as any)[key]}
+                        value={config.colors[key as keyof typeof config.colors]}
                         onChange={(e) => updateConfig(`colors.${key}`, e.target.value)}
                         size="small"
                         variant="standard"
@@ -642,7 +642,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
                       const newSections = [...config.sections];
                       newSections[selectedSection] = {
                         ...newSections[selectedSection],
-                        style: { ...newSections[selectedSection].style, bgStyle: e.target.value as any },
+                        style: { ...newSections[selectedSection].style, bgStyle: e.target.value as "light" | "dark" | "primary" | "gradient" },
                       };
                       setConfig((prev) => ({ ...prev, sections: newSections }));
                     }}
@@ -663,7 +663,7 @@ export default function TemplateEditor({ initialConfig }: { initialConfig: Templ
                       const newSections = [...config.sections];
                       newSections[selectedSection] = {
                         ...newSections[selectedSection],
-                        style: { ...newSections[selectedSection].style, spacing: e.target.value as any },
+                        style: { ...newSections[selectedSection].style, spacing: e.target.value as "compact" | "default" | "spacious" },
                       };
                       setConfig((prev) => ({ ...prev, sections: newSections }));
                     }}

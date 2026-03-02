@@ -32,11 +32,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import TeamNotes from "@/components/shared-ui/TeamNotes";
 import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
+import type { HubTeam, HubEvent, HubParticipant, HubMember } from "@/types/hub";
 
 interface TeamDetailClientProps {
-  team: any;
-  event: any;
-  participant: any;
+  team: HubTeam;
+  event: HubEvent;
+  participant: HubParticipant | null;
   isLeader: boolean;
   isMember: boolean;
   eventId: string;
@@ -198,7 +199,7 @@ export default function TeamDetailClient({
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {team.members?.map((member: any, index: number) => (
+            {team.members?.map((member: HubMember, index: number) => (
               <Box
                 key={member._id || `member-${index}`}
                 sx={{
@@ -220,7 +221,7 @@ export default function TeamDetailClient({
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {member.name || "Unknown"}
                     </Typography>
-                    {member._id === team.leaderId?._id && (
+                    {member._id === (typeof team.leaderId === 'string' ? team.leaderId : team.leaderId?._id) && (
                       <Chip
                         label="Leader"
                         size="small"

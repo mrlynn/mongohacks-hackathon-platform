@@ -9,9 +9,10 @@ import YourProjectSection from "./sections/YourProjectSection";
 import EventResourcesSection from "./sections/EventResourcesSection";
 import BrowseTeamsSection from "./sections/BrowseTeamsSection";
 import ProjectSuggestionsCTA from "@/components/project-suggestions/ProjectSuggestionsCTA";
+import type { EventHubData } from "@/types/hub";
 
 interface EventHubContentProps {
-  data: any;
+  data: EventHubData;
   eventId: string;
 }
 
@@ -75,7 +76,7 @@ export default function EventHubContent({ data, eventId }: EventHubContentProps)
             )}
 
             {/* Your Project (if created) */}
-            {project && (
+            {project && team && (
               <YourProjectSection
                 project={project}
                 team={team}

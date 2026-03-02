@@ -49,7 +49,7 @@ export async function GET() {
 
       // Registered for an event?
       const participant = await ParticipantModel.findOne({ userId }).lean();
-      if (participant && (participant as any).registeredEvents?.length > 0) {
+      if (participant && (participant as unknown as { registeredEvents?: unknown[] }).registeredEvents?.length) {
         autoDetected.push("participant.browse-events", "participant.register-event");
       }
 
@@ -68,7 +68,8 @@ export async function GET() {
           }).lean();
           if (project) {
             autoDetected.push("participant.create-project");
-            if ((project as any).status === "submitted" || (project as any).status === "judged") {
+            const projectStatus = (project as unknown as { status?: string }).status;
+            if (projectStatus === "submitted" || projectStatus === "judged") {
               autoDetected.push("participant.submit-project");
             }
           }
@@ -119,7 +120,7 @@ export async function PATCH(request: NextRequest) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const updateOps: any = {};
+    const updateOps: Record<string, Record<string, unknown>> = {};
 
     if (body.completeStep) {
       updateOps.$addToSet = {

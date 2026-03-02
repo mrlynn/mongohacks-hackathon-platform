@@ -27,14 +27,15 @@ import {
 } from '@mui/icons-material';
 import { format, parseISO, isBefore, isAfter } from 'date-fns';
 import { useToast } from '@/contexts/ToastContext';
+import type { ChipColor } from '@/types/hub';
 
 interface ScheduleItem {
-  _id: string;
+  _id?: string;
   title: string;
   description?: string;
-  startTime: string;
+  startTime?: string;
   endTime?: string;
-  type: 'workshop' | 'meal' | 'ceremony' | 'deadline' | 'social' | 'other';
+  type?: string;
   location?: string;
   required?: boolean;
 }
@@ -45,7 +46,7 @@ interface EventData {
   description: string;
   startDate: string;
   endDate: string;
-  location: {
+  location?: string | {
     type?: 'in-person' | 'virtual' | 'hybrid';
     venue?: string;
     address?: string;
@@ -67,7 +68,7 @@ interface EventResourcesSectionProps {
   upcomingSchedule: ScheduleItem[];
 }
 
-const scheduleTypeConfig = {
+const scheduleTypeConfig: Record<string, { color: ChipColor; icon: string; label: string }> = {
   workshop: { color: 'primary', icon: '🎓', label: 'Workshop' },
   meal: { color: 'success', icon: '🍕', label: 'Meal' },
   ceremony: { color: 'warning', icon: '🎤', label: 'Ceremony' },
@@ -141,7 +142,14 @@ export default function EventResourcesSection({
                 </Box>
 
                 {/* Location */}
-                {event.location && (
+                {event.location && typeof event.location === 'string' ? (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Location
+                    </Typography>
+                    <Typography variant="body2">{event.location}</Typography>
+                  </Box>
+                ) : event.location && typeof event.location === 'object' && (
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Location
@@ -333,7 +341,7 @@ export default function EventResourcesSection({
 
                 <Stack spacing={2} sx={{ mt: 2 }}>
                   {upcomingSchedule.map((item, index) => {
-                    const config = scheduleTypeConfig[item.type] || scheduleTypeConfig.other;
+                    const config = (item.type && scheduleTypeConfig[item.type]) || scheduleTypeConfig.other;
                     
                     return (
                       <Box key={item._id || index}>
@@ -349,7 +357,7 @@ export default function EventResourcesSection({
                               </Typography>
                               <Chip
                                 label={config.label}
-                                color={config.color as any}
+                                color={config.color}
                                 size="small"
                               />
                               {item.required && (
@@ -364,7 +372,7 @@ export default function EventResourcesSection({
                             
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                               <ClockIcon sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
-                              {formatScheduleTime(item.startTime, item.endTime)}
+                              {item.startTime && formatScheduleTime(item.startTime, item.endTime)}
                             </Typography>
                             
                             {item.location && (

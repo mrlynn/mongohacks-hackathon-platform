@@ -14,11 +14,12 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/ToastContext";
+import type { HubTeam, HubParticipant, HubMember } from "@/types/hub";
 
 interface YourTeamSectionProps {
-  team: any;
+  team: HubTeam;
   eventId: string;
-  participant: any;
+  participant: HubParticipant;
 }
 
 export default function YourTeamSection({
@@ -28,7 +29,8 @@ export default function YourTeamSection({
 }: YourTeamSectionProps) {
   const router = useRouter();
   const { showSuccess, showError } = useToast();
-  const isLeader = participant.userId === team.leaderId?._id;
+  const leaderId = typeof team.leaderId === 'string' ? team.leaderId : team.leaderId?._id;
+  const isLeader = participant.userId === leaderId;
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -80,8 +82,8 @@ export default function YourTeamSection({
       showSuccess('You have left the team');
       setLeaveDialogOpen(false);
       router.refresh();
-    } catch (err: any) {
-      showError(err.message || 'Failed to leave team');
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to leave team');
     } finally {
       setIsLeaving(false);
     }
@@ -137,7 +139,7 @@ export default function YourTeamSection({
             Team Members:
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {team.members?.map((member: any, index: number) => (
+            {team.members?.map((member: HubMember, index: number) => (
               <Box
                 key={member._id || `member-${index}`}
                 sx={{
@@ -167,7 +169,7 @@ export default function YourTeamSection({
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                       {member.name || "Anonymous"}
                     </Typography>
-                    {member._id === team.leaderId?._id && (
+                    {member._id === leaderId && (
                       <Chip
                         icon={<LeaderIcon sx={{ fontSize: 14 }} />}
                         label="Leader"

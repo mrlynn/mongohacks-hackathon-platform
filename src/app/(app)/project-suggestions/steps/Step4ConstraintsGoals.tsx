@@ -17,7 +17,22 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-export default function Step4ConstraintsGoals({ data, onUpdate, onGenerate, onBack, loading }: any) {
+interface Step4Data {
+  interestAreas?: string[];
+  timeCommitment?: number;
+  complexityPreference?: 'simple' | 'moderate' | 'ambitious';
+  targetPrizes?: string[];
+}
+
+interface Step4Props {
+  data: Step4Data;
+  onUpdate: (data: Step4Data) => void;
+  onGenerate: () => void;
+  onBack: () => void;
+  loading: boolean;
+}
+
+export default function Step4ConstraintsGoals({ data, onUpdate, onGenerate, onBack, loading }: Step4Props) {
   const [interestAreas, setInterestAreas] = useState(data.interestAreas || []);
   const [timeCommitment, setTimeCommitment] = useState(data.timeCommitment || 24);
   const [complexityPreference, setComplexityPreference] = useState(data.complexityPreference || 'moderate');
@@ -48,7 +63,7 @@ export default function Step4ConstraintsGoals({ data, onUpdate, onGenerate, onBa
 
       <FormControl component="fieldset" sx={{ mb: 3 }}>
         <FormLabel>Complexity</FormLabel>
-        <RadioGroup value={complexityPreference} onChange={(e) => setComplexityPreference(e.target.value)}>
+        <RadioGroup value={complexityPreference} onChange={(e) => setComplexityPreference(e.target.value as 'simple' | 'moderate' | 'ambitious')}>
           <FormControlLabel value="simple" control={<Radio />} label="Simple MVP" />
           <FormControlLabel value="moderate" control={<Radio />} label="Moderate features" />
           <FormControlLabel value="ambitious" control={<Radio />} label="Ambitious project" />

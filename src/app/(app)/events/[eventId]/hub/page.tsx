@@ -9,10 +9,16 @@ import { TeamModel } from "@/lib/db/models/Team";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { serializeDoc, serializeDocs } from "@/lib/utils/serialize";
 import { findMatchingTeams } from "@/lib/ai/matching-engine";
+import type { Participant } from "@/types";
 import EventHubContent from "./EventHubContent";
 
 // Calculate next milestone
-function calculateNextMilestone(event: any, participant: any, team: any, project: any) {
+function calculateNextMilestone(
+  event: { startDate: Date | string; endDate: Date | string; submissionDeadline?: Date | string },
+  participant: { teamId?: unknown },
+  team: unknown,
+  project: { status?: string } | null
+) {
   const now = new Date();
 
   if (now < new Date(event.startDate)) {
@@ -89,7 +95,7 @@ function calculateNextMilestone(event: any, participant: any, team: any, project
 }
 
 // Calculate current phase
-function calculateCurrentPhase(event: any) {
+function calculateCurrentPhase(event: { startDate: Date | string; endDate: Date | string; submissionDeadline?: Date | string; registrationDeadline?: Date | string }) {
   const now = new Date();
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
@@ -163,10 +169,10 @@ async function getHubData(eventId: string, userId: string) {
   }
 
   // Get recommended teams using vector/skill matching (if no team)
-  let recommendedTeams: any[] = [];
+  let recommendedTeams: unknown[] = [];
   if (!team) {
     try {
-      recommendedTeams = await findMatchingTeams(participant as any, eventId, 6);
+      recommendedTeams = await findMatchingTeams(participant as unknown as Participant, eventId, 6);
     } catch {
       // Fallback to simple query if matching fails
       recommendedTeams = await TeamModel.find({ eventId, lookingForMembers: true })
@@ -181,8 +187,8 @@ async function getHubData(eventId: string, userId: string) {
   const currentPhase = calculateCurrentPhase(event);
 
   // Get upcoming schedule
-  const upcomingSchedule = event.schedule?.filter((item: any) => {
-    return new Date(item.startTime) > new Date();
+  const upcomingSchedule = event.schedule?.filter((item: { startTime?: string | Date }) => {
+    return new Date(item.startTime as string | Date) > new Date();
   }).slice(0, 5) || [];
 
   // Participant status
@@ -217,7 +223,7 @@ export default async function EventHubPage({
   }
 
   const { eventId } = await params;
-  const userId = (session.user as { id: string }).id;
+  const userId = session.user.id;
   const data = await getHubData(eventId, userId);
 
   if ("error" in data) {

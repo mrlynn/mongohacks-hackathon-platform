@@ -6,7 +6,7 @@ export interface FilterState {
   status?: string;
   sortField: string;
   sortDirection: "asc" | "desc";
-  [key: string]: any;
+  [key: string]: string | string[] | number | boolean | undefined;
 }
 
 /**
@@ -25,7 +25,7 @@ export function useFilterState<T extends FilterState>(defaultFilters: T) {
 
   // Initialize from URL params
   const [filters, setFilters] = useState<T>(() => {
-    const urlFilters: any = { ...defaultFilters };
+    const urlFilters: Record<string, string | string[] | number | boolean | undefined> = { ...defaultFilters };
 
     searchParams.forEach((value, key) => {
       // Parse arrays (e.g., "tags=a,b,c")
@@ -36,12 +36,12 @@ export function useFilterState<T extends FilterState>(defaultFilters: T) {
       }
     });
 
-    return urlFilters;
+    return urlFilters as T;
   });
 
   // Update single filter
   const updateFilter = useCallback(
-    (key: keyof T, value: any) => {
+    (key: keyof T, value: T[keyof T]) => {
       const newFilters = { ...filters, [key]: value };
       setFilters(newFilters);
 

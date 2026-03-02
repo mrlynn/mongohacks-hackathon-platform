@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
+import type { ChipColor } from '@/types/hub';
 
 interface TeamMember {
   _id: string;
@@ -45,7 +46,7 @@ interface RecommendedTeam {
   name: string;
   description?: string;
   members: TeamMember[];
-  leaderId?: TeamMember;
+  leaderId?: TeamMember | string;
   maxMembers: number;
   lookingForMembers: boolean;
   desiredSkills?: string[];
@@ -105,8 +106,8 @@ export default function BrowseTeamsSection({
       setTimeout(() => {
         router.refresh();
       }, 500);
-    } catch (err: any) {
-      const errorMsg = err.message || 'An error occurred while joining the team';
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred while joining the team';
       setError(errorMsg);
       showError(errorMsg);
     } finally {
@@ -114,11 +115,12 @@ export default function BrowseTeamsSection({
     }
   };
 
-  const getTeamLeader = (team: RecommendedTeam) => {
-    return team.leaderId || null;
+  const getTeamLeader = (team: RecommendedTeam): TeamMember | null => {
+    if (!team.leaderId || typeof team.leaderId === 'string') return null;
+    return team.leaderId;
   };
 
-  const getMatchScoreColor = (score?: number) => {
+  const getMatchScoreColor = (score?: number): ChipColor => {
     if (!score) return 'default';
     if (score >= 80) return 'success';
     if (score >= 60) return 'primary';
@@ -203,7 +205,7 @@ export default function BrowseTeamsSection({
                         <Chip
                           icon={<StarIcon />}
                           label={`${team.matchScore}% Match`}
-                          color={matchColor as any}
+                          color={matchColor}
                           size="small"
                         />
                       </Tooltip>
@@ -377,7 +379,7 @@ export default function BrowseTeamsSection({
                     <Typography variant="body2">
                       {member.name}
                     </Typography>
-                    {selectedTeam?.leaderId?._id === member._id && (
+                    {selectedTeam?.leaderId && typeof selectedTeam.leaderId !== 'string' && selectedTeam.leaderId._id === member._id && (
                       <Chip label="Leader" size="small" color="primary" />
                     )}
                   </Box>

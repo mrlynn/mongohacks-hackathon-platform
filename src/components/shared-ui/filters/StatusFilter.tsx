@@ -1,12 +1,13 @@
 "use client";
 
 import { Chip, Stack, Box, Typography } from "@mui/material";
+import type { ChipColor } from "@/types/hub";
 
 interface StatusFilterProps {
   label?: string;
   value: string | string[];
   onChange: (value: string | string[]) => void;
-  options: Array<{ value: string; label: string; color?: string }>;
+  options: Array<{ value: string; label: string; color?: ChipColor }>;
   multiple?: boolean;
 }
 
@@ -76,7 +77,7 @@ export default function StatusFilter({
               onClick={() => handleClick(option.value)}
               variant={isSelected ? "filled" : "outlined"}
               size="small"
-              color={option.color as any}
+              color={option.color}
               sx={{
                 fontWeight: isSelected ? 600 : 400,
               }}

@@ -12,7 +12,18 @@ import {
 
 const SPONSORS = ['MongoDB Atlas', 'Twilio', 'OpenAI', 'Stripe', 'Auth0', 'Vercel'];
 
-export default function Step3SponsorProducts({ data, onUpdate, onNext, onBack }: any) {
+interface Step3Data {
+  sponsorProducts?: string[];
+}
+
+interface Step3Props {
+  data: Step3Data;
+  onUpdate: (data: Step3Data) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function Step3SponsorProducts({ data, onUpdate, onNext, onBack }: Step3Props) {
   const [sponsorProducts, setSponsorProducts] = useState<string[]>(data.sponsorProducts || []);
 
   const handleToggle = (sponsor: string) => {

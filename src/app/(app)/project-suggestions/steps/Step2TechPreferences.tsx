@@ -16,7 +16,20 @@ const LANGUAGES = ['JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', '
 const FRAMEWORKS = ['React', 'Next.js', 'Vue', 'Angular', 'Flask', 'Django', 'Express', 'Spring Boot'];
 const DATABASES = ['MongoDB Atlas', 'PostgreSQL', 'Redis', 'MySQL', 'Supabase', 'Firebase'];
 
-export default function Step2TechPreferences({ data, onUpdate, onNext, onBack }: any) {
+interface Step2Data {
+  preferredLanguages?: string[];
+  preferredFrameworks?: string[];
+  preferredDatabases?: string[];
+}
+
+interface Step2Props {
+  data: Step2Data;
+  onUpdate: (data: Step2Data) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function Step2TechPreferences({ data, onUpdate, onNext, onBack }: Step2Props) {
   const [preferredLanguages, setPreferredLanguages] = useState<string[]>(data.preferredLanguages || []);
   const [preferredFrameworks, setPreferredFrameworks] = useState<string[]>(data.preferredFrameworks || []);
   const [preferredDatabases, setPreferredDatabases] = useState<string[]>(data.preferredDatabases || []);

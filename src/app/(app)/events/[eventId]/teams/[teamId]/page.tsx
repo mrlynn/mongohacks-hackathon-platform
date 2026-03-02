@@ -33,7 +33,7 @@ async function getTeamData(eventId: string, teamId: string, userId: string) {
   const isLeader = team.leaderId?._id?.toString() === userId;
   // Check membership - members is an array of User objects after populate
   const isMember = team.members?.some(
-    (member: any) => member._id?.toString() === userId
+    (member: { _id?: { toString(): string } }) => member._id?.toString() === userId
   );
 
   return {
