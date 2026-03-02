@@ -58,6 +58,11 @@ export interface IEvent extends Document {
         subheadline?: string;
         ctaText?: string;
         backgroundImage?: string;
+        backgroundImageAttribution?: {
+          photographerName?: string;
+          photographerUrl?: string;
+          unsplashPhotoUrl?: string;
+        };
       };
       about?: string;
       prizes?: Array<{ title: string; description: string; value?: string }>;
@@ -154,6 +159,11 @@ const EventSchema = new Schema<IEvent>(
           subheadline: String,
           ctaText: String,
           backgroundImage: String,
+          backgroundImageAttribution: {
+            photographerName: String,
+            photographerUrl: String,
+            unsplashPhotoUrl: String,
+          },
         },
         about: String,
         prizes: [
