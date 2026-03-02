@@ -51,6 +51,15 @@ export async function PUT(
     const existingEvent = await EventModel.findById(eventId).lean();
     const existingFormConfig = existingEvent?.landingPage?.registrationFormConfig;
 
+    // Auto-clear Unsplash attribution when switching to non-Unsplash background
+    const heroContent = (body.customContent || {}).hero;
+    if (heroContent?.backgroundImage && !heroContent.backgroundImage.includes("images.unsplash.com")) {
+      // Ensure stale attribution is wiped even if client sent it
+      if (body.customContent?.hero) {
+        body.customContent.hero.backgroundImageAttribution = undefined;
+      }
+    }
+
     const event = await EventModel.findByIdAndUpdate(
       eventId,
       {
