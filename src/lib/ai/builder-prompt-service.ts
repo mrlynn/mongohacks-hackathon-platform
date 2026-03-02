@@ -1,6 +1,6 @@
 import { IProjectIdea } from "@/lib/db/models/ProjectIdea";
 import { IEvent } from "@/lib/db/models/Event";
-import OpenAI from "openai";
+import { generateText } from "@/lib/ai/provider";
 import { logAiUsage } from "@/lib/ai/usage-logger";
 
 export type PromptVariant = "full-scaffold" | "backend-first" | "frontend-first";
@@ -258,13 +258,10 @@ async function enhancePromptWithAI(
   idea: IProjectIdea,
   event: IEvent
 ): Promise<string> {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
   const startTime = Date.now();
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+  const result = await generateText({
     temperature: 0.4,
-    max_tokens: 4000,
+    maxTokens: 4000,
     messages: [
       {
         role: "system",
@@ -285,19 +282,18 @@ Return the COMPLETE enhanced prompt in Markdown. Do not remove any existing cont
     ],
   });
 
-  // Log AI usage
   await logAiUsage({
     category: "project_suggestions",
     provider: "openai",
-    model: "gpt-4o",
+    model: result.model,
     operation: "builder_prompt_enhancement",
-    tokensUsed: response.usage?.total_tokens || 0,
-    promptTokens: response.usage?.prompt_tokens || 0,
-    completionTokens: response.usage?.completion_tokens || 0,
+    tokensUsed: result.usage.totalTokens,
+    promptTokens: result.usage.promptTokens,
+    completionTokens: result.usage.completionTokens,
     durationMs: Date.now() - startTime,
     userId: idea.userId?.toString(),
     eventId: idea.eventId?.toString(),
   });
 
-  return response.choices[0]?.message?.content || basePrompt;
+  return result.content || basePrompt;
 }

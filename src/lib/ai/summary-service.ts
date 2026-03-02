@@ -1,14 +1,5 @@
-import OpenAI from "openai";
+import { generateText } from "./provider";
 import { logAiUsage } from "./usage-logger";
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
 
 interface ProjectInput {
   name: string;
@@ -29,9 +20,8 @@ export async function generateProjectSummary(
     ? `\nInnovations: ${project.innovations}`
     : "";
 
-  const client = getOpenAIClient();
   const startTime = Date.now();
-  const response = await client.chat.completions.create({
+  const result = await generateText({
     model: "gpt-4-turbo",
     messages: [
       {
@@ -44,20 +34,20 @@ export async function generateProjectSummary(
         content: `Project: ${project.name}\nDescription: ${project.description}\nTechnologies: ${techList}${innovationsLine}`,
       },
     ],
-    max_tokens: 150,
+    maxTokens: 150,
     temperature: 0.6,
   });
 
   logAiUsage({
     category: "project_summaries",
     provider: "openai",
-    model: response.model,
+    model: result.model,
     operation: "chat_completion",
-    tokensUsed: response.usage?.total_tokens || 0,
-    promptTokens: response.usage?.prompt_tokens,
-    completionTokens: response.usage?.completion_tokens,
+    tokensUsed: result.usage.totalTokens,
+    promptTokens: result.usage.promptTokens,
+    completionTokens: result.usage.completionTokens,
     durationMs: Date.now() - startTime,
   });
 
-  return response.choices[0].message.content?.trim() || "";
+  return result.content;
 }

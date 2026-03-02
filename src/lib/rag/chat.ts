@@ -1,15 +1,6 @@
-import OpenAI from "openai";
 import type { ChatMessage } from "./types";
+import { streamText, type Message } from "@/lib/ai/provider";
 import { logAiUsage } from "@/lib/ai/usage-logger";
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
 
 const AUTHENTICATED_SYSTEM_PROMPT = `You are the MongoHacks Assistant, an AI helper for the MongoHacks hackathon platform.
 Answer questions using ONLY the provided context from the MongoHacks documentation and event data.
@@ -51,7 +42,7 @@ interface ChatCompletionOptions {
 }
 
 /**
- * Stream a chat completion from OpenAI GPT-4o.
+ * Stream a chat completion from the AI provider.
  * Returns an async iterable of text chunks.
  */
 export async function* streamChatCompletion(
@@ -65,7 +56,7 @@ export async function* streamChatCompletion(
     : ANONYMOUS_SYSTEM_PROMPT;
 
   // Build messages array: system + context + history + current message
-  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+  const messages: Message[] = [
     {
       role: "system",
       content: `${systemPrompt}\n\nContext from documentation:\n${context}`,
@@ -76,7 +67,7 @@ export async function* streamChatCompletion(
   const recentHistory = conversationHistory.slice(-10);
   for (const msg of recentHistory) {
     messages.push({
-      role: msg.role,
+      role: msg.role as Message["role"],
       content: msg.content,
     });
   }
@@ -87,42 +78,31 @@ export async function* streamChatCompletion(
     content: userMessage,
   });
 
-  const client = getOpenAIClient();
   const startTime = Date.now();
-  const stream = await client.chat.completions.create({
-    model: "gpt-4o",
+  const stream = streamText({
     messages,
-    stream: true,
-    stream_options: { include_usage: true },
-    max_tokens: 1024,
+    maxTokens: 1024,
     temperature: 0.3,
   });
 
-  let totalTokens = 0;
-  let promptTokens = 0;
-  let completionTokens = 0;
+  let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
 
-  for await (const chunk of stream) {
-    const content = chunk.choices[0]?.delta?.content;
-    if (content) {
-      yield content;
-    }
-    // The final chunk includes usage when stream_options.include_usage is true
-    if (chunk.usage) {
-      totalTokens = chunk.usage.total_tokens;
-      promptTokens = chunk.usage.prompt_tokens;
-      completionTokens = chunk.usage.completion_tokens;
-    }
+  let result = await stream.next();
+  while (!result.done) {
+    yield result.value;
+    result = await stream.next();
   }
+  // The return value from the generator contains usage info
+  usage = result.value;
 
   logAiUsage({
     category: "rag_chat",
     provider: "openai",
     model: "gpt-4o",
     operation: "streaming",
-    tokensUsed: totalTokens,
-    promptTokens,
-    completionTokens,
+    tokensUsed: usage.totalTokens,
+    promptTokens: usage.promptTokens,
+    completionTokens: usage.completionTokens,
     durationMs: Date.now() - startTime,
   });
 }

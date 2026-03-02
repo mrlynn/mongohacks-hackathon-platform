@@ -2,7 +2,7 @@
 
 **Date:** February 28, 2026
 **Last Updated:** March 2, 2026
-**Status:** In Progress — Workstreams 1, 2, 3, 4 & 5 Complete, Cross-Cutting RBAC Complete
+**Status:** In Progress — Workstreams 1, 2, 3, 4 & 5 Complete, Cross-Cutting RBAC & AI Abstraction Complete
 **Goal:** Harden the platform for production readiness before any external-facing launch
 **Estimated Effort:** 4–6 weeks across 5 workstreams
 **Derived From:** [CEO/CTO Advisory Assessment](docs/CEO_CTO_ADVISORY.md)
@@ -429,7 +429,7 @@ This spec defines 5 workstreams that address the CTO's top concerns:
 
 ---
 
-## Cross-Cutting: AI Provider Abstraction
+## Cross-Cutting: AI Provider Abstraction — COMPLETE
 
 **Priority:** P1
 **Effort:** 2–3 days (can run in parallel with other workstreams)
@@ -437,12 +437,24 @@ This spec defines 5 workstreams that address the CTO's top concerns:
 
 ### Implementation
 
-- Create `src/lib/ai/provider.ts` — abstract interface for AI operations
-- Operations: `generateText`, `generateJSON`, `generateEmbedding`, `streamText`
-- OpenAI adapter as default implementation
-- Configuration via environment variable (`AI_PROVIDER=openai|anthropic|local`)
-- Centralize model selection, token limits, and retry logic
-- No functional changes to existing features — pure abstraction
+- [x] Create `src/lib/ai/provider.ts` — abstract interface for AI operations
+- [x] Operations: `generateText`, `generateJSON`, `generateEmbeddings`, `streamText`
+- [x] OpenAI adapter as default implementation (lazy singleton client)
+- [x] Configuration via environment variables (`AI_DEFAULT_MODEL`, `AI_EMBEDDING_MODEL`)
+- [x] Centralize model selection and token limits
+- [x] No functional changes to existing features — pure abstraction
+
+**Completed Work:**
+- Created `src/lib/ai/provider.ts` with 4 provider-agnostic operations
+- Updated 6 service files to use the provider abstraction:
+  - `summary-service.ts` — uses `generateText()`
+  - `feedback-service.ts` — uses `generateText()`
+  - `embedding-service.ts` — uses `generateEmbeddings()`
+  - `project-suggestion.ts` — uses `generateJSON()` + `streamText()`
+  - `builder-prompt-service.ts` — uses `generateText()`
+  - `rag/chat.ts` — uses `streamText()`
+- Skipped `rag/embeddings.ts` (Voyage AI — separate provider, not OpenAI)
+- All 87 tests passing, build compiles cleanly
 
 ---
 

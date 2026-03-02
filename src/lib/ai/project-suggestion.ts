@@ -1,14 +1,5 @@
-import OpenAI from 'openai';
+import { generateJSON, streamText } from './provider';
 import { logAiUsage } from './usage-logger';
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
 
 interface GenerationInputs {
   eventTheme: string;
@@ -166,13 +157,10 @@ export async function generateProjectIdeas(
   inputs: GenerationInputs,
   numIdeas: number = 3
 ): Promise<GenerationResult> {
-  const client = getOpenAIClient();
-
   const prompt = buildPrompt(inputs);
   const startTime = Date.now();
 
-  const response = await client.chat.completions.create({
-    model: 'gpt-4o',
+  const result = await generateJSON({
     messages: [
       {
         role: 'system',
@@ -183,20 +171,19 @@ export async function generateProjectIdeas(
         content: prompt,
       },
     ],
-    temperature: 0.8, // Creative but coherent
-    max_tokens: 6000, // ~2000 per idea × 3 ideas
-    response_format: { type: 'json_object' },
+    temperature: 0.8,
+    maxTokens: 6000,
   });
 
-  const content = response.choices[0].message.content;
+  const content = result.content;
   if (!content) {
-    throw new Error('No content in OpenAI response');
+    throw new Error('No content in AI response');
   }
 
   let ideas: ProjectIdea[];
   try {
     const parsed = JSON.parse(content);
-    console.log('Parsed OpenAI response:', JSON.stringify(parsed).substring(0, 200) + '...');
+    console.log('Parsed AI response:', JSON.stringify(parsed).substring(0, 200) + '...');
     
     // Handle multiple possible response formats
     if (Array.isArray(parsed)) {
@@ -215,7 +202,7 @@ export async function generateProjectIdeas(
       if (arrayValue && Array.isArray(arrayValue)) {
         ideas = arrayValue;
       } else {
-        console.error('Invalid OpenAI response structure:', parsed);
+        console.error('Invalid AI response structure:', parsed);
         throw new Error('Response does not contain an array of ideas');
       }
     }
@@ -224,25 +211,25 @@ export async function generateProjectIdeas(
       throw new Error('No ideas generated');
     }
   } catch (error) {
-    console.error('Failed to parse OpenAI response:', content.substring(0, 500));
+    console.error('Failed to parse AI response:', content.substring(0, 500));
     throw new Error('Invalid response format from AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
   }
 
   logAiUsage({
     category: 'project_suggestions',
     provider: 'openai',
-    model: response.model,
+    model: result.model,
     operation: 'chat_completion',
-    tokensUsed: response.usage?.total_tokens || 0,
-    promptTokens: response.usage?.prompt_tokens,
-    completionTokens: response.usage?.completion_tokens,
+    tokensUsed: result.usage.totalTokens,
+    promptTokens: result.usage.promptTokens,
+    completionTokens: result.usage.completionTokens,
     durationMs: Date.now() - startTime,
   });
 
   return {
     ideas: ideas.slice(0, numIdeas),
-    tokensUsed: response.usage?.total_tokens || 0,
-    model: response.model,
+    tokensUsed: result.usage.totalTokens,
+    model: result.model,
   };
 }
 
@@ -252,11 +239,9 @@ export async function generateProjectIdeas(
 export async function* streamProjectIdeas(
   inputs: GenerationInputs
 ): AsyncGenerator<string> {
-  const client = getOpenAIClient();
   const prompt = buildPrompt(inputs);
 
-  const stream = await client.chat.completions.create({
-    model: 'gpt-4o',
+  const stream = streamText({
     messages: [
       {
         role: 'system',
@@ -268,14 +253,10 @@ export async function* streamProjectIdeas(
       },
     ],
     temperature: 0.8,
-    max_tokens: 6000,
-    stream: true,
+    maxTokens: 6000,
   });
 
   for await (const chunk of stream) {
-    const content = chunk.choices[0]?.delta?.content;
-    if (content) {
-      yield content;
-    }
+    yield chunk;
   }
 }
