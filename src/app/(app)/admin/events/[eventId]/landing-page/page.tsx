@@ -77,6 +77,11 @@ interface LandingPageFormData {
       subheadline: string;
       ctaText: string;
       backgroundImage: string;
+      backgroundImageAttribution?: {
+        photographerName: string;
+        photographerUrl: string;
+        unsplashPhotoUrl: string;
+      };
     };
     about: string;
     prizes: Array<{ title: string; description: string; value: string }>;
@@ -632,7 +637,7 @@ export default function LandingPageBuilder({
                               ...prev,
                               customContent: {
                                 ...prev.customContent,
-                                hero: { ...prev.customContent.hero, backgroundImage: "" },
+                                hero: { ...prev.customContent.hero, backgroundImage: "", backgroundImageAttribution: undefined },
                               },
                             }))
                           }
@@ -688,7 +693,7 @@ export default function LandingPageBuilder({
                                 ...prev,
                                 customContent: {
                                   ...prev.customContent,
-                                  hero: { ...prev.customContent.hero, backgroundImage: val },
+                                  hero: { ...prev.customContent.hero, backgroundImage: val, backgroundImageAttribution: undefined },
                                 },
                               }))
                             }
@@ -745,7 +750,7 @@ export default function LandingPageBuilder({
                         ...prev,
                         customContent: {
                           ...prev.customContent,
-                          hero: { ...prev.customContent.hero, backgroundImage: e.target.value },
+                          hero: { ...prev.customContent.hero, backgroundImage: e.target.value, backgroundImageAttribution: undefined },
                         },
                       }))
                     }
