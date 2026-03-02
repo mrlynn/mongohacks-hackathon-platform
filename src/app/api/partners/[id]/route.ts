@@ -5,6 +5,7 @@ import { updatePartnerSchema } from "@/lib/db/schemas";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { isValidObjectId } from "mongoose";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -29,7 +30,7 @@ export async function GET(
 
     return successResponse({ partner });
   } catch (error) {
-    console.error("GET /api/partners/[id] error:", error);
+    partnerLogger.error({ err: error }, "GET /api/partners/[id] error")
     return errorResponse("Failed to fetch partner", 500);
   }
 }
@@ -44,7 +45,7 @@ export async function PATCH(
       return errorResponse("Unauthorized", 401);
     }
 
-    if ((session.user as any).role !== "admin") {
+    if (session.user.role !== "admin") {
       return errorResponse("Forbidden - Admin access required", 403);
     }
 
@@ -78,7 +79,7 @@ export async function PATCH(
       partner,
     });
   } catch (error) {
-    console.error("PATCH /api/partners/[id] error:", error);
+    partnerLogger.error({ err: error }, "PATCH /api/partners/[id] error")
     return errorResponse("Failed to update partner", 500);
   }
 }
@@ -93,7 +94,7 @@ export async function DELETE(
       return errorResponse("Unauthorized", 401);
     }
 
-    if ((session.user as any).role !== "admin") {
+    if (session.user.role !== "admin") {
       return errorResponse("Forbidden - Admin access required", 403);
     }
 
@@ -115,7 +116,7 @@ export async function DELETE(
       message: "Partner deleted successfully",
     });
   } catch (error) {
-    console.error("DELETE /api/partners/[id] error:", error);
+    partnerLogger.error({ err: error }, "DELETE /api/partners/[id] error")
     return errorResponse("Failed to delete partner", 500);
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { sendFeedbackRequests } from "@/lib/feedback/feedback-distribution";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -34,10 +35,7 @@ export async function POST(
       ...result,
     });
   } catch (error) {
-    console.error(
-      "POST /api/admin/events/[eventId]/send-feedback error:",
-      error
-    );
+    apiLogger.error({ err: error }, "POST /api/admin/events/[eventId]/send-feedback error");
     return NextResponse.json(
       { success: false, error: "Failed to send feedback requests" },
       { status: 500 }

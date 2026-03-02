@@ -6,6 +6,7 @@ import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { UserModel } from "@/lib/db/models/User";
 import { notifyJudgeAssigned } from "@/lib/notifications/notification-service";
+import { apiLogger } from "@/lib/logger";
 
 // GET - Fetch all assignments for an event
 export async function GET(
@@ -50,7 +51,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("GET /api/admin/events/[eventId]/assignments error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/events/[eventId]/assignments error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch assignments" },
       { status: 500 }
@@ -171,7 +172,7 @@ export async function POST(
       skipped: projectIds.length - created, // Duplicates
     });
   } catch (error) {
-    console.error("POST /api/admin/events/[eventId]/assignments error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/events/[eventId]/assignments error");
     return NextResponse.json(
       { success: false, error: "Failed to create assignments" },
       { status: 500 }
@@ -230,7 +231,7 @@ export async function DELETE(
       message: "Assignment removed successfully",
     });
   } catch (error) {
-    console.error("DELETE /api/admin/events/[eventId]/assignments error:", error);
+    apiLogger.error({ err: error }, "DELETE /api/admin/events/[eventId]/assignments error");
     return NextResponse.json(
       { success: false, error: "Failed to delete assignment" },
       { status: 500 }

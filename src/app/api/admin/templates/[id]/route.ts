@@ -4,6 +4,7 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TemplateConfigModel } from "@/lib/db/models/TemplateConfig";
 import mongoose from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +37,7 @@ export async function GET(
       template: JSON.parse(JSON.stringify(template)),
     });
   } catch (error) {
-    console.error("GET /api/admin/templates/[id] error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/templates/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch template" },
       { status: 500 }
@@ -141,7 +142,7 @@ export async function PATCH(
       template: JSON.parse(JSON.stringify(template.toObject())),
     });
   } catch (error) {
-    console.error("PATCH /api/admin/templates/[id] error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/admin/templates/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to update template" },
       { status: 500 }
@@ -185,7 +186,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/admin/templates/[id] error:", error);
+    apiLogger.error({ err: error }, "DELETE /api/admin/templates/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to delete template" },
       { status: 500 }

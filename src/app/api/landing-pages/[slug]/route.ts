@@ -4,6 +4,7 @@ import { EventModel } from "@/lib/db/models/Event";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -51,7 +52,7 @@ export async function GET(
 
     return successResponse(result);
   } catch (error) {
-    console.error("GET /api/landing-pages/[slug] error:", error);
+    apiLogger.error({ err: error }, "GET /api/landing-pages/[slug] error")
     return errorResponse("Failed to fetch landing page", 500);
   }
 }

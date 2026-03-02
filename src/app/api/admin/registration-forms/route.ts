@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin, requireSuperAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RegistrationFormConfigModel } from "@/lib/db/models/RegistrationFormConfig";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
       forms: JSON.parse(JSON.stringify(forms)),
     });
   } catch (error) {
-    console.error("GET /api/admin/registration-forms error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/registration-forms error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch registration forms" },
       { status: 500 }
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/registration-forms error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/registration-forms error")
     return NextResponse.json(
       { success: false, error: "Failed to create registration form" },
       { status: 500 }

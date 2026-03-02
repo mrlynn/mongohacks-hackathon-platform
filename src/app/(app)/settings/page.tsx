@@ -10,10 +10,10 @@ export default async function SettingsPage() {
   }
 
   const user = {
-    _id: (session.user as any).id,
+    _id: session.user.id,
     name: session.user.name || "",
     email: session.user.email || "",
-    role: (session.user as any).role || "participant",
+    role: session.user.role || "participant",
   };
 
   return <SettingsClient user={user} />;

@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db/connection';
 import { EventModel } from '@/lib/db/models/Event';
 import { errorResponse } from '@/lib/utils';
+import { apiLogger } from '@/lib/logger';
 
 /**
  * PATCH /api/admin/events/[eventId]/atlas-provisioning
@@ -18,7 +19,7 @@ export async function PATCH(
       return errorResponse('Authentication required', 401);
     }
 
-    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
+    if (!['admin', 'super_admin'].includes(session.user.role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -92,7 +93,7 @@ export async function PATCH(
       atlasProvisioning: event.atlasProvisioning,
     });
   } catch (error) {
-    console.error('[API] Failed to update Atlas provisioning:', error);
+    apiLogger.error({ err: error }, '[API] Failed to update Atlas provisioning');
     return errorResponse(
       `Failed to update Atlas provisioning: ${(error as Error).message}`,
       500

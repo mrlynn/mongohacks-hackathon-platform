@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RagIngestionRunModel } from "@/lib/db/models/RagIngestionRun";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   if (!(await isUserAdmin())) {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({ runs });
   } catch (error) {
-    console.error("RAG runs error:", error);
+    apiLogger.error({ err: error }, "RAG runs error");
     return NextResponse.json(
       { error: "Failed to fetch ingestion runs" },
       { status: 500 }

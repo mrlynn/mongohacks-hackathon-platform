@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db/connection';
 import { ProjectIdeaModel } from '@/lib/db/models/ProjectIdea';
 import { successResponse, errorResponse } from '@/lib/utils';
 
+import { aiLogger } from '@/lib/logger';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     await connectToDatabase();
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       total: savedIdeas.length,
     });
   } catch (error) {
-    console.error('GET /api/project-suggestions/saved error:', error);
+    aiLogger.error({ err: error }, 'GET /api/project-suggestions/saved error');
     return errorResponse('Failed to fetch saved ideas', 500);
   }
 }

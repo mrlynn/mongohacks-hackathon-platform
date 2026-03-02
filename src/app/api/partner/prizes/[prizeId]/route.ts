@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEffectivePartnerIdForApi } from "@/lib/partner-context-api";
 import { connectToDatabase } from "@/lib/db/connection";
 import { PrizeModel } from "@/lib/db/models/Prize";
+import { partnerLogger } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ prizeId: string }>;
@@ -27,7 +28,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ prize });
   } catch (error) {
-    console.error("Partner prize GET error:", error);
+    partnerLogger.error({ err: error }, "Partner prize GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -61,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ prize });
   } catch (error) {
-    console.error("Partner prize PATCH error:", error);
+    partnerLogger.error({ err: error }, "Partner prize PATCH error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -84,7 +85,7 @@ export async function DELETE(_request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Partner prize DELETE error:", error);
+    partnerLogger.error({ err: error }, "Partner prize DELETE error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

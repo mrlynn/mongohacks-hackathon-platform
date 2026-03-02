@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 /**
  * DELETE /api/admin/users/[userId]
@@ -23,7 +24,7 @@ export async function DELETE(
     }
 
     // Admin authorization check
-    const userRole = (session.user as any).role;
+    const userRole = session.user.role;
     if (!["admin", "super_admin"].includes(userRole)) {
       return NextResponse.json(
         { error: "Admin access required" },
@@ -74,7 +75,7 @@ export async function DELETE(
       userId: user._id,
     });
   } catch (error) {
-    console.error("DELETE /api/admin/users/[userId]:", error);
+    apiLogger.error({ err: error }, "DELETE /api/admin/users/[userId]");
     return NextResponse.json(
       { error: "Failed to delete user" },
       { status: 500 }

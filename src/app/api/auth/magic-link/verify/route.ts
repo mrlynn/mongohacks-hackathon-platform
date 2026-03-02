@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 
+import { authLogger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
       `${baseUrl}/login?mode=magic-callback&callbackToken=${callbackToken}&email=${encodeURIComponent(email.toLowerCase())}`
     );
   } catch (error) {
-    console.error("Magic link verify error:", error);
+    authLogger.error({ err: error }, "Magic link verify error");
     return NextResponse.redirect(`${baseUrl}/login?error=InvalidOrExpiredLink`);
   }
 }

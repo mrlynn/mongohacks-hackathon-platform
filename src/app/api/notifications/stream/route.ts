@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { NotificationModel } from "@/lib/db/models/Notification";
+import { apiLogger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function GET() {
             }
           }
         } catch (error) {
-          console.error("SSE poll error:", error);
+          apiLogger.error({ err: error }, "SSE poll error")
         }
 
         if (!closed) {

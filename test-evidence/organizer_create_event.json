@@ -1,0 +1,10 @@
+{
+  "testName": "O-04: Can navigate to create event",
+  "role": "organizer",
+  "action": "Navigate to /admin/events/new",
+  "expectedOutcome": "Create event form loads",
+  "actualOutcome": "Create event page loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:21.970Z",
+  "url": "http://localhost:3000/admin/events/new"
+}

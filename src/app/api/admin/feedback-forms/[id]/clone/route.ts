@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackFormConfigModel } from "@/lib/db/models/FeedbackFormConfig";
 import mongoose from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 // Recursively strip _id fields from plain objects (lean results may include them)
 function stripIds(obj: unknown): unknown {
@@ -85,10 +86,7 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    console.error(
-      "POST /api/admin/feedback-forms/[id]/clone error:",
-      error
-    );
+    apiLogger.error({ err: error }, "POST /api/admin/feedback-forms/[id]/clone error");
     return NextResponse.json(
       { success: false, error: "Failed to clone feedback form" },
       { status: 500 }

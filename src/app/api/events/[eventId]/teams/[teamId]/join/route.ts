@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -83,7 +84,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Error joining team:", error);
+    apiLogger.error({ err: error }, "Error joining team")
     return NextResponse.json(
       { success: false, error: "Failed to join team" },
       { status: 500 }

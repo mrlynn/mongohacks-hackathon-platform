@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { notifyResultsPublished } from "@/lib/notifications/notification-service";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -77,7 +78,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("POST /api/admin/events/[eventId]/publish-results error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/events/[eventId]/publish-results error")
     return NextResponse.json(
       { success: false, error: "Failed to update results publication status" },
       { status: 500 }

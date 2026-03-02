@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { cancelIngestion } from "@/lib/rag/ingestion";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   if (!(await isUserAdmin())) {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ status: "cancelled" });
   } catch (error) {
-    console.error("RAG cancel error:", error);
+    apiLogger.error({ err: error }, "RAG cancel error");
     return NextResponse.json(
       { error: "Failed to cancel ingestion" },
       { status: 500 }

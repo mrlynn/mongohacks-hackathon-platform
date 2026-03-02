@@ -7,6 +7,6 @@ export async function GET() {
     session,
     hasSession: !!session,
     hasUser: !!session?.user,
-    userRole: (session?.user as any)?.role,
+    userRole: session?.user?.role,
   });
 }

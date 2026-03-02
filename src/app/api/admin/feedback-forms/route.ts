@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackFormConfigModel } from "@/lib/db/models/FeedbackFormConfig";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
       forms: JSON.parse(JSON.stringify(forms)),
     });
   } catch (error) {
-    console.error("GET /api/admin/feedback-forms error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/feedback-forms error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback forms" },
       { status: 500 }
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/feedback-forms error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/feedback-forms error");
     return NextResponse.json(
       { success: false, error: "Failed to create feedback form" },
       { status: 500 }

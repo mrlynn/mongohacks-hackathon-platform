@@ -6,6 +6,7 @@ import { ProjectModel } from "@/lib/db/models/Project";
 import { EventModel } from "@/lib/db/models/Event";
 import { TeamModel } from "@/lib/db/models/Team";
 import { notifyScoreReceived } from "@/lib/notifications/notification-service";
+import { apiLogger } from "@/lib/logger";
 
 // Default criteria when event has no custom rubric
 const DEFAULT_CRITERIA = [
@@ -175,7 +176,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Error submitting score:", error);
+    apiLogger.error({ err: error }, "Error submitting score");
     return NextResponse.json(
       { success: false, error: "Failed to submit score" },
       { status: 500 }

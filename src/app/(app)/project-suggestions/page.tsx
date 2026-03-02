@@ -17,7 +17,7 @@ export default async function ProjectSuggestionsPage() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <ProjectSuggestionWizard userId={(session.user as any).id} />
+      <ProjectSuggestionWizard userId={session.user.id} />
     </Suspense>
   );
 }

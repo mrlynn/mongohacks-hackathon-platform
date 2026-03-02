@@ -5,6 +5,7 @@ import { FeedbackResponseModel } from "@/lib/db/models/FeedbackResponse";
 import "@/lib/db/models/FeedbackFormConfig";
 import { EventModel } from "@/lib/db/models/Event";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -181,7 +182,7 @@ export async function GET() {
       }
     });
   } catch (error) {
-    console.error("GET /api/admin/analytics/feedback error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/analytics/feedback error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback analytics" },
       { status: 500 }

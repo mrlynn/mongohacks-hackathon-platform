@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 const createUserSchema = z.object({
   name: z.string().min(2).max(200),
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/users error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/users error");
     return NextResponse.json(
       { success: false, error: "Failed to create user" },
       { status: 500 }

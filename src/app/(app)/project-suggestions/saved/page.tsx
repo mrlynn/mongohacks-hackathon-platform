@@ -17,7 +17,7 @@ export default async function SavedIdeasPage() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SavedIdeasView userId={(session.user as any).id} />
+      <SavedIdeasView userId={session.user.id} />
     </Suspense>
   );
 }

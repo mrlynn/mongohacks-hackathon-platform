@@ -4,6 +4,7 @@ import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { requireTeamLeader } from '@/lib/atlas/auth-guard';
 import { deleteAtlasDatabaseUser } from '@/lib/atlas/atlas-client';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * DELETE /api/atlas/clusters/[clusterId]/database-users/[username]
@@ -40,7 +41,7 @@ export async function DELETE(
       message: 'Database user deleted',
     });
   } catch (error) {
-    console.error('[API] Failed to delete database user:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to delete database user")
     return errorResponse(
       `Failed to delete database user: ${(error as Error).message}`,
       500

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -73,7 +74,7 @@ export async function POST(
       message: "Leadership transferred successfully",
     });
   } catch (error) {
-    console.error("Error transferring leadership:", error);
+    apiLogger.error({ err: error }, "Error transferring leadership")
     return NextResponse.json(
       { success: false, error: "Failed to transfer leadership" },
       { status: 500 }

@@ -5,6 +5,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { EventModel } from "@/lib/db/models/Event";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ProjectModel } from "@/lib/db/models/Project";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
       events: eventsWithStatus,
     });
   } catch (error) {
-    console.error("Dashboard API error:", error);
+    apiLogger.error({ err: error }, "Dashboard API error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch dashboard data" },
       { status: 500 }

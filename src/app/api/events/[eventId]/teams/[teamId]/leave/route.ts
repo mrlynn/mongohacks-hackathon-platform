@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -71,7 +72,7 @@ export async function POST(
       message: "Successfully left team",
     });
   } catch (error) {
-    console.error("Error leaving team:", error);
+    apiLogger.error({ err: error }, "Error leaving team")
     return NextResponse.json(
       { success: false, error: "Failed to leave team" },
       { status: 500 }

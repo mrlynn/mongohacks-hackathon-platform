@@ -1,0 +1,76 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - banner [ref=e12]:
+    - generic [ref=e14]:
+      - img "MongoDB" [ref=e15]
+      - link "MongoDB Hackathons" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - heading "MongoDB Hackathons" [level=6] [ref=e17]
+      - generic [ref=e18]:
+        - button "Toggle theme" [ref=e19] [cursor=pointer]:
+          - img [ref=e20]
+        - link "Events" [ref=e22] [cursor=pointer]:
+          - /url: /events
+          - img [ref=e24]
+          - text: Events
+        - link "Map" [ref=e26] [cursor=pointer]:
+          - /url: /events/map
+          - img [ref=e28]
+          - text: Map
+        - link "Gallery" [ref=e30] [cursor=pointer]:
+          - /url: /gallery
+          - img [ref=e32]
+          - text: Gallery
+        - link "Docs" [ref=e34] [cursor=pointer]:
+          - /url: https://docs.mongohacks.com
+          - img [ref=e36]
+          - text: Docs
+        - link "Sign In" [ref=e39] [cursor=pointer]:
+          - /url: /login
+        - link "Register" [ref=e40] [cursor=pointer]:
+          - /url: /register
+  - generic [ref=e42]:
+    - generic [ref=e43]:
+      - img [ref=e45]
+      - heading "MongoDB Hackathons" [level=5] [ref=e47]
+      - paragraph [ref=e48]: Hackathon Platform
+    - generic [ref=e50]:
+      - heading "Welcome Back" [level=4] [ref=e51]
+      - paragraph [ref=e52]: Sign in to your hackathon account
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - text: Email
+            - generic [ref=e56]: "*"
+          - generic [ref=e57]:
+            - img [ref=e59]
+            - textbox "Email" [ref=e61]
+            - group:
+              - generic: Email *
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - text: Password
+            - generic [ref=e64]: "*"
+          - generic [ref=e65]:
+            - img [ref=e67]
+            - textbox "Password" [ref=e69]
+            - group:
+              - generic: Password *
+        - button "Sign In" [ref=e70] [cursor=pointer]
+        - button "Sign in with magic link" [ref=e71] [cursor=pointer]:
+          - img [ref=e73]
+          - text: Sign in with magic link
+        - separator [ref=e75]:
+          - generic [ref=e76]: or
+        - paragraph [ref=e77]:
+          - text: Don't have an account?
+          - link "Create Account" [ref=e78] [cursor=pointer]:
+            - /url: /register
+  - button "Open chat assistant" [ref=e79] [cursor=pointer]:
+    - img [ref=e80]
+```

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -79,7 +80,7 @@ export async function POST(
       message: "Member removed successfully",
     });
   } catch (error) {
-    console.error("Error removing member:", error);
+    apiLogger.error({ err: error }, "Error removing member")
     return NextResponse.json(
       { success: false, error: "Failed to remove member" },
       { status: 500 }

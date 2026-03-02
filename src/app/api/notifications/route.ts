@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { NotificationModel } from "@/lib/db/models/Notification";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       unreadCount,
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    apiLogger.error({ err: error }, "Error fetching notifications")
     return NextResponse.json(
       { success: false, message: "Failed to fetch notifications" },
       { status: 500 }

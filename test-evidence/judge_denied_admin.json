@@ -1,0 +1,10 @@
+{
+  "testName": "J-03: CANNOT access admin panel",
+  "role": "judge",
+  "action": "Navigate to /admin",
+  "expectedOutcome": "Redirect to /dashboard",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:08.711Z",
+  "url": "http://localhost:3000/dashboard"
+}

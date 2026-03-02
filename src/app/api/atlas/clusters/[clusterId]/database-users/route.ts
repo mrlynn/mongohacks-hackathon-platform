@@ -7,6 +7,7 @@ import { createAtlasDatabaseUser, listAtlasDatabaseUsers } from '@/lib/atlas/atl
 import { generateSecurePassword } from '@/lib/atlas/utils';
 import { errorResponse } from '@/lib/utils';
 import { auth } from '@/lib/auth';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * POST /api/atlas/clusters/[clusterId]/database-users
@@ -88,7 +89,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error('[API] Failed to create database user:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to create database user")
     return errorResponse(
       `Failed to create database user: ${(error as Error).message}`,
       500
@@ -135,7 +136,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error('[API] Failed to list database users:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to list database users")
     return errorResponse(
       `Failed to list database users: ${(error as Error).message}`,
       500

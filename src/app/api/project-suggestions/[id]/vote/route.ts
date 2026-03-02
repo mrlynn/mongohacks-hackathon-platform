@@ -5,6 +5,7 @@ import { ProjectIdeaModel } from '@/lib/db/models/ProjectIdea';
 import { successResponse, errorResponse } from '@/lib/utils';
 import mongoose from 'mongoose';
 
+import { aiLogger } from '@/lib/logger';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,7 +16,7 @@ export async function POST(
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { id } = await params;
     const body = await request.json();
     const { vote, comment } = body;
@@ -59,7 +60,7 @@ export async function POST(
       totalVotes: projectIdea.teamVotes.length,
     });
   } catch (error) {
-    console.error('POST /api/project-suggestions/[id]/vote error:', error);
+    aiLogger.error({ err: error }, 'POST /api/project-suggestions/[id]/vote error');
     return errorResponse('Failed to vote', 500);
   }
 }
@@ -74,7 +75,7 @@ export async function DELETE(
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { id } = await params;
 
     await connectToDatabase();
@@ -94,7 +95,7 @@ export async function DELETE(
 
     return successResponse({ success: true, removed: true });
   } catch (error) {
-    console.error('DELETE /api/project-suggestions/[id]/vote error:', error);
+    aiLogger.error({ err: error }, 'DELETE /api/project-suggestions/[id]/vote error');
     return errorResponse('Failed to remove vote', 500);
   }
 }

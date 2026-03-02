@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import mongoose, { Schema } from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 // Simple waitlist schema — stored inline, no separate model file needed
 const WaitlistEntrySchema = new Schema(
@@ -57,7 +58,7 @@ export async function POST(
       message: "Added to waitlist successfully",
     });
   } catch (error) {
-    console.error("Error joining waitlist:", error);
+    apiLogger.error({ err: error }, "Error joining waitlist")
     return NextResponse.json(
       { success: false, error: "Failed to join waitlist" },
       { status: 500 }

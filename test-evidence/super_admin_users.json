@@ -1,0 +1,10 @@
+{
+  "testName": "SA-04: Can access user management",
+  "role": "super_admin",
+  "action": "Navigate to /admin/users",
+  "expectedOutcome": "Users page loads",
+  "actualOutcome": "Users page loaded successfully",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:40.990Z",
+  "url": "http://localhost:3000/admin/users"
+}

@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
 import { synthesizeJudgeFeedback } from "@/lib/ai/feedback-service";
+import { apiLogger } from "@/lib/logger";
 
 /**
  * POST — Batch generate AI feedback for all judged projects in an event.
@@ -106,7 +107,7 @@ export async function POST(
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    console.error("POST /api/admin/events/[eventId]/generate-all-feedback error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/events/[eventId]/generate-all-feedback error")
     return NextResponse.json(
       { 
         success: false, 

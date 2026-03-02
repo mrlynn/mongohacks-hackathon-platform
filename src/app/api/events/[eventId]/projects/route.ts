@@ -6,6 +6,7 @@ import { ProjectModel } from "@/lib/db/models/Project";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -160,7 +161,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Error creating project:", error);
+    apiLogger.error({ err: error }, "Error creating project")
     return NextResponse.json(
       { success: false, error: "Failed to create project" },
       { status: 500 }
@@ -189,7 +190,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("Error fetching projects:", error);
+    apiLogger.error({ err: error }, "Error fetching projects")
     return NextResponse.json(
       { success: false, error: "Failed to fetch projects" },
       { status: 500 }

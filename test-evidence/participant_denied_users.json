@@ -1,0 +1,10 @@
+{
+  "testName": "PT-06: CANNOT access user management",
+  "role": "participant",
+  "action": "Navigate to /admin/users",
+  "expectedOutcome": "Redirect away from users",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:33.402Z",
+  "url": "http://localhost:3000/dashboard"
+}

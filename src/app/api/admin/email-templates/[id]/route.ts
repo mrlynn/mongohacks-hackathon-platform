@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EmailTemplateModel } from "@/lib/db/models/EmailTemplate";
+import { apiLogger } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -28,7 +29,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ template });
   } catch (error) {
-    console.error("Email template GET error:", error);
+    apiLogger.error({ err: error }, "Email template GET error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -69,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ template });
   } catch (error) {
-    console.error("Email template PATCH error:", error);
+    apiLogger.error({ err: error }, "Email template PATCH error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -100,7 +101,7 @@ export async function DELETE(_request: NextRequest, { params }: Props) {
     await template.deleteOne();
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Email template DELETE error:", error);
+    apiLogger.error({ err: error }, "Email template DELETE error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

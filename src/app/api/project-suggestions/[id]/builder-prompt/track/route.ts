@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectIdeaModel } from "@/lib/db/models/ProjectIdea";
 
+import { aiLogger } from "@/lib/logger";
 const TrackSchema = z.object({
   action: z.enum(["copy", "download"]),
   variant: z.enum(["full-scaffold", "backend-first", "frontend-first"]),
@@ -60,7 +61,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("POST /api/project-suggestions/[id]/builder-prompt/track:", error);
+    aiLogger.error({ err: error }, "POST /api/project-suggestions/[id]/builder-prompt/track");
     return NextResponse.json(
       { error: "Failed to track action" },
       { status: 500 }

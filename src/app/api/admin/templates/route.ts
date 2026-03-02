@@ -4,6 +4,7 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/admin-guard";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TemplateConfigModel } from "@/lib/db/models/TemplateConfig";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -19,7 +20,7 @@ export async function GET() {
       templates: JSON.parse(JSON.stringify(templates)),
     });
   } catch (error) {
-    console.error("GET /api/admin/templates error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/templates error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch templates" },
       { status: 500 }
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/templates error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/templates error");
     return NextResponse.json(
       { success: false, error: "Failed to create template" },
       { status: 500 }

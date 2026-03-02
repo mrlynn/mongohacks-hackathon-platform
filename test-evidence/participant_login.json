@@ -1,0 +1,10 @@
+{
+  "testName": "PT-01: Login redirects to dashboard",
+  "role": "participant",
+  "action": "Login with participant credentials",
+  "expectedOutcome": "Redirect to /dashboard",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:23.338Z",
+  "url": "http://localhost:3000/dashboard"
+}

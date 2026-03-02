@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackFormConfigModel } from "@/lib/db/models/FeedbackFormConfig";
 import mongoose from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 function findFormById(id: string) {
   if (mongoose.Types.ObjectId.isValid(id)) {
@@ -46,7 +47,7 @@ export async function GET(
       form: JSON.parse(JSON.stringify(form)),
     });
   } catch (error) {
-    console.error("GET /api/admin/feedback-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/feedback-forms/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback form" },
       { status: 500 }
@@ -129,7 +130,7 @@ export async function PATCH(
       form: JSON.parse(JSON.stringify(form.toObject())),
     });
   } catch (error) {
-    console.error("PATCH /api/admin/feedback-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/admin/feedback-forms/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to update feedback form" },
       { status: 500 }
@@ -176,7 +177,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/admin/feedback-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "DELETE /api/admin/feedback-forms/[id] error");
     return NextResponse.json(
       { success: false, error: "Failed to delete feedback form" },
       { status: 500 }

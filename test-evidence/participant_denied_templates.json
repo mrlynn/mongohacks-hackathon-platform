@@ -1,0 +1,10 @@
+{
+  "testName": "PT-07: CANNOT access template settings",
+  "role": "participant",
+  "action": "Navigate to /admin/settings/templates",
+  "expectedOutcome": "Redirect away from templates",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:33.990Z",
+  "url": "http://localhost:3000/dashboard"
+}

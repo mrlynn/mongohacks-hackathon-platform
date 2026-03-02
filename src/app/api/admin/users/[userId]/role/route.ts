@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -62,7 +63,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("Error updating user role:", error);
+    apiLogger.error({ err: error }, "Error updating user role");
     return NextResponse.json(
       { success: false, error: "Failed to update user role" },
       { status: 500 }

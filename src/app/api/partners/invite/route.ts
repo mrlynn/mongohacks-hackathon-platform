@@ -6,6 +6,7 @@ import { PartnerModel } from "@/lib/db/models/Partner";
 import { sendEmail } from "@/lib/email/email-service";
 import { renderEmailTemplate } from "@/lib/email/template-renderer";
 import { auth } from "@/lib/auth";
+import { partnerLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
       message: `Invitation sent to ${contactEmail}`,
     });
   } catch (error) {
-    console.error("Partner invite error:", error);
+    partnerLogger.error({ err: error }, "Partner invite error")
     return NextResponse.json(
       { success: false, message: "Something went wrong" },
       { status: 500 }

@@ -6,6 +6,7 @@ import { TeamModel } from "@/lib/db/models/Team";
 import { EventModel } from "@/lib/db/models/Event";
 import { generateProjectSummary } from "@/lib/ai/summary-service";
 import { notifyProjectSubmitted } from "@/lib/notifications/notification-service";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, project });
   } catch (error) {
-    console.error("GET /api/events/[eventId]/projects/[projectId] error:", error);
+    apiLogger.error({ err: error }, "GET /api/events/[eventId]/projects/[projectId] error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch project" },
       { status: 500 }
@@ -151,7 +152,7 @@ export async function PATCH(
       project,
     });
   } catch (error) {
-    console.error("PATCH /api/events/[eventId]/projects/[projectId] error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/events/[eventId]/projects/[projectId] error")
     return NextResponse.json(
       { success: false, error: "Failed to update project" },
       { status: 500 }
@@ -289,7 +290,7 @@ export async function POST(
       );
     }
   } catch (error) {
-    console.error("POST /api/events/[eventId]/projects/[projectId] error:", error);
+    apiLogger.error({ err: error }, "POST /api/events/[eventId]/projects/[projectId] error")
     return NextResponse.json(
       { success: false, error: "Failed to modify project status" },
       { status: 500 }

@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { errorResponse, successResponse } from "@/lib/utils";
 
+import { authLogger } from "@/lib/logger";
 const registerSchema = z.object({
   name: z.string().min(2).max(200),
   email: z.string().email(),
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error) {
-    console.error("POST /api/auth/register error:", error);
+    authLogger.error({ err: error }, "POST /api/auth/register error");
     return errorResponse("Registration failed", 500);
   }
 }

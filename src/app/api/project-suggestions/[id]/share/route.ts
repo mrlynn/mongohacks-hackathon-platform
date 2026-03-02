@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db/connection';
 import { ProjectIdeaModel } from '@/lib/db/models/ProjectIdea';
 import { successResponse, errorResponse } from '@/lib/utils';
 
+import { aiLogger } from '@/lib/logger';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,7 +15,7 @@ export async function POST(
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { id } = await params;
     const body = await request.json();
     const { recipients, message } = body;
@@ -46,7 +47,7 @@ export async function POST(
       message: message || '',
     });
   } catch (error) {
-    console.error('POST /api/project-suggestions/[id]/share error:', error);
+    aiLogger.error({ err: error }, 'POST /api/project-suggestions/[id]/share error');
     return errorResponse('Failed to share idea', 500);
   }
 }

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { apiLogger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("OG image error:", error);
+    apiLogger.error({ err: error }, "OG image error")
     // Fallback — generic branded card
     return new ImageResponse(
       (

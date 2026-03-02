@@ -1,0 +1,10 @@
+{
+  "testName": "P-05: CANNOT create events",
+  "role": "partner",
+  "action": "Navigate to /admin/events/new",
+  "expectedOutcome": "Redirect away from event creation",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:37.843Z",
+  "url": "http://localhost:3000/dashboard"
+}

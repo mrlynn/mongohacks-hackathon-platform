@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { NotificationModel } from "@/lib/db/models/Notification";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   _request: NextRequest,
@@ -36,7 +37,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    apiLogger.error({ err: error }, "Error marking notification as read")
     return NextResponse.json(
       { success: false, message: "Failed to update notification" },
       { status: 500 }

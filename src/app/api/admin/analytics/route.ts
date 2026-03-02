@@ -9,6 +9,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { ScoreModel } from "@/lib/db/models/Score";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -393,7 +394,7 @@ export async function GET() {
     },
   });
   } catch (error) {
-    console.error("Error fetching analytics:", error);
+    apiLogger.error({ err: error }, "Error fetching analytics")
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 }

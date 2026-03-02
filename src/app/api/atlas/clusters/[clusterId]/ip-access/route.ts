@@ -9,6 +9,7 @@ import {
 } from '@/lib/atlas/atlas-client';
 import { errorResponse } from '@/lib/utils';
 import { auth } from '@/lib/auth';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * POST /api/atlas/clusters/[clusterId]/ip-access
@@ -74,7 +75,7 @@ export async function POST(
       added: newEntries,
     });
   } catch (error) {
-    console.error('[API] Failed to add IP access entries:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to add IP access entries")
     return errorResponse(
       `Failed to add IP access entries: ${(error as Error).message}`,
       500
@@ -111,7 +112,7 @@ export async function GET(
       entries: atlasEntries,
     });
   } catch (error) {
-    console.error('[API] Failed to list IP access entries:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to list IP access entries")
     return errorResponse(
       `Failed to list IP access entries: ${(error as Error).message}`,
       500
@@ -160,7 +161,7 @@ export async function DELETE(
       message: 'IP access entry removed',
     });
   } catch (error) {
-    console.error('[API] Failed to remove IP access entry:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to remove IP access entry")
     return errorResponse(
       `Failed to remove IP access entry: ${(error as Error).message}`,
       500

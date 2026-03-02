@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RagIngestionRunModel } from "@/lib/db/models/RagIngestionRun";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
 
     return NextResponse.json({ run });
   } catch (error) {
-    console.error("RAG run detail error:", error);
+    apiLogger.error({ err: error }, "RAG run detail error");
     return NextResponse.json(
       { error: "Failed to fetch run details" },
       { status: 500 }

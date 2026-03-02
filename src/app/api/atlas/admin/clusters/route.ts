@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db/connection';
 import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * GET /api/atlas/admin/clusters?eventId={eventId}&status={status}
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
+    if (!['admin', 'super_admin'].includes(session.user.role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
       stats,
     });
   } catch (error) {
-    console.error('[API] Admin cluster list failed:', error);
+    atlasLogger.error({ err: error }, "[API] Admin cluster list failed")
     return errorResponse(
       `Failed to list clusters: ${(error as Error).message}`,
       500

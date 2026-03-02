@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EmailTemplateModel } from "@/lib/db/models/EmailTemplate";
 import { seedEmailTemplates } from "@/lib/email/seed-email-templates";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ templates });
   } catch (error) {
-    console.error("Email templates GET error:", error);
+    apiLogger.error({ err: error }, "Email templates GET error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ template }, { status: 201 });
   } catch (error) {
-    console.error("Email templates POST error:", error);
+    apiLogger.error({ err: error }, "Email templates POST error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

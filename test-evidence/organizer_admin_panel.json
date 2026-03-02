@@ -1,0 +1,10 @@
+{
+  "testName": "O-02: Can access admin panel",
+  "role": "organizer",
+  "action": "Navigate to /admin",
+  "expectedOutcome": "Admin panel loads (limited view)",
+  "actualOutcome": "Admin panel loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:19.464Z",
+  "url": "http://localhost:3000/admin"
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { SiteSettingsModel } from "@/lib/db/models/SiteSettings";
+import { apiLogger } from "@/lib/logger";
 
 // Valid backgrounds served from /public/backgrounds/
 const VALID_BACKGROUNDS = [
@@ -22,7 +23,7 @@ export async function GET() {
       heroBackground: settings?.heroBackground ?? null,
     });
   } catch (error) {
-    console.error("Error fetching site settings:", error);
+    apiLogger.error({ err: error }, "Error fetching site settings");
     return NextResponse.json({ heroBackground: null });
   }
 }
@@ -51,7 +52,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ heroBackground: settings.heroBackground });
   } catch (error) {
-    console.error("Error updating site settings:", error);
+    apiLogger.error({ err: error }, "Error updating site settings");
     return NextResponse.json(
       { error: "Failed to update settings" },
       { status: 500 }

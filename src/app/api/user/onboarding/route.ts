@@ -7,6 +7,7 @@ import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
 import { EventModel } from "@/lib/db/models/Event";
 import "@/lib/db/models/Team";
+import { apiLogger } from "@/lib/logger";
 
 /**
  * GET /api/user/onboarding
@@ -20,8 +21,8 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
-    const role = (session.user as any).role || "participant";
+    const userId = session.user.id;
+    const role = session.user.role || "participant";
 
     const user = await UserModel.findById(userId)
       .select("onboardingProgress bio githubUsername")
@@ -95,7 +96,7 @@ export async function GET() {
       autoDetected,
     });
   } catch (error) {
-    console.error("GET /api/user/onboarding error:", error);
+    apiLogger.error({ err: error }, "GET /api/user/onboarding error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch onboarding progress" },
       { status: 500 }
@@ -115,7 +116,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await request.json();
 
     const updateOps: any = {};
@@ -164,7 +165,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("PATCH /api/user/onboarding error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/user/onboarding error")
     return NextResponse.json(
       { success: false, error: "Failed to update onboarding progress" },
       { status: 500 }

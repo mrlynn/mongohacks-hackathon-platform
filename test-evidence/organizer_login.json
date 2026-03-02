@@ -1,0 +1,10 @@
+{
+  "testName": "O-01: Login redirects appropriately",
+  "role": "organizer",
+  "action": "Login with organizer credentials",
+  "expectedOutcome": "Redirect to /dashboard or /admin",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:18.693Z",
+  "url": "http://localhost:3000/dashboard"
+}

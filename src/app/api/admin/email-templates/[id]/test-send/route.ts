@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EmailTemplateModel } from "@/lib/db/models/EmailTemplate";
 import { sendEmail } from "@/lib/email/email-service";
+import { apiLogger } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ success: true, sentTo: recipientEmail });
   } catch (error) {
-    console.error("Email template test-send error:", error);
+    apiLogger.error({ err: error }, "Email template test-send error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

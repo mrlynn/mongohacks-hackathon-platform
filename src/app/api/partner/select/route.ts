@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ADMIN_ROLES } from "@/lib/admin-guard";
 import type { UserRole } from "@/lib/admin-guard";
+import { partnerLogger } from "@/lib/logger";
 
 /**
  * POST /api/partner/select
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Partner select error:", error);
+    partnerLogger.error({ err: error }, "Partner select error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

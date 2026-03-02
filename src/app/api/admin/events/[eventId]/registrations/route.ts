@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { serializeDoc } from "@/lib/utils/serialize";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -48,7 +49,7 @@ export async function GET(
       registrations,
     });
   } catch (error) {
-    console.error("Error fetching registrations:", error);
+    apiLogger.error({ err: error }, "Error fetching registrations")
     return NextResponse.json(
       { success: false, error: "Failed to fetch registrations" },
       { status: 500 }

@@ -7,6 +7,7 @@ import { createPrizeSchema } from "@/lib/db/schemas";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { errorResponse, successResponse } from "@/lib/utils";
 import { isValidObjectId } from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     return successResponse({ prizes });
   } catch (error) {
-    console.error("GET /api/prizes error:", error);
+    apiLogger.error({ err: error }, "GET /api/prizes error")
     return errorResponse("Failed to fetch prizes", 500);
   }
 }
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error) {
-    console.error("POST /api/prizes error:", error);
+    apiLogger.error({ err: error }, "POST /api/prizes error")
     return errorResponse("Failed to create prize", 500);
   }
 }

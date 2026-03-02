@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { apiLogger } from "@/lib/logger";
 
 export async function PUT(
   request: NextRequest,
@@ -76,7 +77,7 @@ export async function PUT(
       event,
     });
   } catch (error: any) {
-    console.error("PUT /api/admin/events/[eventId]/landing-page error:", error);
+    apiLogger.error({ err: error }, "PUT /api/admin/events/[eventId]/landing-page error")
     // MongoDB duplicate key on slug unique index
     if (error?.code === 11000) {
       return errorResponse("This URL slug is already in use by another event", 409);
@@ -106,7 +107,7 @@ export async function GET(
 
     return successResponse({ landingPage: event.landingPage || null });
   } catch (error) {
-    console.error("GET /api/admin/events/[eventId]/landing-page error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/events/[eventId]/landing-page error")
     return errorResponse("Failed to fetch landing page", 500);
   }
 }

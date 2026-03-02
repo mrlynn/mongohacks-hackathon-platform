@@ -94,6 +94,8 @@ export function OnboardingProvider({
         const res = await fetch("/api/user/onboarding");
         const data = await res.json();
         if (data.success) {
+          const dismissed = !!data.progress.dismissedAt;
+
           const merged = new Set<string>([
             ...(data.progress.completedSteps || []),
             ...(data.autoDetected || []),
@@ -101,15 +103,17 @@ export function OnboardingProvider({
           setCompletedSteps(merged);
           setTourCompleted(data.progress.tourCompleted || false);
 
-          // Don't auto-open or trigger first-login when impersonating
-          if (!isPreviewMode) {
+          if (dismissed) {
+            setIsDismissed(true);
+            setIsDrawerOpen(false);
+          }
+
+          // Don't auto-open or trigger first-login when impersonating or when dismissed
+          if (!isPreviewMode && !dismissed) {
             if (!data.progress.firstLoginSeen) {
               setIsFirstLogin(true);
               setIsDrawerOpen(true);
             }
-          }
-          if (data.progress.dismissedAt) {
-            setIsDismissed(true);
           }
         }
       } catch (e) {
@@ -158,6 +162,32 @@ export function OnboardingProvider({
     setIsDrawerOpen(false);
     patchOnboarding({ dismiss: true });
   }, [patchOnboarding]);
+
+  // Auto-dismiss journey permanently once all steps are complete
+  useEffect(() => {
+    if (isPreviewMode) return;
+    if (!journeyMap) return;
+    if (effectiveSteps.length === 0) return;
+    if (isDismissed) return;
+
+    const completedCount = effectiveSteps.filter((s) =>
+      completedSteps.has(s.id)
+    ).length;
+    const allComplete = completedCount === effectiveSteps.length;
+
+    if (allComplete) {
+      setIsDismissed(true);
+      setIsDrawerOpen(false);
+      patchOnboarding({ dismiss: true });
+    }
+  }, [
+    completedSteps,
+    effectiveSteps,
+    isDismissed,
+    isPreviewMode,
+    journeyMap,
+    patchOnboarding,
+  ]);
 
   const resetDismiss = useCallback(async () => {
     setIsDismissed(false);

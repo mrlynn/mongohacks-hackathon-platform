@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 
+import { authLogger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const { email, code } = await request.json();
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
       callbackToken,
     });
   } catch (error) {
-    console.error("2FA verify error:", error);
+    authLogger.error({ err: error }, "2FA verify error");
     return NextResponse.json(
       { success: false, message: "Something went wrong" },
       { status: 500 }

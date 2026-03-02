@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -33,10 +34,7 @@ export async function GET(
       ),
     });
   } catch (error) {
-    console.error(
-      "GET /api/admin/events/[eventId]/feedback-forms error:",
-      error
-    );
+    apiLogger.error({ err: error }, "GET /api/admin/events/[eventId]/feedback-forms error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch event feedback forms" },
       { status: 500 }
@@ -96,10 +94,7 @@ export async function PATCH(
       ),
     });
   } catch (error) {
-    console.error(
-      "PATCH /api/admin/events/[eventId]/feedback-forms error:",
-      error
-    );
+    apiLogger.error({ err: error }, "PATCH /api/admin/events/[eventId]/feedback-forms error");
     return NextResponse.json(
       { success: false, error: "Failed to update event feedback forms" },
       { status: 500 }

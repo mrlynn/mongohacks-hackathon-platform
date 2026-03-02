@@ -1,0 +1,10 @@
+{
+  "testName": "O-06: CANNOT access template settings",
+  "role": "organizer",
+  "action": "Navigate to /admin/settings/templates",
+  "expectedOutcome": "Redirect away from templates",
+  "actualOutcome": "Redirected to /admin",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:24.933Z",
+  "url": "http://localhost:3000/admin"
+}

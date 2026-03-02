@@ -7,6 +7,7 @@ import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
 import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
+import { authLogger } from "@/lib/logger";
 const ResendSchema = z.object({
   email: z.string().email().optional(),
 });
@@ -78,14 +79,14 @@ export async function POST(request: NextRequest) {
       html: emailContent.html,
       text: emailContent.text,
     }).catch((err) => {
-      console.error("Failed to send verification email:", err);
+      authLogger.error({ err: err }, "Failed to send verification email");
     });
 
     return NextResponse.json({
       message: "Verification email sent. Please check your inbox.",
     });
   } catch (error) {
-    console.error("POST /api/auth/resend-verification:", error);
+    authLogger.error({ err: error }, "POST /api/auth/resend-verification");
     return NextResponse.json(
       { error: "Failed to resend verification email" },
       { status: 500 }

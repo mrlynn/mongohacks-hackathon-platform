@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackFormConfigModel } from "@/lib/db/models/FeedbackFormConfig";
 import { FeedbackResponseModel } from "@/lib/db/models/FeedbackResponse";
 import { EventModel } from "@/lib/db/models/Event";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -65,7 +66,7 @@ export async function GET(
       form: JSON.parse(JSON.stringify(form)),
     });
   } catch (error) {
-    console.error("GET /api/feedback/[formId] error:", error);
+    apiLogger.error({ err: error }, "GET /api/feedback/[formId] error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback form" },
       { status: 500 }
@@ -189,7 +190,7 @@ export async function POST(
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/feedback/[formId] error:", error);
+    apiLogger.error({ err: error }, "POST /api/feedback/[formId] error")
     return NextResponse.json(
       { success: false, error: "Failed to submit feedback response" },
       { status: 500 }

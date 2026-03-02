@@ -7,6 +7,7 @@ import { UserModel } from "@/lib/db/models/User";
 import { EventModel } from "@/lib/db/models/Event";
 import { sendEmail } from "@/lib/email/email-service";
 import { renderEmailTemplate } from "@/lib/email/template-renderer";
+import { partnerLogger } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ requestId: string }>;
@@ -132,7 +133,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Access request PATCH error:", error);
+    partnerLogger.error({ err: error }, "Access request PATCH error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

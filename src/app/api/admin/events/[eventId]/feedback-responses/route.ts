@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { FeedbackResponseModel } from "@/lib/db/models/FeedbackResponse";
 import "@/lib/db/models/FeedbackFormConfig";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -31,10 +32,7 @@ export async function GET(
       responses: JSON.parse(JSON.stringify(responses)),
     });
   } catch (error) {
-    console.error(
-      "GET /api/admin/events/[eventId]/feedback-responses error:",
-      error
-    );
+    apiLogger.error({ err: error }, "GET /api/admin/events/[eventId]/feedback-responses error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback responses" },
       { status: 500 }

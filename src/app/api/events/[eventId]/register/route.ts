@@ -12,6 +12,7 @@ import { generateEmbedding } from "@/lib/ai/embedding-service";
 import { notifyRegistrationConfirmed } from "@/lib/notifications/notification-service";
 import { sendEmail } from "@/lib/email/email-service";
 import { renderEmailTemplate } from "@/lib/email/template-renderer";
+import { apiLogger } from "@/lib/logger";
 
 const registrationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -249,7 +250,7 @@ export async function POST(
           subject: template.subject,
           html: template.html,
           text: template.text,
-        }).catch((err) => console.error("Failed to send confirmation email:", err));
+        }).catch((err) => apiLogger.error({ err }, "Failed to send confirmation email"));
 
         // Fire-and-forget: send email verification email
         const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${verificationToken}`;
@@ -260,7 +261,7 @@ export async function POST(
           subject: verificationTemplate.subject,
           html: verificationTemplate.html,
           text: verificationTemplate.text,
-        }).catch((err) => console.error("Failed to send verification email:", err));
+        }).catch((err) => apiLogger.error({ err }, "Failed to send verification email"));
 
         return NextResponse.json({
           success: true,
@@ -398,7 +399,7 @@ export async function POST(
       subject: template.subject,
       html: template.html,
       text: template.text,
-    }).catch((err) => console.error("Failed to send confirmation email:", err));
+    }).catch((err) => apiLogger.error({ err }, "Failed to send confirmation email"));
 
     return NextResponse.json({
       success: true,
@@ -411,7 +412,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("POST /api/events/[eventId]/register error:", error);
+    apiLogger.error({ err: error }, "POST /api/events/[eventId]/register error")
     return NextResponse.json(
       { success: false, error: "Failed to register for event" },
       { status: 500 }

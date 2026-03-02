@@ -38,8 +38,7 @@ export default async function ProfilePage() {
     redirect("/auth/signin");
   }
 
-  // Get user ID from session - try multiple possible locations
-  const userId = (session.user as any).id || (session.user as any).sub;
+  const userId = session.user.id;
   
   if (!userId) {
     console.error('[Profile] No user ID in session:', session.user);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { PartnerAccessRequestModel } from "@/lib/db/models/PartnerAccessRequest";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -23,7 +24,7 @@ export async function GET() {
 
     return NextResponse.json({ requests });
   } catch (error) {
-    console.error("Access requests GET error:", error);
+    partnerLogger.error({ err: error }, "Access requests GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

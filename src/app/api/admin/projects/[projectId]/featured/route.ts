@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function PATCH(
       );
     }
 
-    const role = (session.user as any).role;
+    const role = session.user.role;
     if (role !== "admin" && role !== "super_admin") {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
@@ -46,7 +47,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, project });
   } catch (error) {
-    console.error("PATCH /api/admin/projects/[projectId]/featured error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/admin/projects/[projectId]/featured error");
     return NextResponse.json(
       { success: false, error: "Failed to update project" },
       { status: 500 }

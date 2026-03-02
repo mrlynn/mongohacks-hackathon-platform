@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -28,7 +29,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching notification preferences:", error);
+    apiLogger.error({ err: error }, "Error fetching notification preferences");
     return NextResponse.json(
       { success: false, message: "Failed to fetch preferences" },
       { status: 500 }
@@ -76,7 +77,7 @@ export async function PATCH(request: NextRequest) {
       message: "Notification preferences saved",
     });
   } catch (error) {
-    console.error("Error saving notification preferences:", error);
+    apiLogger.error({ err: error }, "Error saving notification preferences");
     return NextResponse.json(
       { success: false, message: "Failed to save preferences" },
       { status: 500 }

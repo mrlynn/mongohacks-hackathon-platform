@@ -1,0 +1,10 @@
+{
+  "testName": "MN-04: CANNOT access partner portal",
+  "role": "mentor",
+  "action": "Navigate to /partner",
+  "expectedOutcome": "Redirect away from /partner",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:17.791Z",
+  "url": "http://localhost:3000/dashboard"
+}

@@ -132,22 +132,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role: string }).role;
-        token.id = user.id;
-        token.partnerId = (user as { partnerId?: string }).partnerId;
-        // NextAuth v5 uses 'sub' as the standard user ID field
+        token.role = user.role;
+        token.id = user.id!;
+        token.partnerId = user.partnerId;
         token.sub = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // Store the real admin identity
-        (session.user as unknown as { role: string }).role =
-          token.role as string;
-        (session.user as unknown as { id: string }).id = (token.id || token.sub) as string;
-        (session.user as unknown as { partnerId?: string }).partnerId =
-          token.partnerId as string | undefined;
+        session.user.role = token.role;
+        session.user.id = token.id || token.sub!;
+        session.user.partnerId = token.partnerId;
 
         // Check for impersonation cookie
         try {
@@ -161,20 +157,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               .lean();
 
             if (impersonatedUser) {
-              // Swap session to impersonated user, but keep admin info
-              (session.user as unknown as { id: string }).id =
-                impersonatedUser._id.toString();
+              session.user.id = impersonatedUser._id.toString();
               session.user.name = impersonatedUser.name;
               session.user.email = impersonatedUser.email;
-              (session.user as unknown as { role: string }).role =
-                impersonatedUser.role;
-              // Flag that this is an impersonated session
-              (session.user as unknown as { isImpersonating: boolean }).isImpersonating = true;
-              (session.user as unknown as { realAdminId: string }).realAdminId =
-                token.id as string;
-              // Preserve real admin role so guards remain functional while impersonating
-              (session.user as unknown as { realAdminRole: string }).realAdminRole =
-                token.role as string;
+              session.user.role = impersonatedUser.role;
+              session.user.isImpersonating = true;
+              session.user.realAdminId = token.id;
+              session.user.realAdminRole = token.role;
             }
           }
         } catch {

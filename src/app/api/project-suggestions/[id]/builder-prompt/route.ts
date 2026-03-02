@@ -8,6 +8,7 @@ import { TeamModel } from "@/lib/db/models/Team";
 import { generateBuilderPrompt } from "@/lib/ai/builder-prompt-service";
 import type { PromptVariant } from "@/lib/ai/builder-prompt-service";
 
+import { aiLogger } from "@/lib/logger";
 const QuerySchema = z.object({
   variant: z
     .enum(["full-scaffold", "backend-first", "frontend-first"])
@@ -100,7 +101,7 @@ export async function GET(
 
     return NextResponse.json({ data: result });
   } catch (error) {
-    console.error("GET /api/project-suggestions/[id]/builder-prompt:", error);
+    aiLogger.error({ err: error }, "GET /api/project-suggestions/[id]/builder-prompt");
     return NextResponse.json(
       { error: "Failed to generate builder prompt" },
       { status: 500 }
@@ -206,7 +207,7 @@ export async function POST(
 
     return NextResponse.json({ data: result });
   } catch (error) {
-    console.error("POST /api/project-suggestions/[id]/builder-prompt:", error);
+    aiLogger.error({ err: error }, "POST /api/project-suggestions/[id]/builder-prompt");
     return NextResponse.json(
       { error: "Failed to generate enhanced builder prompt" },
       { status: 500 }

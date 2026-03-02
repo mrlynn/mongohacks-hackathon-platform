@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { EventModel } from "@/lib/db/models/Event";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -140,7 +141,7 @@ export async function POST(
       tier: 1,
     });
   } catch (error: unknown) {
-    console.error("Quick registration error:", error);
+    apiLogger.error({ err: error }, "Quick registration error")
 
     if (
       typeof error === "object" &&

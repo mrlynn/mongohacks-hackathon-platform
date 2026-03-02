@@ -1,0 +1,10 @@
+{
+  "testName": "J-01: Login redirects to dashboard",
+  "role": "judge",
+  "action": "Login with judge credentials",
+  "expectedOutcome": "Redirect to /dashboard or /judging",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:07.286Z",
+  "url": "http://localhost:3000/dashboard"
+}

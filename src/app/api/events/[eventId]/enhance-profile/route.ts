@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -69,7 +70,7 @@ export async function PATCH(
       participantId: participant._id.toString(),
     });
   } catch (error) {
-    console.error("Enhance profile error:", error);
+    apiLogger.error({ err: error }, "Enhance profile error")
     return NextResponse.json(
       { success: false, message: "Failed to update profile" },
       { status: 500 }

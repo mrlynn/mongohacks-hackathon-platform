@@ -1,0 +1,10 @@
+{
+  "testName": "PT-02: Can access dashboard",
+  "role": "participant",
+  "action": "Navigate to /dashboard",
+  "expectedOutcome": "Dashboard loads",
+  "actualOutcome": "Dashboard loaded successfully",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:24.814Z",
+  "url": "http://localhost:3000/dashboard"
+}

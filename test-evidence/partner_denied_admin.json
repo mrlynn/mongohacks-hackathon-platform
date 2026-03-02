@@ -1,0 +1,10 @@
+{
+  "testName": "P-03: CANNOT access admin panel",
+  "role": "partner",
+  "action": "Navigate to /admin",
+  "expectedOutcome": "Redirect away from /admin",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:34.908Z",
+  "url": "http://localhost:3000/dashboard"
+}

@@ -1,0 +1,10 @@
+{
+  "testName": "MN-05: CANNOT access user management",
+  "role": "mentor",
+  "action": "Navigate to /admin/users",
+  "expectedOutcome": "Redirect away from users",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:20.577Z",
+  "url": "http://localhost:3000/dashboard"
+}

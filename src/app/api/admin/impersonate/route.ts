@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Error impersonating user:", error);
+    apiLogger.error({ err: error }, "Error impersonating user")
     return NextResponse.json(
       { success: false, error: "Failed to impersonate user" },
       { status: 500 }
@@ -90,7 +91,7 @@ export async function DELETE() {
 
     return response;
   } catch (error) {
-    console.error("Error stopping impersonation:", error);
+    apiLogger.error({ err: error }, "Error stopping impersonation")
     return NextResponse.json(
       { success: false, error: "Failed to stop impersonation" },
       { status: 500 }

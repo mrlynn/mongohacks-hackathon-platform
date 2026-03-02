@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { EventModel } from "@/lib/db/models/Event";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function GET() {
 
     return NextResponse.json({ prizes, events: partnerEvents });
   } catch (error) {
-    console.error("Partner prizes GET error:", error);
+    partnerLogger.error({ err: error }, "Partner prizes GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ prize }, { status: 201 });
   } catch (error) {
-    console.error("Partner prizes POST error:", error);
+    partnerLogger.error({ err: error }, "Partner prizes POST error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { sendFeedbackRequests } from "@/lib/feedback/feedback-distribution";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
       event,
     });
   } catch (error) {
-    console.error("Error fetching event:", error);
+    apiLogger.error({ err: error }, "Error fetching event")
     return NextResponse.json(
       { success: false, error: "Failed to fetch event" },
       { status: 500 }
@@ -67,7 +68,7 @@ export async function DELETE(
       message: "Event deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting event:", error);
+    apiLogger.error({ err: error }, "Error deleting event")
     return NextResponse.json(
       { success: false, error: "Failed to delete event" },
       { status: 500 }
@@ -165,7 +166,7 @@ export async function PATCH(
       (previousEvent as { status?: string }).status !== "concluded"
     ) {
       sendFeedbackRequests(eventId, "both").catch((err) =>
-        console.error("Auto-send feedback on conclude failed:", err)
+        apiLogger.error({ err }, "Auto-send feedback on conclude failed")
       );
     }
 
@@ -174,7 +175,7 @@ export async function PATCH(
       event: updatedEvent,
     });
   } catch (error) {
-    console.error("Error updating event:", error);
+    apiLogger.error({ err: error }, "Error updating event")
     return NextResponse.json(
       { success: false, error: "Failed to update event" },
       { status: 500 }

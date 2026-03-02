@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { PartnerModel } from "@/lib/db/models/Partner";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Create event with organizer as current user
     const event = new EventModel({
       ...body,
-      organizers: [(session.user as any).id],
+      organizers: [session.user.id],
     });
 
     await event.save();
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error creating event:", error);
+    apiLogger.error({ err: error }, "Error creating event");
     return NextResponse.json(
       { success: false, error: "Failed to create event" },
       { status: 500 }
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error("Error fetching events:", error);
+    apiLogger.error({ err: error }, "Error fetching events");
     return NextResponse.json(
       { success: false, error: "Failed to fetch events" },
       { status: 500 }

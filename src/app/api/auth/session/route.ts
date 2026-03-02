@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
+import { authLogger } from "@/lib/logger";
 export async function GET() {
   try {
     const session = await auth();
@@ -11,14 +12,14 @@ export async function GET() {
 
     return NextResponse.json({
       user: {
-        id: (session.user as any).id,
+        id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        role: (session.user as any).role,
+        role: session.user.role,
       },
     });
   } catch (error) {
-    console.error("Session fetch error:", error);
+    authLogger.error({ err: error }, "Session fetch error");
     return NextResponse.json({ user: null }, { status: 500 });
   }
 }

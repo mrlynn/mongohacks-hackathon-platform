@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -98,7 +99,7 @@ export async function GET(
       projects: projectsWithScores,
     });
   } catch (error) {
-    console.error("Error fetching projects for judging:", error);
+    apiLogger.error({ err: error }, "Error fetching projects for judging");
     return NextResponse.json(
       { success: false, error: "Failed to fetch projects" },
       { status: 500 }

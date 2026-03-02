@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { EmailTemplateModel } from "@/lib/db/models/EmailTemplate";
+import { apiLogger } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       text: interpolate(template.textBody, mergedVars),
     });
   } catch (error) {
-    console.error("Email template preview error:", error);
+    apiLogger.error({ err: error }, "Email template preview error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { requireTeamMember, requireTeamLeader } from '@/lib/atlas/auth-guard';
 import { deleteCluster } from '@/lib/atlas/provisioning-service';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * GET /api/atlas/clusters/[clusterId]
@@ -29,7 +30,7 @@ export async function GET(
     // Handle corrupt records (missing teamId) — only admins can view
     if (!cluster.teamId) {
       const session = await auth();
-      if (!session?.user?.id || !['admin', 'super_admin'].includes((session.user as any).role)) {
+      if (!session?.user?.id || !['admin', 'super_admin'].includes(session.user.role)) {
         return errorResponse('Cluster has invalid data. Contact an admin.', 500);
       }
     } else {
@@ -41,7 +42,7 @@ export async function GET(
       cluster,
     });
   } catch (error) {
-    console.error('[API] Failed to get cluster:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to get cluster")
     return errorResponse(`Failed to get cluster: ${(error as Error).message}`, 500);
   }
 }
@@ -67,7 +68,7 @@ export async function DELETE(
     // Handle corrupt records (missing teamId) — only admins can delete
     if (!cluster.teamId) {
       const session = await auth();
-      if (!session?.user?.id || !['admin', 'super_admin'].includes((session.user as any).role)) {
+      if (!session?.user?.id || !['admin', 'super_admin'].includes(session.user.role)) {
         return errorResponse('Cluster has invalid data. Contact an admin to delete it.', 403);
       }
       // Admin deleting corrupt record — remove directly from database
@@ -97,7 +98,7 @@ export async function DELETE(
       message: 'Cluster deletion initiated',
     });
   } catch (error) {
-    console.error('[API] Failed to delete cluster:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to delete cluster")
     return errorResponse(`Failed to delete cluster: ${(error as Error).message}`, 500);
   }
 }

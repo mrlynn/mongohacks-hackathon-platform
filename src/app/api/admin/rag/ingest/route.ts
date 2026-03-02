@@ -6,6 +6,7 @@ import {
   runIngestion,
   isIngestionRunning,
 } from "@/lib/rag/ingestion";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   if (!(await isUserAdmin())) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ runId, status: "started" });
   } catch (error) {
-    console.error("Ingestion trigger error:", error);
+    apiLogger.error({ err: error }, "Ingestion trigger error");
     return NextResponse.json(
       { error: "Failed to start ingestion" },
       { status: 500 }

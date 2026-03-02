@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { PartnerAccessRequestModel } from "@/lib/db/models/PartnerAccessRequest";
+import { partnerLogger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       message: "Your partner access request has been submitted and is pending admin approval.",
     });
   } catch (error) {
-    console.error("Partner registration error:", error);
+    partnerLogger.error({ err: error }, "Partner registration error")
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

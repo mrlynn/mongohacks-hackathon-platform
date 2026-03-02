@@ -4,6 +4,7 @@ import { AtlasClusterModel } from '@/lib/db/models/AtlasCluster';
 import { requireTeamMember } from '@/lib/atlas/auth-guard';
 import { refreshClusterStatus } from '@/lib/atlas/status-service';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * GET /api/atlas/clusters/[clusterId]/status
@@ -42,7 +43,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('[API] Failed to refresh cluster status:', error);
+    atlasLogger.error({ err: error }, "[API] Failed to refresh cluster status")
     return errorResponse(
       `Failed to refresh status: ${(error as Error).message}`,
       500

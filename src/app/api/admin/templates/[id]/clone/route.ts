@@ -3,6 +3,7 @@ import { requireSuperAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TemplateConfigModel } from "@/lib/db/models/TemplateConfig";
 import mongoose from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -72,7 +73,7 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/templates/[id]/clone error:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/templates/[id]/clone error");
     return NextResponse.json(
       { success: false, error: "Failed to clone template" },
       { status: 500 }

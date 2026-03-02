@@ -1,0 +1,10 @@
+{
+  "testName": "MN-02: Can access events listing",
+  "role": "mentor",
+  "action": "Navigate to /events",
+  "expectedOutcome": "Events page loads",
+  "actualOutcome": "Events page loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:15.828Z",
+  "url": "http://localhost:3000/events"
+}

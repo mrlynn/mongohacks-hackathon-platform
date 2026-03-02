@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { requireAdmin } from "@/lib/admin-guard";
 import { AiUsageLogModel } from "@/lib/db/models/AiUsageLog";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -217,7 +218,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("AI analytics error:", error);
+    apiLogger.error({ err: error }, "AI analytics error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch AI analytics" },
       { status: 500 }

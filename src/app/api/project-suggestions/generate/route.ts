@@ -6,6 +6,7 @@ import { ProjectIdeaModel } from '@/lib/db/models/ProjectIdea';
 import { generateProjectIdeas } from '@/lib/ai/project-suggestion';
 import { successResponse, errorResponse } from '@/lib/utils';
 
+import { aiLogger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await request.json();
     
     const {
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       remainingGenerations: 5 - existingIdeas - 1,
     });
   } catch (error) {
-    console.error('POST /api/project-suggestions/generate error:', error);
+    aiLogger.error({ err: error }, 'POST /api/project-suggestions/generate error');
     return errorResponse(
       error instanceof Error ? error.message : 'Failed to generate ideas',
       500

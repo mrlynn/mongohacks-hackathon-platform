@@ -5,6 +5,7 @@ import { PartnerModel } from "@/lib/db/models/Partner";
 import { updatePrizeSchema } from "@/lib/db/schemas";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -40,7 +41,7 @@ export async function PATCH(
 
     return successResponse({ prize });
   } catch (error) {
-    console.error("PATCH /api/prizes/[prizeId] error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/prizes/[prizeId] error")
     return errorResponse("Failed to update prize", 500);
   }
 }
@@ -71,7 +72,7 @@ export async function DELETE(
 
     return successResponse({ message: "Prize deleted" });
   } catch (error) {
-    console.error("DELETE /api/prizes/[prizeId] error:", error);
+    apiLogger.error({ err: error }, "DELETE /api/prizes/[prizeId] error")
     return errorResponse("Failed to delete prize", 500);
   }
 }

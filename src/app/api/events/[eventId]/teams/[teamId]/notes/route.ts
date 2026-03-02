@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { TeamNoteModel } from "@/lib/db/models/TeamNote";
+import { apiLogger } from "@/lib/logger";
 
 async function verifyTeamMembership(userId: string, teamId: string) {
   const team = await TeamModel.findById(teamId).lean();
@@ -45,7 +46,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, notes });
   } catch (error) {
-    console.error("Error fetching team notes:", error);
+    apiLogger.error({ err: error }, "Error fetching team notes")
     return NextResponse.json(
       { success: false, error: "Failed to fetch notes" },
       { status: 500 }
@@ -132,7 +133,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, note: populatedNote });
   } catch (error) {
-    console.error("Error creating team note:", error);
+    apiLogger.error({ err: error }, "Error creating team note")
     return NextResponse.json(
       { success: false, error: "Failed to create note" },
       { status: 500 }

@@ -1,0 +1,10 @@
+{
+  "testName": "PT-03: Can browse events",
+  "role": "participant",
+  "action": "Navigate to /events",
+  "expectedOutcome": "Events listing loads",
+  "actualOutcome": "Events page loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:26.692Z",
+  "url": "http://localhost:3000/events"
+}

@@ -5,13 +5,14 @@ import {
   getIngestionStats,
   isIngestionRunning,
 } from "@/lib/rag/ingestion";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   const session = await auth();
-  console.log("[RAG status] session:", JSON.stringify(session?.user, null, 2));
+  apiLogger.info({ data: JSON.stringify(session?.user, null, 2) }, "[RAG status] session:");
 
   const adminCheck = await isUserAdmin();
-  console.log("[RAG status] isUserAdmin:", adminCheck);
+  apiLogger.info({ data: adminCheck }, "[RAG status] isUserAdmin:");
 
   if (!adminCheck) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -28,7 +29,7 @@ export async function GET() {
       ...stats,
     });
   } catch (error) {
-    console.error("RAG status error:", error);
+    apiLogger.error({ err: error }, "RAG status error");
     return NextResponse.json(
       { error: "Failed to fetch RAG status" },
       { status: 500 }

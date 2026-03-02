@@ -6,6 +6,7 @@ import {
   runScheduledCleanup,
   findEventsNeedingCleanup,
 } from '@/lib/atlas/cleanup-service';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * POST /api/atlas/admin/cleanup
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
+    if (!['admin', 'super_admin'].includes(session.user.role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
       reports,
     });
   } catch (error) {
-    console.error('[API] Cleanup failed:', error);
+    atlasLogger.error({ err: error }, "[API] Cleanup failed")
     return errorResponse(
       `Cleanup failed: ${(error as Error).message}`,
       500
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
+    if (!['admin', 'super_admin'].includes(session.user.role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -106,7 +107,7 @@ export async function GET(req: NextRequest) {
       eventIds,
     });
   } catch (error) {
-    console.error('[API] Cleanup preview failed:', error);
+    atlasLogger.error({ err: error }, "[API] Cleanup preview failed")
     return errorResponse(
       `Failed to preview cleanup: ${(error as Error).message}`,
       500

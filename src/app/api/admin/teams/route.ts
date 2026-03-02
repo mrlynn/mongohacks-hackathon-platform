@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { serializeDocs } from "@/lib/utils/serialize";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       teams: formattedTeams,
     });
   } catch (error) {
-    console.error("Error fetching teams:", error);
+    apiLogger.error({ err: error }, "Error fetching teams");
     return NextResponse.json(
       { success: false, error: "Failed to fetch teams" },
       { status: 500 }

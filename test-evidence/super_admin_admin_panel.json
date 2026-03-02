@@ -1,0 +1,10 @@
+{
+  "testName": "SA-02: Can access admin panel",
+  "role": "super_admin",
+  "action": "Navigate to /admin",
+  "expectedOutcome": "Admin panel loads without redirect",
+  "actualOutcome": "Admin panel loaded successfully",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:37.891Z",
+  "url": "http://localhost:3000/admin"
+}

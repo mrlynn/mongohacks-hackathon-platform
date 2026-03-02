@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { deleteCluster } from '@/lib/atlas/provisioning-service';
 import { errorResponse } from '@/lib/utils';
+import { atlasLogger } from "@/lib/logger";
 
 /**
  * DELETE /api/atlas/admin/clusters/[clusterId]
@@ -18,7 +19,7 @@ export async function DELETE(
     }
 
     // Require admin role
-    if (!['admin', 'super_admin'].includes((session.user as any).role)) {
+    if (!['admin', 'super_admin'].includes(session.user.role)) {
       return errorResponse('Admin access required', 403);
     }
 
@@ -32,7 +33,7 @@ export async function DELETE(
       message: 'Cluster deletion initiated by admin',
     });
   } catch (error) {
-    console.error('[API] Admin cluster delete failed:', error);
+    atlasLogger.error({ err: error }, "[API] Admin cluster delete failed")
     return errorResponse(
       `Failed to delete cluster: ${(error as Error).message}`,
       500

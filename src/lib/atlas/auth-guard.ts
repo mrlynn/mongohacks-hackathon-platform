@@ -17,7 +17,7 @@ export async function requireTeamLeader(teamId: string | null | undefined) {
   }
 
   // Admins bypass team leader check
-  if (['admin', 'super_admin'].includes((session.user as any).role)) {
+  if (['admin', 'super_admin'].includes(session.user.role)) {
     return session;
   }
 
@@ -53,7 +53,7 @@ export async function requireTeamMember(teamId: string | null | undefined) {
   }
 
   // Admins bypass team member check
-  if (['admin', 'super_admin'].includes((session.user as any).role)) {
+  if (['admin', 'super_admin'].includes(session.user.role)) {
     return session;
   }
 

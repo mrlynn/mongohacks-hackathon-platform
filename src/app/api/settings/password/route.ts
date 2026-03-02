@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import bcrypt from "bcryptjs";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await request.json();
 
     const { currentPassword, newPassword } = body;
@@ -66,7 +67,7 @@ export async function PATCH(request: NextRequest) {
       message: "Password updated successfully",
     });
   } catch (error) {
-    console.error("Error updating password:", error);
+    apiLogger.error({ err: error }, "Error updating password");
     return NextResponse.json(
       { success: false, message: "Failed to update password" },
       { status: 500 }

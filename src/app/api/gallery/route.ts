@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import "@/lib/db/models/Team";
 import "@/lib/db/models/Event";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, projects });
   } catch (error) {
-    console.error("GET /api/gallery error:", error);
+    apiLogger.error({ err: error }, "GET /api/gallery error");
     return NextResponse.json(
       { success: false, error: "Failed to fetch featured projects" },
       { status: 500 }

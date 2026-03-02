@@ -5,6 +5,7 @@ import { EventModel } from '@/lib/db/models/Event';
 import { ProjectModel } from '@/lib/db/models/Project';
 import { successResponse, errorResponse } from '@/lib/utils';
 
+import { aiLogger } from '@/lib/logger';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     await connectToDatabase();
 
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
       registeredCount,
     });
   } catch (error) {
-    console.error('GET /api/project-suggestions/events error:', error);
+    aiLogger.error({ err: error }, 'GET /api/project-suggestions/events error');
     return errorResponse('Failed to fetch events', 500);
   }
 }

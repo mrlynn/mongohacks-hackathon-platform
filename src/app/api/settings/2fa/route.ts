@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -64,7 +65,7 @@ export async function PATCH(request: NextRequest) {
       message: enabled ? "Two-factor authentication enabled" : "Two-factor authentication disabled",
     });
   } catch (error) {
-    console.error("2FA settings error:", error);
+    apiLogger.error({ err: error }, "2FA settings error");
     return NextResponse.json(
       { success: false, message: "Something went wrong" },
       { status: 500 }
@@ -91,7 +92,7 @@ export async function GET() {
       twoFactorEnabled: user?.twoFactorEnabled || false,
     });
   } catch (error) {
-    console.error("2FA settings GET error:", error);
+    apiLogger.error({ err: error }, "2FA settings GET error");
     return NextResponse.json(
       { success: false, message: "Something went wrong" },
       { status: 500 }

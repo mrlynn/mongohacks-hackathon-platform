@@ -6,6 +6,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { TeamModel } from "@/lib/db/models/Team";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { serializeDoc, serializeDocs } from "@/lib/utils/serialize";
+import { apiLogger } from "@/lib/logger";
 
 // Calculate next milestone based on event state and participant progress
 function calculateNextMilestone(
@@ -278,7 +279,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching hub data:", error);
+    apiLogger.error({ err: error }, "Error fetching hub data")
     return NextResponse.json(
       {
         success: false,

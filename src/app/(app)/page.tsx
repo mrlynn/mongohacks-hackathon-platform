@@ -34,7 +34,7 @@ export default async function HomePage() {
     ? {
         name: session.user.name || undefined,
         email: session.user.email || undefined,
-        role: (session.user as any).role,
+        role: session.user.role,
       }
     : null;
 

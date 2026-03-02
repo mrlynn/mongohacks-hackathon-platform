@@ -4,6 +4,7 @@ import { PartnerModel } from "@/lib/db/models/Partner";
 import { createPartnerSchema } from "@/lib/db/schemas";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("GET /api/partners error:", error);
+    partnerLogger.error({ err: error }, "GET /api/partners error")
     return errorResponse("Failed to fetch partners", 500);
   }
 }
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    if ((session.user as any).role !== "admin") {
+    if (session.user.role !== "admin") {
       return errorResponse("Forbidden - Admin access required", 403);
     }
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error) {
-    console.error("POST /api/partners error:", error);
+    partnerLogger.error({ err: error }, "POST /api/partners error")
     return errorResponse("Failed to create partner", 500);
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RagDocumentModel } from "@/lib/db/models/RagDocument";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   if (!(await isUserAdmin())) {
@@ -40,7 +41,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("RAG files error:", error);
+    apiLogger.error({ err: error }, "RAG files error");
     return NextResponse.json(
       { error: "Failed to fetch indexed files" },
       { status: 500 }

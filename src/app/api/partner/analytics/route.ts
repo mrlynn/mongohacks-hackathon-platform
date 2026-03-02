@@ -5,6 +5,7 @@ import { PartnerModel } from "@/lib/db/models/Partner";
 import { EventModel } from "@/lib/db/models/Event";
 import { PrizeModel } from "@/lib/db/models/Prize";
 import { ProjectModel } from "@/lib/db/models/Project";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -79,7 +80,7 @@ export async function GET() {
       eventStats,
     });
   } catch (error) {
-    console.error("Partner analytics GET error:", error);
+    partnerLogger.error({ err: error }, "Partner analytics GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

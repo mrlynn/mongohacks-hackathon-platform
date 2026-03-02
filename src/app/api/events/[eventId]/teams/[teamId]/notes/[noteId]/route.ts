@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { TeamModel } from "@/lib/db/models/Team";
 import { TeamNoteModel } from "@/lib/db/models/TeamNote";
+import { apiLogger } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -83,7 +84,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, note: populatedNote });
   } catch (error) {
-    console.error("Error editing team note:", error);
+    apiLogger.error({ err: error }, "Error editing team note")
     return NextResponse.json(
       { success: false, error: "Failed to edit note" },
       { status: 500 }
@@ -151,7 +152,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting team note:", error);
+    apiLogger.error({ err: error }, "Error deleting team note")
     return NextResponse.json(
       { success: false, error: "Failed to delete note" },
       { status: 500 }

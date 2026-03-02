@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { PartnerModel } from "@/lib/db/models/Partner";
 import { EventModel } from "@/lib/db/models/Event";
 import { FeedbackResponseModel } from "@/lib/db/models/FeedbackResponse";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -65,7 +66,7 @@ export async function GET() {
 
     return NextResponse.json({ feedbackEvents });
   } catch (error) {
-    console.error("Partner feedback GET error:", error);
+    partnerLogger.error({ err: error }, "Partner feedback GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

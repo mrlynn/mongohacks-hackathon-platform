@@ -25,6 +25,7 @@ export default function JourneyDrawer() {
     journeyMap,
     completedSteps,
     isDrawerOpen,
+    isDismissed,
     isLoading,
     progress,
     isPreviewMode,
@@ -44,6 +45,11 @@ export default function JourneyDrawer() {
     completedSteps.has(s.id)
   ).length;
   const allComplete = completedCount === effectiveSteps.length;
+
+  // Never render the journey drawer once dismissed or fully complete
+  if (isDismissed || allComplete) {
+    return null;
+  }
 
   const handleFirstLoginDismiss = () => {
     markFirstLoginSeen();

@@ -5,6 +5,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { successResponse, errorResponse } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { isValidObjectId } from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -34,7 +35,7 @@ export async function GET(
     // Check if the current user is already registered
     let isRegistered = false;
     if (session?.user) {
-      const userId = (session.user as any).id;
+      const userId = session.user.id;
       const participant = await ParticipantModel.findOne({
         userId,
         "registeredEvents.eventId": eventId,
@@ -56,7 +57,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("GET /api/events/[eventId] error:", error);
+    apiLogger.error({ err: error }, "GET /api/events/[eventId] error")
     return errorResponse("Failed to fetch event", 500);
   }
 }

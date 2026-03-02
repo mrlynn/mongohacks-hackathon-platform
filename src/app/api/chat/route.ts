@@ -11,6 +11,7 @@ import {
 import { checkRateLimit } from "@/lib/rag/rate-limit";
 import type { ChatMessageSource } from "@/lib/rag/types";
 
+import { aiLogger } from "@/lib/logger";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
             )
           );
           controller.close();
-          console.error("Chat stream error:", errorMessage);
+          aiLogger.error({ err: errorMessage }, "Chat stream error");
         }
       },
     });
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    aiLogger.error({ err: error }, "Chat API error");
     return Response.json(
       { error: "Internal server error" },
       { status: 500 }

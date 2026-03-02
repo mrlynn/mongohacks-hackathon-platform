@@ -26,7 +26,7 @@ async function checkAtlasClusters() {
     // Check for the phantom ID (try both string and ObjectId)
     const phantomId = '69a2b76edf6e529f3e10a134';
     
-    const phantomString = await db.collection('atlasclusters').findOne({ _id: phantomId });
+    const phantomString = await db.collection('atlasclusters').findOne({ _id: phantomId as unknown as ObjectId });
     console.log(`\nPhantom as string (_id: "${phantomId}"):`, phantomString ? 'FOUND' : 'NOT FOUND');
     
     try {

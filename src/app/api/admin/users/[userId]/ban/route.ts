@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
+import { apiLogger } from "@/lib/logger";
 
 const BanSchema = z.object({
   reason: z.string().min(1).max(500).optional(),
@@ -26,7 +27,7 @@ export async function POST(
     }
 
     // Admin authorization check
-    const userRole = (session.user as any).role;
+    const userRole = session.user.role;
     if (!["admin", "super_admin"].includes(userRole)) {
       return NextResponse.json(
         { error: "Admin access required" },
@@ -95,7 +96,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("POST /api/admin/users/[userId]/ban:", error);
+    apiLogger.error({ err: error }, "POST /api/admin/users/[userId]/ban");
     return NextResponse.json(
       { error: "Failed to update ban status" },
       { status: 500 }

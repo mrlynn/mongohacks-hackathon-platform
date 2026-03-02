@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEffectivePartnerIdForApi } from "@/lib/partner-context-api";
 import { connectToDatabase } from "@/lib/db/connection";
 import { PartnerModel } from "@/lib/db/models/Partner";
+import { partnerLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -22,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json({ partner });
   } catch (error) {
-    console.error("Partner profile GET error:", error);
+    partnerLogger.error({ err: error }, "Partner profile GET error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -61,7 +62,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ partner });
   } catch (error) {
-    console.error("Partner profile PATCH error:", error);
+    partnerLogger.error({ err: error }, "Partner profile PATCH error")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

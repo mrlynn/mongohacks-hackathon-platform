@@ -1,0 +1,10 @@
+{
+  "testName": "O-03: Can access events management",
+  "role": "organizer",
+  "action": "Navigate to /admin/events",
+  "expectedOutcome": "Events page loads",
+  "actualOutcome": "Events page loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:20.425Z",
+  "url": "http://localhost:3000/admin/events"
+}

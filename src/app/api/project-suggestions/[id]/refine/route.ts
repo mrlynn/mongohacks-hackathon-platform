@@ -6,6 +6,7 @@ import { EventModel } from '@/lib/db/models/Event';
 import { generateProjectIdeas } from '@/lib/ai/project-suggestion';
 import { successResponse, errorResponse } from '@/lib/utils';
 
+import { aiLogger } from '@/lib/logger';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,7 +17,7 @@ export async function POST(
       return errorResponse('Unauthorized', 401);
     }
 
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const { id } = await params;
     const body = await request.json();
     const { refinement } = body;
@@ -123,7 +124,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error('POST /api/project-suggestions/[id]/refine error:', error);
+    aiLogger.error({ err: error }, 'POST /api/project-suggestions/[id]/refine error');
     return errorResponse(
       error instanceof Error ? error.message : 'Failed to refine idea',
       500

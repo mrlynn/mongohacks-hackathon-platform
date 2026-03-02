@@ -1,0 +1,10 @@
+{
+  "testName": "J-05: CANNOT access partner portal",
+  "role": "judge",
+  "action": "Navigate to /partner",
+  "expectedOutcome": "Redirect away from /partner",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:09.215Z",
+  "url": "http://localhost:3000/dashboard"
+}

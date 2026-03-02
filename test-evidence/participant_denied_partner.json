@@ -1,0 +1,10 @@
+{
+  "testName": "PT-05: CANNOT access partner portal",
+  "role": "participant",
+  "action": "Navigate to /partner",
+  "expectedOutcome": "Redirect away from /partner",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:29.904Z",
+  "url": "http://localhost:3000/dashboard"
+}

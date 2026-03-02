@@ -5,6 +5,7 @@ import { ParticipantModel } from "@/lib/db/models/Participant";
 import { createEventSchema } from "@/lib/db/schemas";
 import { auth } from "@/lib/auth";
 import { errorResponse, successResponse } from "@/lib/utils";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("GET /api/events error:", error);
+    apiLogger.error({ err: error }, "GET /api/events error");
     return errorResponse("Failed to fetch events", 500);
   }
 }
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     return successResponse(event, 201);
   } catch (error) {
-    console.error("POST /api/events error:", error);
+    apiLogger.error({ err: error }, "POST /api/events error");
     return errorResponse("Failed to create event", 500);
   }
 }

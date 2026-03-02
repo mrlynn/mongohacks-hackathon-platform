@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db/connection";
 import { EventModel } from "@/lib/db/models/Event";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
+import { apiLogger } from "@/lib/logger";
 
 const DEFAULT_CRITERIA = [
   { name: "innovation", description: "How novel and creative is the solution?", weight: 1, maxScore: 10 },
@@ -157,7 +158,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("GET /api/events/[eventId]/results error:", error);
+    apiLogger.error({ err: error }, "GET /api/events/[eventId]/results error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch results" },
       { status: 500 }

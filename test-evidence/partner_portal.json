@@ -1,0 +1,10 @@
+{
+  "testName": "P-02: Can access partner portal",
+  "role": "partner",
+  "action": "Navigate to /partner",
+  "expectedOutcome": "Partner portal loads",
+  "actualOutcome": "Partner portal loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:33.209Z",
+  "url": "http://localhost:3000/partner"
+}

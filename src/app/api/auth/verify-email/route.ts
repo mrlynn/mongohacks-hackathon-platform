@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 
+import { authLogger } from "@/lib/logger";
 /**
  * GET /api/auth/verify-email?token=xxx
  * Verify user's email address via token
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
       )
     );
   } catch (error) {
-    console.error("GET /api/auth/verify-email:", error);
+    authLogger.error({ err: error }, "GET /api/auth/verify-email");
     return NextResponse.redirect(
       new URL(
         "/login?error=Verification failed. Please try again.",

@@ -5,6 +5,7 @@ import { UserModel } from "@/lib/db/models/User";
 import { sendEmail } from "@/lib/email/email-service";
 import { renderEmailTemplate } from "@/lib/email/template-renderer";
 
+import { authLogger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
       message: "If an account exists, a magic link has been sent to your email.",
     });
   } catch (error) {
-    console.error("Magic link request error:", error);
+    authLogger.error({ err: error }, "Magic link request error");
     return NextResponse.json(
       { success: false, message: "Something went wrong" },
       { status: 500 }

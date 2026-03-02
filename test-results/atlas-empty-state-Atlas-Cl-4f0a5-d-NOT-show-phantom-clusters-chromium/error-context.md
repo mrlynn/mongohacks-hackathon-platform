@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - banner [ref=e12]:
+    - generic [ref=e14]:
+      - img "MongoDB" [ref=e15]
+      - link "MongoDB Hackathons" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - heading "MongoDB Hackathons" [level=6] [ref=e17]
+      - generic [ref=e18]:
+        - button "Toggle theme" [ref=e19] [cursor=pointer]:
+          - img [ref=e20]
+        - button "Notifications" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]:
+            - img [ref=e24]
+            - generic: "0"
+        - link "Events" [ref=e26] [cursor=pointer]:
+          - /url: /events
+          - img [ref=e28]
+          - text: Events
+        - link "Map" [ref=e30] [cursor=pointer]:
+          - /url: /events/map
+          - img [ref=e32]
+          - text: Map
+        - link "Gallery" [ref=e34] [cursor=pointer]:
+          - /url: /gallery
+          - img [ref=e36]
+          - text: Gallery
+        - link "Ideas" [ref=e38] [cursor=pointer]:
+          - /url: /project-suggestions
+          - img [ref=e40]
+          - text: Ideas
+        - link "Docs" [ref=e42] [cursor=pointer]:
+          - /url: https://docs.mongohacks.com
+          - img [ref=e44]
+          - text: Docs
+        - button "A" [active] [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: A
+  - generic [ref=e49]:
+    - generic [ref=e52]:
+      - generic [ref=e53]:
+        - generic [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: Overview
+          - img [ref=e56]
+        - list [ref=e61]:
+          - listitem [ref=e62]:
+            - link "Dashboard" [ref=e63] [cursor=pointer]:
+              - /url: /admin
+              - button "Dashboard" [ref=e64]:
+                - img [ref=e66]
+                - generic [ref=e69]: Dashboard
+          - listitem [ref=e70]:
+            - link "Analytics" [ref=e71] [cursor=pointer]:
+              - /url: /admin/analytics
+              - button "Analytics" [ref=e72]:
+                - img [ref=e74]
+                - generic [ref=e77]: Analytics
+      - generic [ref=e79] [cursor=pointer]:
+        - generic [ref=e80]: Event Management
+        - img [ref=e81]
+      - generic [ref=e84] [cursor=pointer]:
+        - generic [ref=e85]: Administration
+        - img [ref=e86]
+    - main [ref=e88]:
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - heading "Admin Dashboard" [level=4] [ref=e92]
+          - paragraph [ref=e93]: Manage your hackathon platform from this central console
+        - generic [ref=e94]:
+          - generic [ref=e97]:
+            - img [ref=e100]
+            - heading "8" [level=4] [ref=e102]
+            - paragraph [ref=e103]: Total Events
+            - generic [ref=e105]: 4 active
+          - generic [ref=e108]:
+            - img [ref=e111]
+            - heading "84" [level=4] [ref=e113]
+            - paragraph [ref=e114]: Total Users
+            - generic [ref=e116]: 63 participants
+          - generic [ref=e119]:
+            - img [ref=e122]
+            - heading "26" [level=4] [ref=e124]
+            - paragraph [ref=e125]: Projects
+            - generic [ref=e127]: Submitted
+          - generic [ref=e130]:
+            - img [ref=e133]
+            - heading "9" [level=4] [ref=e135]
+            - paragraph [ref=e136]: Judges
+            - generic [ref=e138]: 3 organizers
+        - generic [ref=e140]:
+          - heading "Quick Actions" [level=6] [ref=e141]
+          - generic [ref=e142]:
+            - link "Create Event" [ref=e143] [cursor=pointer]:
+              - /url: /admin/events/new
+              - generic [ref=e144]: Create Event
+            - link "Manage Users" [ref=e145] [cursor=pointer]:
+              - /url: /admin/users
+              - generic [ref=e146]: Manage Users
+            - link "View Projects" [ref=e147] [cursor=pointer]:
+              - /url: /admin/projects
+              - generic [ref=e148]: View Projects
+            - link "Assign Judges" [ref=e149] [cursor=pointer]:
+              - /url: /admin/judges
+              - generic [ref=e150]: Assign Judges
+  - button "Open chat assistant" [ref=e151] [cursor=pointer]:
+    - img [ref=e152]
+  - button "Your Journey" [ref=e154] [cursor=pointer]:
+    - progressbar [ref=e155]:
+      - img [ref=e156]
+    - img [ref=e158]
+```

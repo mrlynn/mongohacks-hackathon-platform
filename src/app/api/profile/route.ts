@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db/connection";
 import { UserModel } from "@/lib/db/models/User";
 import { ParticipantModel } from "@/lib/db/models/Participant";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     const participant = await ParticipantModel.findOne({ userId }).lean();
 
@@ -30,7 +31,7 @@ export async function GET() {
         : null,
     });
   } catch (error) {
-    console.error("Error fetching profile:", error);
+    apiLogger.error({ err: error }, "Error fetching profile");
     return NextResponse.json(
       { success: false, message: "Failed to fetch profile" },
       { status: 500 }
@@ -49,7 +50,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await connectToDatabase();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
     const body = await request.json();
 
     const { name, bio, skills, interests, experience_level } = body;
@@ -73,8 +74,8 @@ export async function PATCH(request: NextRequest) {
       // Create new participant profile
       await ParticipantModel.create({
         userId,
-        email: (session.user as any).email,
-        name: name || (session.user as any).name,
+        email: session.user.email,
+        name: name || session.user.name,
         bio: bio || "",
         skills: skills || [],
         interests: interests || [],
@@ -87,7 +88,7 @@ export async function PATCH(request: NextRequest) {
       message: "Profile updated successfully",
     });
   } catch (error) {
-    console.error("Error updating profile:", error);
+    apiLogger.error({ err: error }, "Error updating profile");
     return NextResponse.json(
       { success: false, message: "Failed to update profile" },
       { status: 500 }

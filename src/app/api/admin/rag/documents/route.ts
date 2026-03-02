@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isUserAdmin } from "@/lib/admin-guard";
 import { deleteAllDocuments } from "@/lib/rag/ingestion";
+import { apiLogger } from "@/lib/logger";
 
 export async function DELETE() {
   if (!(await isUserAdmin())) {
@@ -15,7 +16,7 @@ export async function DELETE() {
       deletedCount,
     });
   } catch (error) {
-    console.error("RAG delete error:", error);
+    apiLogger.error({ err: error }, "RAG delete error");
     return NextResponse.json(
       { error: "Failed to delete documents" },
       { status: 500 }

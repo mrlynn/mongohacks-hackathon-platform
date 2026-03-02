@@ -1,0 +1,10 @@
+{
+  "testName": "M-02: Can access admin panel",
+  "role": "marketer",
+  "action": "Navigate to /admin",
+  "expectedOutcome": "Admin panel loads (marketing-focused)",
+  "actualOutcome": "Admin panel loaded",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:12.338Z",
+  "url": "http://localhost:3000/admin"
+}

@@ -5,6 +5,7 @@ import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
 import { TeamModel } from "@/lib/db/models/Team";
 import { synthesizeJudgeFeedback } from "@/lib/ai/feedback-service";
+import { apiLogger } from "@/lib/logger";
 
 /**
  * GET  — returns existing aiFeedback (or 404 if not yet generated)
@@ -34,7 +35,7 @@ export async function GET(
       status: project.status,
     });
   } catch (error) {
-    console.error("GET feedback error:", error);
+    apiLogger.error({ err: error }, "GET feedback error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch feedback" },
       { status: 500 }
@@ -111,7 +112,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, aiFeedback: feedback });
   } catch (error) {
-    console.error("POST feedback error:", error);
+    apiLogger.error({ err: error }, "POST feedback error")
     return NextResponse.json(
       { success: false, error: "Failed to generate feedback" },
       { status: 500 }

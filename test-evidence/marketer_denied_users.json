@@ -1,0 +1,10 @@
+{
+  "testName": "M-04: CANNOT access user management",
+  "role": "marketer",
+  "action": "Navigate to /admin/users",
+  "expectedOutcome": "Redirect away from users page",
+  "actualOutcome": "Redirected to /admin",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:15.468Z",
+  "url": "http://localhost:3000/admin"
+}

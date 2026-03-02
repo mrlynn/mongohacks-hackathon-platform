@@ -1,0 +1,10 @@
+{
+  "testName": "M-01: Login redirects appropriately",
+  "role": "marketer",
+  "action": "Login with marketer credentials",
+  "expectedOutcome": "Redirect to /dashboard or /admin",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:10.912Z",
+  "url": "http://localhost:3000/dashboard"
+}

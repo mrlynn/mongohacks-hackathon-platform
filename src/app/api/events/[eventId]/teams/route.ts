@@ -5,6 +5,7 @@ import { TeamModel } from "@/lib/db/models/Team";
 import { ParticipantModel } from "@/lib/db/models/Participant";
 import { UserModel } from "@/lib/db/models/User";
 import { generateEmbedding } from "@/lib/ai/embedding-service";
+import { apiLogger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -89,7 +90,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Error creating team:", error);
+    apiLogger.error({ err: error }, "Error creating team")
     return NextResponse.json(
       { success: false, error: "Failed to create team" },
       { status: 500 }
@@ -118,7 +119,7 @@ export async function GET(
       })),
     });
   } catch (error) {
-    console.error("Error fetching teams:", error);
+    apiLogger.error({ err: error }, "Error fetching teams")
     return NextResponse.json(
       { success: false, error: "Failed to fetch teams" },
       { status: 500 }

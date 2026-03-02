@@ -1,0 +1,10 @@
+{
+  "testName": "SA-01: Login redirects to dashboard or admin",
+  "role": "super_admin",
+  "action": "Login with super_admin credentials",
+  "expectedOutcome": "Redirect to /dashboard or /admin",
+  "actualOutcome": "Redirected to /dashboard",
+  "success": true,
+  "timestamp": "2026-03-01T14:20:36.233Z",
+  "url": "http://localhost:3000/dashboard"
+}

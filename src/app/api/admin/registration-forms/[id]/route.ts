@@ -4,6 +4,7 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { RegistrationFormConfigModel } from "@/lib/db/models/RegistrationFormConfig";
 import mongoose from "mongoose";
+import { apiLogger } from "@/lib/logger";
 
 function findFormByIdOrSlug(id: string) {
   if (mongoose.Types.ObjectId.isValid(id)) {
@@ -46,7 +47,7 @@ export async function GET(
       form: JSON.parse(JSON.stringify(form)),
     });
   } catch (error) {
-    console.error("GET /api/admin/registration-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "GET /api/admin/registration-forms/[id] error")
     return NextResponse.json(
       { success: false, error: "Failed to fetch registration form" },
       { status: 500 }
@@ -136,7 +137,7 @@ export async function PATCH(
       form: JSON.parse(JSON.stringify(form.toObject())),
     });
   } catch (error) {
-    console.error("PATCH /api/admin/registration-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "PATCH /api/admin/registration-forms/[id] error")
     return NextResponse.json(
       { success: false, error: "Failed to update registration form" },
       { status: 500 }
@@ -183,7 +184,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/admin/registration-forms/[id] error:", error);
+    apiLogger.error({ err: error }, "DELETE /api/admin/registration-forms/[id] error")
     return NextResponse.json(
       { success: false, error: "Failed to delete registration form" },
       { status: 500 }

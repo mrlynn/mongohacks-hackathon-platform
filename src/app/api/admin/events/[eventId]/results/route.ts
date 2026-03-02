@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectToDatabase } from "@/lib/db/connection";
 import { ProjectModel } from "@/lib/db/models/Project";
 import { ScoreModel } from "@/lib/db/models/Score";
+import { apiLogger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -100,7 +101,7 @@ export async function GET(
       results,
     });
   } catch (error) {
-    console.error("Error fetching results:", error);
+    apiLogger.error({ err: error }, "Error fetching results");
     return NextResponse.json(
       { success: false, error: "Failed to fetch results" },
       { status: 500 }
