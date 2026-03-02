@@ -148,7 +148,7 @@ export async function POST(
       ...body,
       eventId,
       teamId: team._id,
-      teamMembers: team.members.map((m: any) => m._id),
+      teamMembers: team.members.map((m: { _id: unknown }) => m._id),
     });
 
     await project.save();
@@ -177,17 +177,30 @@ export async function GET(
     await connectToDatabase();
     const { eventId } = await params;
 
-    const projects = await ProjectModel.find({ eventId, status: "submitted" })
-      .populate("teamId", "name")
-      .populate("teamMembers", "name email")
-      .sort({ submissionDate: -1 });
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+    const skip = (page - 1) * limit;
+
+    const filter = { eventId, status: "submitted" as const };
+    const [projects, total] = await Promise.all([
+      ProjectModel.find(filter)
+        .populate("teamId", "name")
+        .populate("teamMembers", "name email")
+        .sort({ submissionDate: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ProjectModel.countDocuments(filter),
+    ]);
 
     return NextResponse.json({
       success: true,
       projects: projects.map((project) => ({
-        ...project.toObject(),
+        ...project,
         _id: project._id.toString(),
       })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     apiLogger.error({ err: error }, "Error fetching projects")

@@ -27,7 +27,7 @@ const ScoreSchema = new Schema<IScore>(
 
 // Indexes
 ScoreSchema.index({ projectId: 1, judgeId: 1 }, { unique: true }); // One score per judge per project
-ScoreSchema.index({ eventId: 1 });
+ScoreSchema.index({ eventId: 1, totalScore: -1 }); // Ranking queries: scores by event sorted by total
 ScoreSchema.index({ judgeId: 1 });
 
 // Pre-save hook to calculate total score from all criteria

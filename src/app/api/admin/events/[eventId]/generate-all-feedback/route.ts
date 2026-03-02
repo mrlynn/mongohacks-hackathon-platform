@@ -54,6 +54,20 @@ export async function POST(
       });
     }
 
+    // Batch-fetch all scores for these projects (eliminates N+1)
+    const projectIds = projects.map((p) => p._id);
+    const allScores = await ScoreModel.find({
+      projectId: { $in: projectIds },
+    }).lean();
+
+    // Group scores by project
+    const scoresByProject = new Map<string, typeof allScores>();
+    for (const score of allScores) {
+      const pid = score.projectId.toString();
+      if (!scoresByProject.has(pid)) scoresByProject.set(pid, []);
+      scoresByProject.get(pid)!.push(score);
+    }
+
     let successCount = 0;
     let failCount = 0;
     const errors: string[] = [];
@@ -61,10 +75,7 @@ export async function POST(
     // Generate feedback for each project
     for (const project of projects) {
       try {
-        // Get judge scores for this project
-        const scores = await ScoreModel.find({
-          projectId: project._id,
-        }).lean();
+        const scores = scoresByProject.get(project._id.toString()) || [];
 
         if (scores.length === 0) {
           // Skip projects with no scores

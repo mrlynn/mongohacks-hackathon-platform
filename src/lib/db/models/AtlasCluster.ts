@@ -47,8 +47,8 @@ export interface IAtlasCluster extends Document {
 
 const AtlasClusterSchema = new Schema<IAtlasCluster>(
   {
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true, index: true },
-    teamId: { type: Schema.Types.ObjectId, ref: 'Team', required: true, index: true },
+    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
+    teamId: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
     projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
     provisionedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 

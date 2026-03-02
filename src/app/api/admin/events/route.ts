@@ -63,12 +63,13 @@ export async function GET(request: NextRequest) {
       .populate("organizers", "name email")
       .populate("partners", "name tier logo")
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(100)
+      .lean();
 
     return NextResponse.json({
       success: true,
       events: events.map((event) => ({
-        ...event.toObject(),
+        ...event,
         _id: event._id.toString(),
       })),
     });

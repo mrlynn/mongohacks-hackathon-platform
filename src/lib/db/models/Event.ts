@@ -200,8 +200,7 @@ const EventSchema = new Schema<IEvent>(
 );
 
 // Indexes
-EventSchema.index({ status: 1 });
-EventSchema.index({ startDate: 1 });
+EventSchema.index({ status: 1, startDate: 1 }); // Compound: event listing filtered by status, sorted by date
 EventSchema.index({ tags: 1 });
 EventSchema.index({ coordinates: "2dsphere" }); // Geospatial index for map queries
 EventSchema.index({ country: 1, city: 1 });

@@ -19,6 +19,7 @@ export async function GET(
     const participants = await ParticipantModel.find({
       "registeredEvents.eventId": eventId,
     })
+      .select("userId name email bio skills experience_level registeredEvents teamId")
       .populate("userId", "email name")
       .lean();
 

@@ -106,17 +106,30 @@ export async function GET(
     await connectToDatabase();
     const { eventId } = await params;
 
-    const teams = await TeamModel.find({ eventId })
-      .populate("members", "name email")
-      .populate("leaderId", "name email")
-      .sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+    const skip = (page - 1) * limit;
+
+    const filter = { eventId };
+    const [teams, total] = await Promise.all([
+      TeamModel.find(filter)
+        .populate("members", "name email")
+        .populate("leaderId", "name email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      TeamModel.countDocuments(filter),
+    ]);
 
     return NextResponse.json({
       success: true,
       teams: teams.map((team) => ({
-        ...team.toObject(),
+        ...team,
         _id: team._id.toString(),
       })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     apiLogger.error({ err: error }, "Error fetching teams")
