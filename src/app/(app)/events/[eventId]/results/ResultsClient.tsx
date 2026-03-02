@@ -169,7 +169,7 @@ export default function ResultsClient({
         <Box
           sx={{
             textAlign: "center",
-            background: "linear-gradient(135deg, #00684A 0%, #00ED64 100%)",
+            background: "linear-gradient(135deg, var(--mui-palette-primary-main) 0%, var(--mui-palette-primary-light) 100%)",
             color: "white",
             borderRadius: 2,
             p: { xs: 3, sm: 4 },
@@ -458,10 +458,10 @@ export default function ResultsClient({
                           sx={{
                             bgcolor: "rgba(0, 237, 100, 0.08)",
                             borderLeft: 4,
-                            borderColor: "#00ED64",
+                            borderColor: "primary.light",
                           }}
                         >
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "primary.main" }}>
                             AI-Generated Summary
                           </Typography>
                           <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
@@ -479,10 +479,10 @@ export default function ResultsClient({
                         sx={{
                           bgcolor: "rgba(0, 104, 74, 0.08)",
                           borderLeft: 4,
-                          borderColor: "#00684A",
+                          borderColor: "primary.main",
                         }}
                       >
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "primary.main" }}>
                           AI Feedback
                         </Typography>
                         <Typography variant="body2" sx={{ lineHeight: 1.7, whiteSpace: "pre-line" }}>

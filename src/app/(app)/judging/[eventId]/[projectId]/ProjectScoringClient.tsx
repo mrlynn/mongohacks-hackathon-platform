@@ -267,10 +267,10 @@ export default function ProjectScoringClient({
             mb: 3,
             bgcolor: "rgba(0, 237, 100, 0.08)",
             borderLeft: 4,
-            borderColor: "#00ED64",
+            borderColor: "primary.light",
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "#00684A" }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: "primary.main" }}>
             AI-Generated Summary
           </Typography>
           <Typography variant="body2" sx={{ lineHeight: 1.7 }}>

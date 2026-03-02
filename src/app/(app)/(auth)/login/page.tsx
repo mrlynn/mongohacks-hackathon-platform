@@ -275,7 +275,7 @@ function LoginForm() {
               <Link
                 href="/register"
                 style={{
-                  color: "#00684A",
+                  color: "var(--mui-palette-primary-main)",
                   fontWeight: 600,
                   textDecoration: "none",
                 }}
@@ -340,7 +340,7 @@ function LoginForm() {
               <Link
                 href="/register"
                 style={{
-                  color: "#00684A",
+                  color: "var(--mui-palette-primary-main)",
                   fontWeight: 600,
                   textDecoration: "none",
                 }}

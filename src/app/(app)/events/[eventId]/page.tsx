@@ -174,9 +174,9 @@ export default function EventDetailPage() {
               href={`/${event.landingPage.slug}`}
               sx={{
                 width: { xs: "100%", sm: "auto" },
-                background: "linear-gradient(135deg, #00ED64 0%, #00684A 100%)",
+                background: "linear-gradient(135deg, var(--mui-palette-primary-light) 0%, var(--mui-palette-primary-main) 100%)",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #00684A 0%, #023430 100%)",
+                  background: "linear-gradient(135deg, var(--mui-palette-primary-main) 0%, var(--mui-palette-primary-dark) 100%)",
                 },
               }}
             >

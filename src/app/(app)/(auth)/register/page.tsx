@@ -237,7 +237,7 @@ export default function RegisterPage() {
             <Link
               href="/login"
               style={{
-                color: "#00684A",
+                color: "var(--mui-palette-primary-main)",
                 fontWeight: 600,
                 textDecoration: "none",
               }}

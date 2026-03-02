@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { Container } from '@mui/material';
 import { auth } from '@/lib/auth';
+import { PageHeaderSkeleton, CardGridSkeleton } from '@/components/shared-ui/PageSkeleton';
 import SavedIdeasView from './SavedIdeasView';
 
 export const metadata = {
@@ -16,7 +18,7 @@ export default async function SavedIdeasPage() {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Container maxWidth="lg" sx={{ py: 4 }}><PageHeaderSkeleton /><CardGridSkeleton count={4} /></Container>}>
       <SavedIdeasView userId={session.user.id} />
     </Suspense>
   );

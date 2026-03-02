@@ -139,7 +139,7 @@ export default function Navbar() {
 
       {user && (
         <>
-          <Box sx={{ px: 2, py: 2, bgcolor: "grey.50" }}>
+          <Box sx={{ px: 2, py: 2, bgcolor: "action.hover" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
               <Avatar
                 sx={{

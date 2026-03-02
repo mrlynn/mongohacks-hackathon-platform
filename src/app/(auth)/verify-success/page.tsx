@@ -8,13 +8,14 @@ import {
   CardContent,
   Typography,
   Button,
+  Skeleton,
 } from "@mui/material";
 import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import Link from "next/link";
 
 export default function VerifySuccessPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Container maxWidth="sm" sx={{ py: 8 }}><Card elevation={3}><CardContent sx={{ textAlign: "center", py: 6, px: 4 }}><Skeleton variant="circular" width={80} height={80} sx={{ mx: "auto", mb: 3 }} /><Skeleton variant="text" width="60%" sx={{ mx: "auto", mb: 2 }} /><Skeleton variant="text" width="80%" sx={{ mx: "auto" }} /></CardContent></Card></Container>}>
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card elevation={3}>
           <CardContent sx={{ textAlign: "center", py: 6, px: 4 }}>
