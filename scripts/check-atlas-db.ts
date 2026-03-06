@@ -1,7 +1,12 @@
 import { MongoClient, ObjectId } from 'mongodb';
 
 async function checkAtlasClusters() {
-  const uri = process.env.MONGODB_URI || 'mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net';
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    throw new Error('MONGODB_URI is required');
+  }
+
   const dbName = 'hackathon-platform';
   
   const client = new MongoClient(uri);
